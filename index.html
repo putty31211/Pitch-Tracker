@@ -79,6 +79,39 @@
     .history-list b { display: block; font-size: 13px; color: #263b58; margin-bottom: 2px; }
     .history-list time { flex: 0 0 auto; font-variant-numeric: tabular-nums; }
     .history-actions { display: flex; justify-content: space-between; gap: 10px; margin-top: 4px; }
+    .tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; background: #e8eef6; border-radius: 13px; margin: 16px 15px 0; padding: 4px; }
+    .tab { border: 0; background: transparent; color: #5e7390; border-radius: 10px; min-height: 44px; font-size: 14px; font-weight: 850; }
+    .tab.active { background: #fff; color: #1761bc; box-shadow: 0 2px 7px #1427441a; }
+    .source-row { display: grid; grid-template-columns: repeat(2, 1fr); gap: 7px; }
+    .source-row .choice { width: 100%; }
+    .import-row { display: flex; align-items: center; gap: 9px; margin-top: 12px; }
+    .import-label { display: inline-flex; align-items: center; justify-content: center; border: 1px solid #bcd1ed; border-radius: 11px; min-height: 42px; padding: 7px 12px; color: #1761bc; font-size: 12px; font-weight: 850; cursor: pointer; white-space: nowrap; }
+    .import-label:focus-within { outline: 3px solid #f6ac50; outline-offset: 2px; }
+    .file-input { width: 1px; height: 1px; opacity: 0; position: absolute; }
+    .import-name { font-size: 12px; color: #647b97; overflow-wrap: anywhere; }
+    .report-filter { display: flex; align-items: center; justify-content: space-between; gap: 12px; font-size: 13px; font-weight: 850; color: #526a88; }
+    .report-filter select { font: inherit; color: #172844; background: #f7f9fc; border: 1px solid #dbe4ee; border-radius: 10px; min-height: 42px; padding: 7px 10px; min-width: 145px; }
+    .report-kpis { display: grid; grid-template-columns: repeat(3, 1fr); gap: 7px; margin-bottom: 12px; }
+    .report-kpi { background: #fff; border: 1px solid #dfe8f1; border-radius: 14px; padding: 12px 9px; }
+    .report-kpi strong { display: block; font-size: 21px; line-height: 1.1; color: #172844; font-variant-numeric: tabular-nums; }
+    .report-kpi small { display: block; margin-top: 4px; font-size: 10px; font-weight: 850; text-transform: uppercase; letter-spacing: .06em; color: #6f8198; }
+    .chart-row { margin: 12px 0; }
+    .chart-label { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; margin-bottom: 5px; font-size: 13px; font-weight: 800; }
+    .chart-label span:last-child { color: #627994; font-size: 12px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+    .bar-track { width: 100%; height: 13px; border-radius: 20px; background: #e9f0f8; overflow: hidden; }
+    .bar-fill { height: 100%; border-radius: 20px; background: #1761bc; }
+    .bar-fill.secondary { background: #f2a345; }
+    .zone-report { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+    .zone-report-cell { min-height: 80px; border-radius: 11px; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 3px; text-align: center; padding: 6px 2px; background: #e9f1fb; color: #234365; }
+    .zone-report-cell span { font-size: 10px; font-weight: 850; line-height: 1.15; }
+    .zone-report-cell strong { font-size: 19px; line-height: 1; font-variant-numeric: tabular-nums; }
+    .zone-report-cell small { font-size: 10px; font-weight: 750; }
+    .batter-report { list-style: none; padding: 0; margin: 0; max-height: 340px; overflow: auto; }
+    .batter-report li { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 11px 0; border-top: 1px solid #edf1f6; font-size: 12px; color: #617893; }
+    .batter-report b { color: #263b58; font-size: 13px; }
+    .batter-report strong { color: #1761bc; font-size: 12px; text-align: right; }
+    .report-empty { text-align: center; padding: 34px 20px; color: #627994; line-height: 1.5; }
+    .report-empty strong { display: block; color: #172844; font-size: 19px; margin-bottom: 7px; }
     .muted { color: #8192a6; font-size: 12px; }
     .toast { position: fixed; left: 50%; bottom: max(18px, env(safe-area-inset-bottom)); transform: translateX(-50%); padding: 11px 17px; background: #142844; color: #fff; border-radius: 12px; box-shadow: 0 8px 24px #10223e40; font-size: 13px; font-weight: 750; z-index: 2; white-space: nowrap; max-width: calc(100vw - 30px); overflow: hidden; text-overflow: ellipsis; }
     .toast[hidden], [hidden] { display: none !important; }
@@ -91,14 +124,15 @@
     <header class="hero">
       <div class="brand"><span class="ball-icon" aria-hidden="true">✦</span> Lightning Softball · Pitch Log</div>
       <h1 id="pitcherHeading">Choose a pitcher</h1>
-      <p>Tap through a pitch. The pitcher stays selected.</p>
-      <div class="hero-summary" aria-live="polite">
+      <p id="heroSubtitle">Tap through a pitch. The pitcher stays selected.</p>
+      <div class="hero-summary" id="heroSummary" aria-live="polite">
         <div class="metric"><strong id="pitchCount">0</strong><small>Pitches</small></div>
         <div class="metric"><strong id="strikeCount">0</strong><small>Strikes</small></div>
         <div class="metric"><strong id="strikeRate">—</strong><small>Strike %</small></div>
       </div>
     </header>
-    <main>
+    <nav class="tabs" aria-label="App sections"><button type="button" class="tab active" id="trackerTab" aria-current="page">Log pitches</button><button type="button" class="tab" id="reportsTab">Reports</button></nav>
+    <main id="trackerView">
       <section class="card pitcher-card" aria-label="Pitcher selection">
         <details id="pitcherPanel" open>
           <summary><strong id="selectedPitcher">Choose a pitcher</strong><small id="pitcherAction">Tap to choose ▾</small></summary>
@@ -148,6 +182,24 @@
         </details>
       </section>
     </main>
+    <main id="reportsView" hidden>
+      <section class="card">
+        <div class="section-title"><h2>Report data</h2></div>
+        <div class="source-row"><button type="button" class="choice selected" id="currentSource" aria-pressed="true">Current game</button><button type="button" class="choice" id="importedSource" aria-pressed="false">Imported CSV</button></div>
+        <div class="import-row"><label class="import-label">Import pitch-log CSV<input class="file-input" id="importFile" type="file" accept=".csv,text/csv"></label><span class="import-name" id="importName">No CSV imported</span></div>
+        <p class="hint" style="margin-top:10px">Importing a report will not change the game you are logging.</p>
+      </section>
+      <section class="card"><label class="report-filter" for="reportPitcher">Pitcher <select id="reportPitcher"><option value="">All pitchers</option></select></label></section>
+      <div id="reportEmpty" class="card report-empty" hidden><strong>No pitches to report yet</strong>Log a pitch in the current game or import an exported pitch-log CSV.</div>
+      <div id="reportContent" hidden>
+        <div class="report-kpis" id="reportKpis" aria-label="Game statistics"></div>
+        <section class="card"><div class="section-title"><h2>Pitch mix</h2><span>Share · strike %</span></div><div id="pitchMix"></div></section>
+        <section class="card"><div class="section-title"><h2>Pitch results</h2></div><div id="resultChart"></div></section>
+        <section class="card"><div class="section-title"><h2>Called targets</h2><span>Pitch count</span></div><div class="zone-report" id="zoneReport"></div><p class="hint" style="margin-top:12px">These are intended targets, not where the pitch actually went. Strike % includes fouls.</p></section>
+        <section class="card"><div class="section-title"><h2>Target accuracy</h2><span>Charted pitches only</span></div><div id="accuracyChart"></div><p class="hint" style="margin-top:12px">Fouls and balls in play have no hit/miss choice yet, so they are excluded.</p></section>
+        <section class="card"><div class="section-title"><h2>Batters faced</h2><span id="batterReportCount"></span></div><ol class="batter-report" id="batterReport"></ol></section>
+      </div>
+    </main>
   </div>
   <div id="toast" class="toast" role="status" hidden></div>
   <script>
@@ -158,6 +210,8 @@
       const pitchNames = ['Fastball', 'Change-up', 'Curve', 'Drop', 'Rise'];
       const zoneNames = ['Up / In', 'Up', 'Up / Out', 'In', 'Middle', 'Out', 'Down / In', 'Down', 'Down / Out'];
       const state = { pitcher: null, batter: 1, pitch: null, zone: null, result: null, strikeType: null, strikeSpot: null, ballType: null, playType: null, history: [] };
+      const report = { tab: 'tracker', source: 'current', pitcher: '', rows: [], fileName: '' };
+      const REPORT_KEY = 'lightning-pitch-reports-v1';
       const $ = id => document.getElementById(id);
       const choices = (id, values, key, { className = 'choice' } = {}) => {
         const container = $(id);
@@ -235,6 +289,134 @@
           li.append(info, when); list.append(li);
         });
       }
+      function parseCSV(text) {
+        const records = []; let row = [], field = '', quoted = false;
+        text = text.replace(/^\uFEFF/, '');
+        for (let i = 0; i < text.length; i++) {
+          const char = text[i];
+          if (quoted) {
+            if (char === '"' && text[i + 1] === '"') { field += '"'; i++; }
+            else if (char === '"') quoted = false;
+            else field += char;
+          } else if (char === '"') quoted = true;
+          else if (char === ',') { row.push(field); field = ''; }
+          else if (char === '\n' || char === '\r') {
+            if (char === '\r' && text[i + 1] === '\n') i++;
+            row.push(field); field = '';
+            if (row.some(value => value.trim())) records.push(row);
+            row = [];
+          } else field += char;
+        }
+        if (quoted) throw Error('The CSV has an unfinished quoted field.');
+        row.push(field); if (row.some(value => value.trim())) records.push(row);
+        const headers = (records.shift() || []).map(value => value.trim());
+        if (!['pitcher', 'batter', 'called_pitch', 'result', 'batter_outcome'].every(key => headers.includes(key))) throw Error('Choose a pitch-log CSV exported by this app.');
+        const data = records.map(cells => Object.fromEntries(headers.map((key, index) => [key, cells[index] || ''])));
+        if (!data.length || data.some(p => !p.pitcher || !p.called_pitch || !['Strike', 'Foul', 'Ball', 'HBP', 'In play'].includes(p.result))) throw Error('This CSV has missing or invalid pitch rows.');
+        return data.map(p => ({ pitcher: p.pitcher, batter: Number(p.batter) || null, pitch: p.called_pitch, zone: p.called_location || null, result: p.result, strikeType: p.strike_type || null, strikeSpot: p.strike_spot || null, ballType: p.ball_detail || null, playType: p.in_play_outcome || null, plateResult: p.batter_outcome || null, countBefore: p.count_before || null }));
+      }
+      function saveReport() {
+        try { localStorage.setItem(REPORT_KEY, JSON.stringify({ rows: report.rows, fileName: report.fileName })); }
+        catch (_) { notify('Report is open, but browser storage is full. Reimport after refreshing.'); }
+      }
+      function restoreReport() {
+        try {
+          const saved = JSON.parse(localStorage.getItem(REPORT_KEY) || '{}');
+          if (Array.isArray(saved.rows)) report.rows = saved.rows.filter(p => p && p.pitcher && p.pitch && p.result);
+          if (typeof saved.fileName === 'string') report.fileName = saved.fileName;
+        } catch (_) { /* Keep reporting available if saved data is invalid. */ }
+      }
+      function showTab(tab) {
+        report.tab = tab;
+        $('trackerView').hidden = tab !== 'tracker'; $('reportsView').hidden = tab !== 'reports';
+        $('heroSummary').hidden = tab === 'reports';
+        $('trackerTab').classList.toggle('active', tab === 'tracker');
+        $('reportsTab').classList.toggle('active', tab === 'reports');
+        $('trackerTab').setAttribute('aria-current', tab === 'tracker' ? 'page' : 'false');
+        $('reportsTab').setAttribute('aria-current', tab === 'reports' ? 'page' : 'false');
+        $('pitcherHeading').textContent = tab === 'reports' ? 'Game reports' : state.pitcher || 'Choose a pitcher';
+        $('heroSubtitle').textContent = tab === 'reports' ? 'Review pitch calls, results, and batters faced.' : 'Tap through a pitch. The pitcher stays selected.';
+        if (tab === 'reports') renderReport();
+        window.scrollTo(0, 0);
+      }
+      function chartRow(label, valueText, fraction, secondary = false) {
+        const row = document.createElement('div'); row.className = 'chart-row';
+        const top = document.createElement('div'); top.className = 'chart-label';
+        const name = document.createElement('span'); name.textContent = label;
+        const value = document.createElement('span'); value.textContent = valueText; top.append(name, value);
+        const track = document.createElement('div'); track.className = 'bar-track';
+        const fill = document.createElement('div'); fill.className = `bar-fill${secondary ? ' secondary' : ''}`;
+        fill.style.width = `${Math.max(0, Math.min(100, fraction * 100))}%`;
+        track.append(fill); row.append(top, track); return row;
+      }
+      const isStrike = p => p.result === 'Strike' || p.result === 'Foul';
+      const percent = (part, total) => total ? `${Math.round(part / total * 100)}%` : '—';
+      function renderReport() {
+        const all = report.source === 'current' ? state.history : report.rows;
+        const pitchers = [...new Set(all.map(p => p.pitcher))].sort();
+        const picker = $('reportPitcher');
+        if (report.pitcher && !pitchers.includes(report.pitcher)) report.pitcher = '';
+        picker.replaceChildren();
+        for (const name of ['', ...pitchers]) {
+          const option = document.createElement('option'); option.value = name; option.textContent = name || 'All pitchers'; picker.append(option);
+        }
+        picker.value = report.pitcher;
+        for (const [id, active] of [['currentSource', report.source === 'current'], ['importedSource', report.source === 'imported']]) {
+          $(id).classList.toggle('selected', active); $(id).setAttribute('aria-pressed', String(active));
+        }
+        $('importName').textContent = report.fileName || 'No CSV imported';
+        const rows = report.pitcher ? all.filter(p => p.pitcher === report.pitcher) : all;
+        $('reportEmpty').hidden = rows.length > 0; $('reportContent').hidden = !rows.length;
+        if (!rows.length) return;
+        const strikes = rows.filter(isStrike).length;
+        const batters = new Set(rows.map(p => p.batter).filter(Boolean));
+        const first = rows.filter(p => p.countBefore === '0-0');
+        const kpis = [
+          ['Pitches', rows.length], ['Batters faced', batters.size], ['Strike %', percent(strikes, rows.length)],
+          ['Strikeouts', rows.filter(p => p.plateResult === 'Strikeout').length],
+          ['Walks', rows.filter(p => p.plateResult === 'Walk').length],
+          ['First pitch strikes', first.length ? `${first.filter(isStrike).length}/${first.length}` : '—']
+        ];
+        $('reportKpis').replaceChildren(...kpis.map(([label, value]) => {
+          const card = document.createElement('div'); card.className = 'report-kpi';
+          const big = document.createElement('strong'); big.textContent = value;
+          const small = document.createElement('small'); small.textContent = label;
+          card.append(big, small); return card;
+        }));
+        const pitchCounts = [...new Set([...pitchNames, ...rows.map(p => p.pitch)])].map(name => [name, rows.filter(p => p.pitch === name)]).filter(([, group]) => group.length);
+        $('pitchMix').replaceChildren(...pitchCounts.map(([name, group]) => chartRow(name, `${group.length} (${percent(group.length, rows.length)}) · ${percent(group.filter(isStrike).length, group.length)} strikes`, group.length / rows.length)));
+        const resultCounts = ['Strike', 'Ball', 'Foul', 'In play', 'HBP'].map(name => [name, rows.filter(p => p.result === name).length]);
+        $('resultChart').replaceChildren(...resultCounts.filter(([, count]) => count).map(([name, count]) => chartRow(name, `${count} · ${percent(count, rows.length)}`, count / rows.length, name === 'Ball')));
+        const maxZone = Math.max(1, ...zoneNames.map(name => rows.filter(p => p.zone === name).length));
+        $('zoneReport').replaceChildren(...zoneNames.map(name => {
+          const matches = rows.filter(p => p.zone === name); const tile = document.createElement('div'); tile.className = 'zone-report-cell';
+          const strength = matches.length / maxZone;
+          tile.style.background = matches.length ? `rgba(23, 97, 188, ${(.10 + strength * .65).toFixed(2)})` : '#f1f5fa';
+          tile.style.color = strength > .62 ? '#fff' : '#234365';
+          const label = document.createElement('span'); label.textContent = name;
+          const count = document.createElement('strong'); count.textContent = matches.length;
+          const rate = document.createElement('small'); rate.textContent = matches.length ? `${percent(matches.filter(isStrike).length, matches.length)} strikes` : 'No calls';
+          tile.append(label, count, rate); return tile;
+        }));
+        const charted = rows.filter(p => p.zone && (p.result === 'Strike' && p.strikeSpot || p.result === 'Ball' && p.ballType));
+        const onTarget = charted.filter(p => p.strikeSpot === 'Hit spot' || p.ballType === 'Right spot · called ball').length;
+        $('accuracyChart').replaceChildren(chartRow('Hit called target', `${onTarget}/${charted.length} · ${percent(onTarget, charted.length)}`, charted.length ? onTarget / charted.length : 0), chartRow('Missed called target', `${charted.length - onTarget}/${charted.length}`, charted.length ? (charted.length - onTarget) / charted.length : 0, true));
+        const groups = new Map();
+        for (const p of rows) {
+          if (!p.batter) continue;
+          if (!groups.has(p.batter)) groups.set(p.batter, []);
+          groups.get(p.batter).push(p);
+        }
+        $('batterReportCount').textContent = `${groups.size} batters`;
+        $('batterReport').replaceChildren(...[...groups.entries()].map(([number, pitches]) => {
+          const li = document.createElement('li');
+          const left = document.createElement('span'); const name = document.createElement('b'); name.textContent = `Batter ${number}`;
+          const detail = document.createElement('span'); detail.textContent = `${pitches.length} ${pitches.length === 1 ? 'pitch' : 'pitches'}${report.pitcher ? '' : ` · ${[...new Set(pitches.map(p => p.pitcher))].join(', ')}`}`;
+          left.append(name, detail);
+          const outcome = document.createElement('strong'); outcome.textContent = pitches.at(-1).plateResult || 'In progress';
+          li.append(left, outcome); return li;
+        }));
+      }
       function render() {
         choices('pitchers', pitcherNames, 'pitcher');
         choices('pitches', pitchNames, 'pitch');
@@ -304,7 +486,21 @@
         const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url;
         a.download = `pitch-log-${new Date().toISOString().slice(0, 10)}.csv`; document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(url), 1000);
       });
-      restore(); render();
+      $('trackerTab').addEventListener('click', () => showTab('tracker'));
+      $('reportsTab').addEventListener('click', () => showTab('reports'));
+      $('currentSource').addEventListener('click', () => { report.source = 'current'; report.pitcher = ''; renderReport(); });
+      $('importedSource').addEventListener('click', () => { report.source = 'imported'; report.pitcher = ''; renderReport(); });
+      $('reportPitcher').addEventListener('change', event => { report.pitcher = event.target.value; renderReport(); });
+      $('importFile').addEventListener('change', async event => {
+        const file = event.target.files?.[0]; if (!file) return;
+        try {
+          const parsed = parseCSV(await file.text());
+          report.rows = parsed; report.fileName = file.name; report.source = 'imported'; report.pitcher = '';
+          saveReport(); renderReport(); notify(`${parsed.length} pitches imported`);
+        } catch (error) { notify(error.message || 'Could not read that CSV.'); }
+        event.target.value = '';
+      });
+      restore(); restoreReport(); render();
     })();
   </script>
 </body>
