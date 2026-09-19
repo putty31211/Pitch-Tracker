@@ -1,0 +1,311 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0d1c35">
+  <title>Pitch Log</title>
+  <style>
+    :root { font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; color: #172844; background: #edf2f7; }
+    * { box-sizing: border-box; }
+    body { margin: 0; }
+    button { font: inherit; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+    button:focus-visible, summary:focus-visible { outline: 3px solid #f6ac50; outline-offset: 2px; }
+    .app { max-width: 560px; margin: auto; min-height: 100dvh; background: #f7f9fc; padding-bottom: calc(22px + env(safe-area-inset-bottom)); box-shadow: 0 10px 40px #14274412; }
+    .hero { background: #0d1c35; color: white; padding: 24px 20px 18px; border-radius: 0 0 25px 25px; }
+    .brand { display: flex; align-items: center; gap: 10px; color: #b9c8dd; font-size: 12px; font-weight: 850; text-transform: uppercase; letter-spacing: .15em; }
+    .ball-icon { height: 28px; width: 28px; display: grid; place-items: center; border-radius: 50%; background: #ffb157; color: #182841; font-size: 17px; }
+    h1 { margin: 13px 0 3px; font-size: clamp(27px, 7vw, 36px); letter-spacing: -.045em; line-height: 1.1; }
+    .hero p { color: #a9bad0; margin: 0; font-size: 13px; }
+    .hero-summary { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 20px; }
+    .metric { background: #192c49; border: 1px solid #ffffff12; border-radius: 13px; padding: 10px 12px; }
+    .metric strong { display: block; font-size: 23px; line-height: 1.1; font-variant-numeric: tabular-nums; }
+    .metric small { display: block; margin-top: 4px; color: #b6c5d9; font-size: 10px; text-transform: uppercase; letter-spacing: .09em; font-weight: 800; }
+    main { padding: 17px 15px 4px; }
+    .card { background: #fff; border: 1px solid #e2e9f0; border-radius: 19px; padding: 16px; margin-bottom: 12px; box-shadow: 0 3px 12px #24436608; }
+    .section-title { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 12px; }
+    .section-title h2 { font-size: 12px; color: #556b84; letter-spacing: .11em; text-transform: uppercase; margin: 0; font-weight: 900; }
+    .section-title span { color: #8a9bb0; font-size: 11px; }
+    .chip-row { display: flex; gap: 7px; overflow-x: auto; padding-bottom: 3px; scrollbar-width: none; }
+    .chip-row::-webkit-scrollbar { display: none; }
+    .choice { border: 1px solid #dbe4ee; border-radius: 12px; color: #293c56; background: #f7f9fc; min-height: 44px; padding: 9px 13px; font-size: 13px; font-weight: 800; line-height: 1.1; transition: background .12s, border-color .12s, transform .12s; }
+    .choice:active, .zone:active, .log:active { transform: scale(.97); }
+    .chip-row .choice { flex: 0 0 auto; }
+    .choice.selected { color: #fff; background: #1761bc; border-color: #1761bc; box-shadow: 0 3px 9px #1761bc35; }
+    .pitch-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 7px; }
+    .pitch-grid .choice { min-height: 50px; }
+    .two-columns { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .two-columns .card { margin: 0; }
+    .zone-wrap { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; aspect-ratio: 1 / 1; }
+    .zone { background: #f3f7fc; border: 1px solid #dce6f1; border-radius: 7px; color: #55708e; font-weight: 850; font-size: clamp(9px, 2.6vw, 12px); min-width: 0; padding: 2px; line-height: 1.1; }
+    .zone.selected { background: #ffb157; border-color: #e99737; color: #172844; }
+    .zone.center { background: #e8f0fa; }
+    .zone.center.selected { background: #ffb157; }
+    .skip { background: transparent; color: #1761bc; border: 0; padding: 9px 0 0; font-size: 12px; font-weight: 800; text-align: left; }
+    .skip.selected { color: #bb6210; }
+    .result-choices { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; }
+    .result-choices .choice { padding-inline: 5px; }
+    .pitcher-card { padding-block: 13px; }
+    .pitcher-card details { border: 0; margin: 0; padding: 0; }
+    .pitcher-card summary { display: flex; justify-content: space-between; align-items: center; list-style: none; padding: 3px 0; }
+    .pitcher-card summary::-webkit-details-marker { display: none; }
+    .pitcher-card summary strong { font-size: 17px; color: #172844; }
+    .pitcher-card summary small { color: #1761bc; font-weight: 800; font-size: 12px; }
+    .pitcher-card .chip-row { margin-top: 13px; }
+    .batter-card { background: #eaf2fc; border-color: #d7e6f9; }
+    .batter-top { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+    .batter-top strong { font-size: 19px; }
+    .count { background: #fff; color: #172844; padding: 7px 11px; border-radius: 10px; font-size: 15px; font-weight: 900; font-variant-numeric: tabular-nums; }
+    .batter-stats { display: flex; gap: 13px; flex-wrap: wrap; margin-top: 10px; font-size: 12px; font-weight: 750; color: #556b84; }
+    .batter-stats b { color: #172844; }
+    .new-batter { margin-top: 9px; padding: 8px 0 2px; border: 0; background: transparent; color: #1761bc; font-size: 12px; font-weight: 850; }
+    .new-batter:disabled { opacity: .45; cursor: default; }
+    .details { margin-top: 15px; border-top: 1px solid #e9eef4; padding-top: 14px; }
+    .details .section-title { margin-bottom: 9px; }
+    .detail-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 7px; }
+    .detail-grid.three { grid-template-columns: repeat(3, 1fr); }
+    .detail-grid .choice { padding: 9px 6px; min-height: 47px; }
+    .detail-grid + .section-title { margin-top: 15px; }
+    .hint { font-size: 12px; line-height: 1.4; color: #7b8da4; margin: 2px 0 0; }
+    .log { width: 100%; border: 0; border-radius: 15px; background: #f4a345; min-height: 58px; font-weight: 950; font-size: 16px; color: #182841; box-shadow: 0 5px 0 #d7882d; margin-top: 4px; }
+    .log:disabled { background: #dce3ec; color: #8192a6; box-shadow: none; cursor: default; }
+    .footer-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 12px 2px 3px; }
+    .link-button { border: 0; background: transparent; color: #1761bc; font-size: 13px; font-weight: 850; padding: 9px 4px; }
+    .link-button:disabled { color: #a9b5c2; cursor: default; }
+    details { border-top: 1px solid #e5ecf3; margin-top: 8px; padding-top: 11px; }
+    summary { cursor: pointer; color: #172844; font-weight: 850; font-size: 14px; padding: 7px 2px; }
+    .history-list { list-style: none; padding: 3px 0 0; margin: 0; }
+    .history-list li { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; border-top: 1px solid #eef2f6; padding: 11px 2px; font-size: 12px; color: #58708d; }
+    .history-list b { display: block; font-size: 13px; color: #263b58; margin-bottom: 2px; }
+    .history-list time { flex: 0 0 auto; font-variant-numeric: tabular-nums; }
+    .history-actions { display: flex; justify-content: space-between; gap: 10px; margin-top: 4px; }
+    .muted { color: #8192a6; font-size: 12px; }
+    .toast { position: fixed; left: 50%; bottom: max(18px, env(safe-area-inset-bottom)); transform: translateX(-50%); padding: 11px 17px; background: #142844; color: #fff; border-radius: 12px; box-shadow: 0 8px 24px #10223e40; font-size: 13px; font-weight: 750; z-index: 2; white-space: nowrap; max-width: calc(100vw - 30px); overflow: hidden; text-overflow: ellipsis; }
+    .toast[hidden], [hidden] { display: none !important; }
+    @media (max-width: 375px) { .card { padding: 12px; } main { padding-inline: 10px; } .two-columns { gap: 8px; } .choice { font-size: 12px; } .zone { font-size: 9px; } }
+    @media (min-width: 561px) { body { padding: 26px 0; } .app { border-radius: 25px; overflow: hidden; min-height: calc(100dvh - 52px); } .hero { border-radius: 0 0 25px 25px; } }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header class="hero">
+      <div class="brand"><span class="ball-icon" aria-hidden="true">✦</span> Lightning Softball · Pitch Log</div>
+      <h1 id="pitcherHeading">Choose a pitcher</h1>
+      <p>Tap through a pitch. The pitcher stays selected.</p>
+      <div class="hero-summary" aria-live="polite">
+        <div class="metric"><strong id="pitchCount">0</strong><small>Pitches</small></div>
+        <div class="metric"><strong id="strikeCount">0</strong><small>Strikes</small></div>
+        <div class="metric"><strong id="strikeRate">—</strong><small>Strike %</small></div>
+      </div>
+    </header>
+    <main>
+      <section class="card pitcher-card" aria-label="Pitcher selection">
+        <details id="pitcherPanel" open>
+          <summary><strong id="selectedPitcher">Choose a pitcher</strong><small id="pitcherAction">Tap to choose ▾</small></summary>
+          <div id="pitchers" class="chip-row" role="group" aria-label="Pitcher"></div>
+        </details>
+      </section>
+      <section class="card batter-card" aria-label="Current batter">
+        <div class="batter-top"><strong id="batterHeading">Batter 1</strong><span class="count" id="atBatCount">0 balls · 0 strikes</span></div>
+        <div class="batter-stats"><span>Faced <b id="batterFaced">0</b></span><span>Strikeouts <b id="strikeouts">0</b></span><span>Walks <b id="walks">0</b></span></div>
+        <button type="button" class="new-batter" id="manualBatter" disabled>New batter →</button>
+      </section>
+      <section class="card" aria-labelledby="pitchLabel">
+        <div class="section-title"><h2 id="pitchLabel">2 · Called pitch</h2></div>
+        <div id="pitches" class="pitch-grid" role="group" aria-label="Called pitch"></div>
+      </section>
+      <div class="two-columns">
+        <section class="card" aria-labelledby="zoneLabel">
+          <div class="section-title"><h2 id="zoneLabel">3 · Target</h2></div>
+          <div class="zone-wrap" id="zone" role="group" aria-label="Called location"></div>
+          <button type="button" class="skip" id="skipZone" aria-pressed="false">Skip location</button>
+        </section>
+        <section class="card" aria-labelledby="resultLabel">
+          <div class="section-title"><h2 id="resultLabel">4 · Result</h2></div>
+          <div class="result-choices" id="results" role="group" aria-label="Pitch result"></div>
+          <p id="resultHint" class="hint" style="margin-top:12px">Pick what happened to this pitch.</p>
+        </section>
+      </div>
+      <section class="card" id="detailsCard" hidden aria-labelledby="detailsLabel">
+        <div class="section-title"><h2 id="detailsLabel">5 · Details</h2><span id="detailsSubtitle"></span></div>
+        <div id="strikeDetails" hidden>
+          <div id="strikeTypes" class="detail-grid three" role="group" aria-label="Strike type"></div>
+          <div class="section-title"><h2>Did it hit the target?</h2></div>
+          <div id="strikeSpots" class="detail-grid" role="group" aria-label="Target accuracy"></div>
+        </div>
+        <div id="ballDetails" hidden><div id="ballTypes" class="detail-grid" role="group" aria-label="Ball detail"></div></div>
+        <p id="hbpDetails" class="hint" hidden>Hit by pitch is ready to log.</p>
+        <p id="foulDetails" class="hint" hidden>A foul with two strikes keeps the count at two.</p>
+        <div id="playDetails" hidden><div id="playTypes" class="detail-grid" role="group" aria-label="Ball in play outcome"></div></div>
+      </section>
+      <button type="button" class="log" id="logButton" disabled>Choose pitcher, pitch & result</button>
+      <div class="footer-row"><button type="button" class="link-button" id="undoButton" disabled>↶ Undo last pitch</button><span id="gameCount" class="muted">0 game pitches</span></div>
+      <section class="card" style="margin-top:8px">
+        <details id="historyPanel">
+          <summary id="historySummary">Pitch history (0)</summary>
+          <ol class="history-list" id="history"></ol>
+          <div class="history-actions"><button type="button" class="link-button" id="exportButton" disabled>Export CSV</button><button type="button" class="link-button" id="newGameButton" disabled>New game</button></div>
+        </details>
+      </section>
+    </main>
+  </div>
+  <div id="toast" class="toast" role="status" hidden></div>
+  <script>
+    (() => {
+      'use strict';
+      const KEY = 'lightning-pitch-log-v1';
+      const pitcherNames = ['Ellie', 'Paige', 'Emery', 'Lila', 'Leelah'];
+      const pitchNames = ['Fastball', 'Change-up', 'Curve', 'Drop', 'Rise'];
+      const zoneNames = ['Up / In', 'Up', 'Up / Out', 'In', 'Middle', 'Out', 'Down / In', 'Down', 'Down / Out'];
+      const state = { pitcher: null, batter: 1, pitch: null, zone: null, result: null, strikeType: null, strikeSpot: null, ballType: null, playType: null, history: [] };
+      const $ = id => document.getElementById(id);
+      const choices = (id, values, key, { className = 'choice' } = {}) => {
+        const container = $(id);
+        container.replaceChildren(...values.map(value => {
+          const button = document.createElement('button');
+          button.type = 'button'; button.className = className; button.textContent = value;
+          button.setAttribute('aria-pressed', String(state[key] === value));
+          if (state[key] === value) button.classList.add('selected');
+          button.addEventListener('click', () => {
+            if ((key === 'strikeSpot' && value === 'Hit spot' || key === 'ballType' && value === 'Right spot · called ball') && !state.zone) {
+              notify('Choose a target first to mark that spot.');
+              return;
+            }
+            state[key] = value;
+            if (key === 'result') { state.strikeType = null; state.strikeSpot = null; state.ballType = null; state.playType = null; }
+            if (key === 'zone' && state.result === 'Ball' && state.ballType === 'Right spot · called ball') state.ballType = null;
+            if (key === 'pitcher') { $('pitcherPanel').open = false; save(); }
+            render();
+          });
+          return button;
+        }));
+      };
+      function save() {
+        try { localStorage.setItem(KEY, JSON.stringify({ pitcher: state.pitcher, batter: state.batter, history: state.history })); }
+        catch (_) { notify('Browser storage is unavailable. Export before closing.'); }
+      }
+      function restore() {
+        try {
+          const saved = JSON.parse(localStorage.getItem(KEY) || '{}');
+          if (pitcherNames.includes(saved.pitcher)) state.pitcher = saved.pitcher;
+          if (Array.isArray(saved.history)) state.history = saved.history.filter(p => p && pitcherNames.includes(p.pitcher) && pitchNames.includes(p.pitch) && ['Strike', 'Ball', 'Foul', 'HBP', 'In play'].includes(p.result));
+          const lastBatter = Math.max(0, ...state.history.map(p => Number.isSafeInteger(p.batter) ? p.batter : 0));
+          if (Number.isSafeInteger(saved.batter) && saved.batter >= lastBatter && saved.batter <= lastBatter + 1) state.batter = saved.batter;
+          else if (lastBatter) state.batter = lastBatter + (state.history.at(-1)?.plateResult ? 1 : 0);
+          $('pitcherPanel').open = !state.pitcher;
+        } catch (_) { /* Start fresh if stored data cannot be read. */ }
+      }
+      function resetEntry() { state.pitch = null; state.zone = null; state.result = null; state.strikeType = null; state.strikeSpot = null; state.ballType = null; state.playType = null; }
+      function countFor(batter) {
+        let balls = 0, strikes = 0;
+        for (const p of state.history.filter(p => p.batter === batter)) {
+          if (p.result === 'Ball') balls++;
+          if (p.result === 'Strike') strikes++;
+          if (p.result === 'Foul') strikes = Math.min(2, strikes + 1);
+        }
+        return { balls, strikes };
+      }
+      let toastTimer;
+      function notify(message) { const el = $('toast'); el.textContent = message; el.hidden = false; clearTimeout(toastTimer); toastTimer = setTimeout(() => { el.hidden = true; }, 2600); }
+      function ready() {
+        return !!(state.pitcher && state.pitch && state.result &&
+          (['HBP', 'Foul'].includes(state.result) || (state.result === 'Strike' && state.strikeType && state.strikeSpot) || (state.result === 'Ball' && state.ballType) || (state.result === 'In play' && state.playType)));
+      }
+      function buttonLabel() {
+        if (!state.pitcher) return 'Choose a pitcher';
+        if (!state.pitch) return 'Choose a called pitch';
+        if (!state.result) return 'Choose a result';
+        if (state.result === 'Strike' && (!state.strikeType || !state.strikeSpot)) return 'Finish strike details';
+        if (state.result === 'Ball' && !state.ballType) return 'Choose a ball detail';
+        if (state.result === 'In play' && !state.playType) return 'Choose what happened';
+        return 'Log pitch →';
+      }
+      function renderHistory() {
+        const list = $('history'); list.replaceChildren();
+        if (!state.history.length) { const li = document.createElement('li'); li.textContent = 'No pitches logged yet.'; list.append(li); }
+        state.history.slice().reverse().forEach((p, reverseIndex) => {
+          const li = document.createElement('li');
+          const info = document.createElement('div'); const head = document.createElement('b');
+          head.textContent = `#${state.history.length - reverseIndex} · ${p.pitcher} · ${p.pitch}${p.batter ? ` · Batter ${p.batter}` : ''}`;
+          const detail = document.createElement('span');
+          const outcome = p.result === 'Strike' ? `${p.strikeType}, ${(p.strikeSpot || 'No spot').toLowerCase()}` : p.result === 'Ball' ? p.ballType : p.result === 'In play' ? p.playType : p.result;
+          detail.textContent = `${outcome} · ${p.zone || 'No target'}${p.plateResult ? ` · ${p.plateResult}` : ''}`;
+          info.append(head, detail);
+          const when = document.createElement('time'); when.dateTime = p.time; when.textContent = new Date(p.time).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+          li.append(info, when); list.append(li);
+        });
+      }
+      function render() {
+        choices('pitchers', pitcherNames, 'pitcher');
+        choices('pitches', pitchNames, 'pitch');
+        choices('zone', zoneNames, 'zone', { className: 'zone' });
+        $('zone').children[4].classList.add('center');
+        $('skipZone').classList.toggle('selected', state.zone === null);
+        $('skipZone').setAttribute('aria-pressed', String(state.zone === null));
+        choices('results', ['Strike', 'Ball', 'Foul', 'HBP', 'In play'], 'result');
+        $('detailsCard').hidden = !state.result;
+        $('strikeDetails').hidden = state.result !== 'Strike';
+        $('ballDetails').hidden = state.result !== 'Ball';
+        $('hbpDetails').hidden = state.result !== 'HBP';
+        $('foulDetails').hidden = state.result !== 'Foul';
+        $('playDetails').hidden = state.result !== 'In play';
+        $('detailsSubtitle').textContent = state.result || '';
+        if (state.result === 'Strike') {
+          choices('strikeTypes', ['Swinging', 'Looking'], 'strikeType');
+          choices('strikeSpots', ['Hit spot', 'Missed spot'], 'strikeSpot');
+        }
+        if (state.result === 'Ball') choices('ballTypes', ['Missed spot', 'Wild pitch', 'Right spot · called ball'], 'ballType');
+        if (state.result === 'In play') choices('playTypes', ['Hit', 'Out', 'Error', 'Other'], 'playType');
+        $('resultHint').textContent = ['HBP', 'Foul'].includes(state.result) ? 'Ready to log.' : 'Pick what happened to this pitch.';
+        const pitcherPitches = state.history.filter(p => p.pitcher === state.pitcher);
+        const strikes = pitcherPitches.filter(p => ['Strike', 'Foul'].includes(p.result)).length;
+        const current = countFor(state.batter);
+        $('selectedPitcher').textContent = state.pitcher || 'Choose a pitcher';
+        $('pitcherAction').textContent = state.pitcher ? 'Change ▾' : 'Tap to choose ▾';
+        $('batterHeading').textContent = `Batter ${state.batter}`;
+        $('atBatCount').textContent = `${current.balls} balls · ${current.strikes} strikes`;
+        $('batterFaced').textContent = new Set(pitcherPitches.filter(p => p.batter).map(p => p.batter)).size;
+        $('strikeouts').textContent = pitcherPitches.filter(p => p.plateResult === 'Strikeout').length;
+        $('walks').textContent = pitcherPitches.filter(p => p.plateResult === 'Walk').length;
+        $('manualBatter').disabled = !state.history.some(p => p.batter === state.batter);
+        $('pitcherHeading').textContent = state.pitcher || 'Choose a pitcher';
+        $('pitchCount').textContent = pitcherPitches.length;
+        $('strikeCount').textContent = strikes;
+        $('strikeRate').textContent = pitcherPitches.length ? `${Math.round(strikes / pitcherPitches.length * 100)}%` : '—';
+        $('logButton').disabled = !ready(); $('logButton').textContent = buttonLabel();
+        $('undoButton').disabled = !state.history.length;
+        $('gameCount').textContent = `${state.history.length} game ${state.history.length === 1 ? 'pitch' : 'pitches'}`;
+        $('historySummary').textContent = `Pitch history (${state.history.length})`;
+        $('exportButton').disabled = $('newGameButton').disabled = !state.history.length;
+        renderHistory();
+      }
+      $('skipZone').addEventListener('click', () => { state.zone = null; if (state.ballType === 'Right spot · called ball') state.ballType = null; if (state.strikeSpot === 'Hit spot') state.strikeSpot = null; render(); });
+      $('manualBatter').addEventListener('click', () => {
+        if (!state.history.some(p => p.batter === state.batter)) return;
+        state.batter++; resetEntry(); save(); render(); notify(`Batter ${state.batter} ready`);
+      });
+      $('logButton').addEventListener('click', () => {
+        if (!ready()) return;
+        const before = countFor(state.batter);
+        const after = { balls: before.balls + (state.result === 'Ball' ? 1 : 0), strikes: before.strikes + (state.result === 'Strike' || state.result === 'Foul' && before.strikes < 2 ? 1 : 0) };
+        const plateResult = after.strikes >= 3 ? 'Strikeout' : after.balls >= 4 ? 'Walk' : state.result === 'HBP' ? 'Hit by pitch' : state.result === 'In play' ? state.playType : null;
+        const p = { pitcher: state.pitcher, batter: state.batter, pitch: state.pitch, zone: state.zone, result: state.result, strikeType: state.result === 'Strike' ? state.strikeType : null, strikeSpot: state.result === 'Strike' ? state.strikeSpot : null, ballType: state.result === 'Ball' ? state.ballType : null, playType: state.result === 'In play' ? state.playType : null, countBefore: `${before.balls}-${before.strikes}`, countAfter: `${after.balls}-${after.strikes}`, plateResult, time: new Date().toISOString() };
+        state.history.push(p); if (plateResult) state.batter++;
+        save(); resetEntry(); render(); notify(plateResult ? `${plateResult} · Batter ${state.batter} ready` : `${p.pitcher}: ${p.pitch} logged`);
+      });
+      $('undoButton').addEventListener('click', () => { if (!state.history.length) return; const p = state.history.pop(); if (p.batter) state.batter = p.batter; save(); render(); notify(`Undid ${p.pitcher}'s ${p.pitch.toLowerCase()}`); });
+      $('newGameButton').addEventListener('click', () => { if (!state.history.length || !confirm('Start a new game? This clears the current pitch history. Export it first if you want to keep it.')) return; state.history = []; state.batter = 1; resetEntry(); save(); render(); notify('New game started'); });
+      $('exportButton').addEventListener('click', () => {
+        if (!state.history.length) return;
+        const columns = ['number', 'timestamp', 'pitcher', 'batter', 'called_pitch', 'called_location', 'result', 'strike_type', 'strike_spot', 'ball_detail', 'in_play_outcome', 'count_before', 'count_after', 'batter_outcome'];
+        const quote = value => `"${String(value ?? '').replaceAll('"', '""')}"`;
+        const rows = state.history.map((p, i) => [i + 1, p.time, p.pitcher, p.batter, p.pitch, p.zone, p.result, p.strikeType, p.strikeSpot, p.ballType, p.playType, p.countBefore, p.countAfter, p.plateResult].map(quote).join(','));
+        const blob = new Blob(['\uFEFF', columns.join(','), '\r\n', rows.join('\r\n')], { type: 'text/csv;charset=utf-8' });
+        const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url;
+        a.download = `pitch-log-${new Date().toISOString().slice(0, 10)}.csv`; document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(url), 1000);
+      });
+      restore(); render();
+    })();
+  </script>
+</body>
+</html>
