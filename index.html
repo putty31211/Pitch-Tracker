@@ -52,6 +52,10 @@
     .pitcher-card summary strong { font-size: 17px; color: #172844; }
     .pitcher-card summary small { color: #1761bc; font-weight: 800; font-size: 12px; }
     .pitcher-card .chip-row { margin-top: 13px; }
+    .game-fields { display: grid; grid-template-columns: 1fr 145px; gap: 10px; }
+    .game-fields label { display: block; color: #556b84; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; font-weight: 900; }
+    .game-fields input { display: block; width: 100%; margin-top: 7px; border: 1px solid #dbe4ee; border-radius: 11px; color: #172844; background: #f7f9fc; padding: 10px; min-width: 0; min-height: 45px; font: inherit; font-size: 14px; letter-spacing: normal; text-transform: none; }
+    .game-fields input:focus { outline: 2px solid #1761bc; outline-offset: 1px; }
     .batter-card { background: #eaf2fc; border-color: #d7e6f9; }
     .batter-top { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
     .batter-top strong { font-size: 19px; }
@@ -91,6 +95,24 @@
     .import-name { font-size: 12px; color: #647b97; overflow-wrap: anywhere; }
     .report-filter { display: flex; align-items: center; justify-content: space-between; gap: 12px; font-size: 13px; font-weight: 850; color: #526a88; }
     .report-filter select { font: inherit; color: #172844; background: #f7f9fc; border: 1px solid #dbe4ee; border-radius: 10px; min-height: 42px; padding: 7px 10px; min-width: 145px; }
+    .report-filter + .report-filter { margin-top: 12px; }
+    .report-filter input { font: inherit; width: 95px; color: #172844; background: #f7f9fc; border: 1px solid #dbe4ee; border-radius: 10px; min-height: 42px; padding: 7px 10px; }
+    .end-game { width: 100%; border: 0; border-radius: 14px; background: #1761bc; color: white; font-size: 15px; font-weight: 900; min-height: 52px; margin: 16px 0 3px; }
+    .end-game:disabled { background: #dce3ec; color: #8192a6; cursor: default; }
+    .modal-backdrop { position: fixed; inset: 0; background: #0b1b32bf; z-index: 10; display: grid; place-items: center; padding: 16px; }
+    .modal-card { width: min(100%, 460px); max-height: 90dvh; overflow: auto; background: #fff; border-radius: 19px; padding: 21px; box-shadow: 0 20px 60px #06172a66; }
+    .modal-card h2 { margin: 0 0 8px; font-size: 21px; }
+    .modal-card p { margin: 0 0 15px; color: #5d718d; font-size: 13px; line-height: 1.45; }
+    .modal-card label { display: block; color: #526a88; font-size: 12px; font-weight: 850; margin: 12px 0; }
+    .modal-card input { display: block; width: 100%; margin-top: 6px; border: 1px solid #cddbea; border-radius: 10px; min-height: 44px; padding: 9px 11px; font: inherit; color: #172844; }
+    .modal-actions { display: flex; justify-content: flex-end; gap: 9px; margin-top: 17px; }
+    .modal-actions button { border: 0; border-radius: 11px; min-height: 46px; padding: 10px 15px; font-weight: 850; }
+    .modal-save { background: #1761bc; color: #fff; }
+    .modal-save:disabled { opacity: .55; cursor: wait; }
+    .modal-cancel { background: #eef2f7; color: #334c6b; }
+    .modal-status { color: #aa3030 !important; min-height: 20px; margin: 0 !important; }
+    .modal-status[data-working="true"] { color: #1761bc !important; }
+    .modal-status[data-success="true"] { color: #167346 !important; }
     .report-kpis { display: grid; grid-template-columns: repeat(3, 1fr); gap: 7px; margin-bottom: 12px; }
     .report-kpi { background: #fff; border: 1px solid #dfe8f1; border-radius: 14px; padding: 12px 9px; }
     .report-kpi strong { display: block; font-size: 21px; line-height: 1.1; color: #172844; font-variant-numeric: tabular-nums; }
@@ -115,7 +137,7 @@
     .muted { color: #8192a6; font-size: 12px; }
     .toast { position: fixed; left: 50%; bottom: max(18px, env(safe-area-inset-bottom)); transform: translateX(-50%); padding: 11px 17px; background: #142844; color: #fff; border-radius: 12px; box-shadow: 0 8px 24px #10223e40; font-size: 13px; font-weight: 750; z-index: 2; white-space: nowrap; max-width: calc(100vw - 30px); overflow: hidden; text-overflow: ellipsis; }
     .toast[hidden], [hidden] { display: none !important; }
-    @media (max-width: 375px) { .card { padding: 12px; } main { padding-inline: 10px; } .two-columns { gap: 8px; } .choice { font-size: 12px; } .zone { font-size: 9px; } }
+    @media (max-width: 375px) { .card { padding: 12px; } main { padding-inline: 10px; } .two-columns { gap: 8px; } .choice { font-size: 12px; } .zone { font-size: 9px; } .game-fields { grid-template-columns: 1fr; } }
     @media (min-width: 561px) { body { padding: 26px 0; } .app { border-radius: 25px; overflow: hidden; min-height: calc(100dvh - 52px); } .hero { border-radius: 0 0 25px 25px; } }
   </style>
 </head>
@@ -133,6 +155,9 @@
     </header>
     <nav class="tabs" aria-label="App sections"><button type="button" class="tab active" id="trackerTab" aria-current="page">Log pitches</button><button type="button" class="tab" id="reportsTab">Reports</button></nav>
     <main id="trackerView">
+      <section class="card" aria-label="Game details">
+        <div class="game-fields"><label for="teamInput">Team<input id="teamInput" type="text" maxlength="80" placeholder="Enter team name" autocomplete="off"></label><label for="gameDateInput">Game date<input id="gameDateInput" type="date"></label></div>
+      </section>
       <section class="card pitcher-card" aria-label="Pitcher selection">
         <details id="pitcherPanel" open>
           <summary><strong id="selectedPitcher">Choose a pitcher</strong><small id="pitcherAction">Tap to choose ▾</small></summary>
@@ -181,16 +206,25 @@
           <div class="history-actions"><button type="button" class="link-button" id="exportButton" disabled>Export CSV</button><button type="button" class="link-button" id="newGameButton" disabled>New game</button></div>
         </details>
       </section>
+      <button type="button" class="end-game" id="endGameButton" disabled>End game · Save to GitHub</button>
+      <p class="hint" style="text-align:center;margin:9px 0">Updates master-pitch-log.csv. Your local game stays available for corrections.</p>
     </main>
     <main id="reportsView" hidden>
       <section class="card">
         <div class="section-title"><h2>Report data</h2></div>
-        <div class="source-row"><button type="button" class="choice selected" id="currentSource" aria-pressed="true">Current game</button><button type="button" class="choice" id="importedSource" aria-pressed="false">Imported CSV</button></div>
-        <div class="import-row"><label class="import-label">Import pitch-log CSV<input class="file-input" id="importFile" type="file" accept=".csv,text/csv"></label><span class="import-name" id="importName">No CSV imported</span></div>
-        <p class="hint" style="margin-top:10px">Importing a report will not change the game you are logging.</p>
+        <div class="source-row"><button type="button" class="choice selected" id="currentSource" aria-pressed="true">Current game</button><button type="button" class="choice" id="importedSource" aria-pressed="false">Master CSV</button></div>
+        <div class="import-row"><label class="import-label">Import master CSV<input class="file-input" id="importFile" type="file" accept=".csv,text/csv"></label><span class="import-name" id="importName">No master loaded</span></div>
+        <button type="button" class="link-button" id="loadGithubMaster">↻ Load / refresh master from GitHub</button>
+        <p class="hint">Importing or loading a master will not change the game you are logging.</p>
+      </section>
+      <section class="card" id="masterFilters" hidden>
+        <label class="report-filter" for="reportTeam">Team <select id="reportTeam"><option value="">All teams</option></select></label>
+        <label class="report-filter" for="gamesFilter">Games <select id="gamesFilter"><option value="all">All games</option><option value="5">Last 5</option><option value="10" selected>Last 10</option><option value="20">Last 20</option><option value="custom">Last N…</option></select></label>
+        <label class="report-filter" id="customGamesRow" for="customGames" hidden>Number of games <input id="customGames" type="number" min="1" max="9999" value="10" inputmode="numeric"></label>
+        <p class="hint" id="gameRange" style="margin-top:12px"></p>
       </section>
       <section class="card"><label class="report-filter" for="reportPitcher">Pitcher <select id="reportPitcher"><option value="">All pitchers</option></select></label></section>
-      <div id="reportEmpty" class="card report-empty" hidden><strong>No pitches to report yet</strong>Log a pitch in the current game or import an exported pitch-log CSV.</div>
+      <div id="reportEmpty" class="card report-empty" hidden><strong>No pitches to report yet</strong>Log a pitch in the current game or load the master CSV.</div>
       <div id="reportContent" hidden>
         <div class="report-kpis" id="reportKpis" aria-label="Game statistics"></div>
         <section class="card"><div class="section-title"><h2>Pitch mix</h2><span>Share · strike %</span></div><div id="pitchMix"></div></section>
@@ -201,6 +235,23 @@
       </div>
     </main>
   </div>
+  <div id="githubModal" class="modal-backdrop" hidden>
+    <form id="githubForm" class="modal-card" aria-labelledby="githubTitle">
+      <h2 id="githubTitle">Save this game to GitHub</h2>
+      <p>Sign in with GitHub to add or replace this game in your master CSV. GitHub handles your username and password.</p>
+      <label>Repository (owner/name)<input id="githubRepo" required value="putty31211/Pitch-Tracker" placeholder="username/pitch-log" autocomplete="off" spellcheck="false"></label>
+      <label>Master CSV path in repository<input id="githubPath" required value="master-pitch-log.csv" autocomplete="off" spellcheck="false"></label>
+      <label>Branch (optional)<input id="githubBranch" placeholder="Default branch" autocomplete="off" spellcheck="false"></label>
+      <details id="githubSetup"><summary>One-time sign-in setup</summary>
+        <p>Enter the public client ID of your GitHub App and the URL of your deployed sign-in Worker. Keep the app's client secret in the Worker settings.</p>
+        <label>GitHub App client ID<input id="githubClientId" autocomplete="off" spellcheck="false" value="Iv23li2FHU7P8zN9EuxG"></label>
+        <label>Sign-in Worker URL<input id="githubWorkerUrl" type="url" autocomplete="off" spellcheck="false" placeholder="https://your-worker.workers.dev"></label>
+      </details>
+      <p id="githubIdentity" class="hint"></p>
+      <p id="githubStatus" class="modal-status" role="alert"></p>
+      <div class="modal-actions"><button type="button" class="modal-cancel" id="githubCancel">Cancel</button><button type="submit" class="modal-save" id="githubSave">Sign in with GitHub</button></div>
+    </form>
+  </div>
   <div id="toast" class="toast" role="status" hidden></div>
   <script>
     (() => {
@@ -209,10 +260,19 @@
       const pitcherNames = ['Ellie', 'Paige', 'Emery', 'Lila', 'Leelah'];
       const pitchNames = ['Fastball', 'Change-up', 'Curve', 'Drop', 'Rise'];
       const zoneNames = ['Up / In', 'Up', 'Up / Out', 'In', 'Middle', 'Out', 'Down / In', 'Down', 'Down / Out'];
-      const state = { pitcher: null, batter: 1, pitch: null, zone: null, result: null, strikeType: null, strikeSpot: null, ballType: null, playType: null, history: [] };
-      const report = { tab: 'tracker', source: 'current', pitcher: '', rows: [], fileName: '' };
+      const state = { team: '', gameDate: '', gameId: '', pitcher: null, batter: 1, pitch: null, zone: null, result: null, strikeType: null, strikeSpot: null, ballType: null, playType: null, history: [] };
+      const report = { tab: 'tracker', source: 'current', pitcher: '', team: '', games: '10', customGames: 10, rows: [], fileName: '', githubTried: false };
       const REPORT_KEY = 'lightning-pitch-reports-v1';
+      const SETTINGS_KEY = 'lightning-pitch-github-settings-v1';
+      const github = { repo: 'putty31211/Pitch-Tracker', path: 'master-pitch-log.csv', branch: '', clientId: 'Iv23li2FHU7P8zN9EuxG', workerUrl: '' };
+      const AUTH_KEY = 'lightning-pitch-github-auth-v1';
+      const PENDING_KEY = 'lightning-pitch-github-pending-v1';
+      const CALLBACK_URL = 'https://putty31211.github.io/Pitch-Tracker/';
+      let auth = null;
+      const CSV_COLUMNS = ['number', 'team', 'game_date', 'game_id', 'timestamp', 'pitcher', 'batter', 'called_pitch', 'called_location', 'result', 'strike_type', 'strike_spot', 'ball_detail', 'in_play_outcome', 'count_before', 'count_after', 'batter_outcome'];
       const $ = id => document.getElementById(id);
+      const localDate = date => `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+      const createGameId = () => `game-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
       const choices = (id, values, key, { className = 'choice' } = {}) => {
         const container = $(id);
         container.replaceChildren(...values.map(value => {
@@ -235,19 +295,26 @@
         }));
       };
       function save() {
-        try { localStorage.setItem(KEY, JSON.stringify({ pitcher: state.pitcher, batter: state.batter, history: state.history })); }
+        try { localStorage.setItem(KEY, JSON.stringify({ team: state.team, gameDate: state.gameDate, gameId: state.gameId, pitcher: state.pitcher, batter: state.batter, history: state.history })); }
         catch (_) { notify('Browser storage is unavailable. Export before closing.'); }
       }
       function restore() {
         try {
           const saved = JSON.parse(localStorage.getItem(KEY) || '{}');
+          if (typeof saved.team === 'string') state.team = saved.team.slice(0, 80);
           if (pitcherNames.includes(saved.pitcher)) state.pitcher = saved.pitcher;
           if (Array.isArray(saved.history)) state.history = saved.history.filter(p => p && pitcherNames.includes(p.pitcher) && pitchNames.includes(p.pitch) && ['Strike', 'Ball', 'Foul', 'HBP', 'In play'].includes(p.result));
+          const firstTime = state.history[0]?.time;
+          const firstDate = firstTime && !Number.isNaN(new Date(firstTime).getTime()) ? localDate(new Date(firstTime)) : localDate(new Date());
+          state.gameDate = /^\d{4}-\d{2}-\d{2}$/.test(saved.gameDate) ? saved.gameDate : firstDate;
+          state.gameId = typeof saved.gameId === 'string' && saved.gameId ? saved.gameId : createGameId();
           const lastBatter = Math.max(0, ...state.history.map(p => Number.isSafeInteger(p.batter) ? p.batter : 0));
           if (Number.isSafeInteger(saved.batter) && saved.batter >= lastBatter && saved.batter <= lastBatter + 1) state.batter = saved.batter;
           else if (lastBatter) state.batter = lastBatter + (state.history.at(-1)?.plateResult ? 1 : 0);
           $('pitcherPanel').open = !state.pitcher;
         } catch (_) { /* Start fresh if stored data cannot be read. */ }
+        if (!state.gameDate) state.gameDate = localDate(new Date());
+        if (!state.gameId) state.gameId = createGameId();
       }
       function resetEntry() { state.pitch = null; state.zone = null; state.result = null; state.strikeType = null; state.strikeSpot = null; state.ballType = null; state.playType = null; }
       function countFor(batter) {
@@ -312,196 +379,115 @@
         const headers = (records.shift() || []).map(value => value.trim());
         if (!['pitcher', 'batter', 'called_pitch', 'result', 'batter_outcome'].every(key => headers.includes(key))) throw Error('Choose a pitch-log CSV exported by this app.');
         const data = records.map(cells => Object.fromEntries(headers.map((key, index) => [key, cells[index] || ''])));
-        if (!data.length || data.some(p => !p.pitcher || !p.called_pitch || !['Strike', 'Foul', 'Ball', 'HBP', 'In play'].includes(p.result))) throw Error('This CSV has missing or invalid pitch rows.');
-        return data.map(p => ({ pitcher: p.pitcher, batter: Number(p.batter) || null, pitch: p.called_pitch, zone: p.called_location || null, result: p.result, strikeType: p.strike_type || null, strikeSpot: p.strike_spot || null, ballType: p.ball_detail || null, playType: p.in_play_outcome || null, plateResult: p.batter_outcome || null, countBefore: p.count_before || null }));
+        if (data.some(p => !p.pitcher || !p.called_pitch || !['Strike', 'Foul', 'Ball', 'HBP', 'In play'].includes(p.result))) throw Error('This CSV has missing or invalid pitch rows.');
+        const legacyId = `legacy-${String(data[0]?.timestamp || 'game').replace(/[^0-9A-Za-z]/g, '')}`;
+        return data.map((p, index) => {
+          const when = new Date(p.timestamp);
+          return { number: Number(p.number) || index + 1, team: p.team || '', gameDate: p.game_date || (Number.isNaN(when.getTime()) ? '' : localDate(when)), gameId: p.game_id || legacyId,
+            time: p.timestamp || '', pitcher: p.pitcher, batter: Number(p.batter) || null, pitch: p.called_pitch, zone: p.called_location || null, result: p.result,
+            strikeType: p.strike_type || null, strikeSpot: p.strike_spot || null, ballType: p.ball_detail || null, playType: p.in_play_outcome || null,
+            countBefore: p.count_before || null, countAfter: p.count_after || null, plateResult: p.batter_outcome || null };
+        });
       }
-      function saveReport() {
-        try { localStorage.setItem(REPORT_KEY, JSON.stringify({ rows: report.rows, fileName: report.fileName })); }
-        catch (_) { notify('Report is open, but browser storage is full. Reimport after refreshing.'); }
+      function currentGameRows() {
+        return state.history.map((p, index) => ({ ...p, number: index + 1, team: state.team.trim(), gameDate: state.gameDate, gameId: state.gameId }));
       }
-      function restoreReport() {
-        try {
-          const saved = JSON.parse(localStorage.getItem(REPORT_KEY) || '{}');
-          if (Array.isArray(saved.rows)) report.rows = saved.rows.filter(p => p && p.pitcher && p.pitch && p.result);
-          if (typeof saved.fileName === 'string') report.fileName = saved.fileName;
-        } catch (_) { /* Keep reporting available if saved data is invalid. */ }
-      }
-      function showTab(tab) {
-        report.tab = tab;
-        $('trackerView').hidden = tab !== 'tracker'; $('reportsView').hidden = tab !== 'reports';
-        $('heroSummary').hidden = tab === 'reports';
-        $('trackerTab').classList.toggle('active', tab === 'tracker');
-        $('reportsTab').classList.toggle('active', tab === 'reports');
-        $('trackerTab').setAttribute('aria-current', tab === 'tracker' ? 'page' : 'false');
-        $('reportsTab').setAttribute('aria-current', tab === 'reports' ? 'page' : 'false');
-        $('pitcherHeading').textContent = tab === 'reports' ? 'Game reports' : state.pitcher || 'Choose a pitcher';
-        $('heroSubtitle').textContent = tab === 'reports' ? 'Review pitch calls, results, and batters faced.' : 'Tap through a pitch. The pitcher stays selected.';
-        if (tab === 'reports') renderReport();
-        window.scrollTo(0, 0);
-      }
-      function chartRow(label, valueText, fraction, secondary = false) {
-        const row = document.createElement('div'); row.className = 'chart-row';
-        const top = document.createElement('div'); top.className = 'chart-label';
-        const name = document.createElement('span'); name.textContent = label;
-        const value = document.createElement('span'); value.textContent = valueText; top.append(name, value);
-        const track = document.createElement('div'); track.className = 'bar-track';
-        const fill = document.createElement('div'); fill.className = `bar-fill${secondary ? ' secondary' : ''}`;
-        fill.style.width = `${Math.max(0, Math.min(100, fraction * 100))}%`;
-        track.append(fill); row.append(top, track); return row;
-      }
-      const isStrike = p => p.result === 'Strike' || p.result === 'Foul';
-      const percent = (part, total) => total ? `${Math.round(part / total * 100)}%` : '—';
-      function renderReport() {
-        const all = report.source === 'current' ? state.history : report.rows;
-        const pitchers = [...new Set(all.map(p => p.pitcher))].sort();
-        const picker = $('reportPitcher');
-        if (report.pitcher && !pitchers.includes(report.pitcher)) report.pitcher = '';
-        picker.replaceChildren();
-        for (const name of ['', ...pitchers]) {
-          const option = document.createElement('option'); option.value = name; option.textContent = name || 'All pitchers'; picker.append(option);
-        }
-        picker.value = report.pitcher;
-        for (const [id, active] of [['currentSource', report.source === 'current'], ['importedSource', report.source === 'imported']]) {
-          $(id).classList.toggle('selected', active); $(id).setAttribute('aria-pressed', String(active));
-        }
-        $('importName').textContent = report.fileName || 'No CSV imported';
-        const rows = report.pitcher ? all.filter(p => p.pitcher === report.pitcher) : all;
-        $('reportEmpty').hidden = rows.length > 0; $('reportContent').hidden = !rows.length;
-        if (!rows.length) return;
-        const strikes = rows.filter(isStrike).length;
-        const batters = new Set(rows.map(p => p.batter).filter(Boolean));
-        const first = rows.filter(p => p.countBefore === '0-0');
-        const kpis = [
-          ['Pitches', rows.length], ['Batters faced', batters.size], ['Strike %', percent(strikes, rows.length)],
-          ['Strikeouts', rows.filter(p => p.plateResult === 'Strikeout').length],
-          ['Walks', rows.filter(p => p.plateResult === 'Walk').length],
-          ['First pitch strikes', first.length ? `${first.filter(isStrike).length}/${first.length}` : '—']
-        ];
-        $('reportKpis').replaceChildren(...kpis.map(([label, value]) => {
-          const card = document.createElement('div'); card.className = 'report-kpi';
-          const big = document.createElement('strong'); big.textContent = value;
-          const small = document.createElement('small'); small.textContent = label;
-          card.append(big, small); return card;
-        }));
-        const pitchCounts = [...new Set([...pitchNames, ...rows.map(p => p.pitch)])].map(name => [name, rows.filter(p => p.pitch === name)]).filter(([, group]) => group.length);
-        $('pitchMix').replaceChildren(...pitchCounts.map(([name, group]) => chartRow(name, `${group.length} (${percent(group.length, rows.length)}) · ${percent(group.filter(isStrike).length, group.length)} strikes`, group.length / rows.length)));
-        const resultCounts = ['Strike', 'Ball', 'Foul', 'In play', 'HBP'].map(name => [name, rows.filter(p => p.result === name).length]);
-        $('resultChart').replaceChildren(...resultCounts.filter(([, count]) => count).map(([name, count]) => chartRow(name, `${count} · ${percent(count, rows.length)}`, count / rows.length, name === 'Ball')));
-        const maxZone = Math.max(1, ...zoneNames.map(name => rows.filter(p => p.zone === name).length));
-        $('zoneReport').replaceChildren(...zoneNames.map(name => {
-          const matches = rows.filter(p => p.zone === name); const tile = document.createElement('div'); tile.className = 'zone-report-cell';
-          const strength = matches.length / maxZone;
-          tile.style.background = matches.length ? `rgba(23, 97, 188, ${(.10 + strength * .65).toFixed(2)})` : '#f1f5fa';
-          tile.style.color = strength > .62 ? '#fff' : '#234365';
-          const label = document.createElement('span'); label.textContent = name;
-          const count = document.createElement('strong'); count.textContent = matches.length;
-          const rate = document.createElement('small'); rate.textContent = matches.length ? `${percent(matches.filter(isStrike).length, matches.length)} strikes` : 'No calls';
-          tile.append(label, count, rate); return tile;
-        }));
-        const charted = rows.filter(p => p.zone && (p.result === 'Strike' && p.strikeSpot || p.result === 'Ball' && p.ballType));
-        const onTarget = charted.filter(p => p.strikeSpot === 'Hit spot' || p.ballType === 'Right spot · called ball').length;
-        $('accuracyChart').replaceChildren(chartRow('Hit called target', `${onTarget}/${charted.length} · ${percent(onTarget, charted.length)}`, charted.length ? onTarget / charted.length : 0), chartRow('Missed called target', `${charted.length - onTarget}/${charted.length}`, charted.length ? (charted.length - onTarget) / charted.length : 0, true));
-        const groups = new Map();
-        for (const p of rows) {
-          if (!p.batter) continue;
-          if (!groups.has(p.batter)) groups.set(p.batter, []);
-          groups.get(p.batter).push(p);
-        }
-        $('batterReportCount').textContent = `${groups.size} batters`;
-        $('batterReport').replaceChildren(...[...groups.entries()].map(([number, pitches]) => {
-          const li = document.createElement('li');
-          const left = document.createElement('span'); const name = document.createElement('b'); name.textContent = `Batter ${number}`;
-          const detail = document.createElement('span'); detail.textContent = `${pitches.length} ${pitches.length === 1 ? 'pitch' : 'pitches'}${report.pitcher ? '' : ` · ${[...new Set(pitches.map(p => p.pitcher))].join(', ')}`}`;
-          left.append(name, detail);
-          const outcome = document.createElement('strong'); outcome.textContent = pitches.at(-1).plateResult || 'In progress';
-          li.append(left, outcome); return li;
-        }));
-      }
-      function render() {
-        choices('pitchers', pitcherNames, 'pitcher');
-        choices('pitches', pitchNames, 'pitch');
-        choices('zone', zoneNames, 'zone', { className: 'zone' });
-        $('zone').children[4].classList.add('center');
-        $('skipZone').classList.toggle('selected', state.zone === null);
-        $('skipZone').setAttribute('aria-pressed', String(state.zone === null));
-        choices('results', ['Strike', 'Ball', 'Foul', 'HBP', 'In play'], 'result');
-        $('detailsCard').hidden = !state.result;
-        $('strikeDetails').hidden = state.result !== 'Strike';
-        $('ballDetails').hidden = state.result !== 'Ball';
-        $('hbpDetails').hidden = state.result !== 'HBP';
-        $('foulDetails').hidden = state.result !== 'Foul';
-        $('playDetails').hidden = state.result !== 'In play';
-        $('detailsSubtitle').textContent = state.result || '';
-        if (state.result === 'Strike') {
-          choices('strikeTypes', ['Swinging', 'Looking'], 'strikeType');
-          choices('strikeSpots', ['Hit spot', 'Missed spot'], 'strikeSpot');
-        }
-        if (state.result === 'Ball') choices('ballTypes', ['Missed spot', 'Wild pitch', 'Right spot · called ball'], 'ballType');
-        if (state.result === 'In play') choices('playTypes', ['Hit', 'Out', 'Error', 'Other'], 'playType');
-        $('resultHint').textContent = ['HBP', 'Foul'].includes(state.result) ? 'Ready to log.' : 'Pick what happened to this pitch.';
-        const pitcherPitches = state.history.filter(p => p.pitcher === state.pitcher);
-        const strikes = pitcherPitches.filter(p => ['Strike', 'Foul'].includes(p.result)).length;
-        const current = countFor(state.batter);
-        $('selectedPitcher').textContent = state.pitcher || 'Choose a pitcher';
-        $('pitcherAction').textContent = state.pitcher ? 'Change ▾' : 'Tap to choose ▾';
-        $('batterHeading').textContent = `Batter ${state.batter}`;
-        $('atBatCount').textContent = `${current.balls} balls · ${current.strikes} strikes`;
-        $('batterFaced').textContent = new Set(pitcherPitches.filter(p => p.batter).map(p => p.batter)).size;
-        $('strikeouts').textContent = pitcherPitches.filter(p => p.plateResult === 'Strikeout').length;
-        $('walks').textContent = pitcherPitches.filter(p => p.plateResult === 'Walk').length;
-        $('manualBatter').disabled = !state.history.some(p => p.batter === state.batter);
-        $('pitcherHeading').textContent = state.pitcher || 'Choose a pitcher';
-        $('pitchCount').textContent = pitcherPitches.length;
-        $('strikeCount').textContent = strikes;
-        $('strikeRate').textContent = pitcherPitches.length ? `${Math.round(strikes / pitcherPitches.length * 100)}%` : '—';
-        $('logButton').disabled = !ready(); $('logButton').textContent = buttonLabel();
-        $('undoButton').disabled = !state.history.length;
-        $('gameCount').textContent = `${state.history.length} game ${state.history.length === 1 ? 'pitch' : 'pitches'}`;
-        $('historySummary').textContent = `Pitch history (${state.history.length})`;
-        $('exportButton').disabled = $('newGameButton').disabled = !state.history.length;
-        renderHistory();
-      }
-      $('skipZone').addEventListener('click', () => { state.zone = null; if (state.ballType === 'Right spot · called ball') state.ballType = null; if (state.strikeSpot === 'Hit spot') state.strikeSpot = null; render(); });
-      $('manualBatter').addEventListener('click', () => {
-        if (!state.history.some(p => p.batter === state.batter)) return;
-        state.batter++; resetEntry(); save(); render(); notify(`Batter ${state.batter} ready`);
-      });
-      $('logButton').addEventListener('click', () => {
-        if (!ready()) return;
-        const before = countFor(state.batter);
-        const after = { balls: before.balls + (state.result === 'Ball' ? 1 : 0), strikes: before.strikes + (state.result === 'Strike' || state.result === 'Foul' && before.strikes < 2 ? 1 : 0) };
-        const plateResult = after.strikes >= 3 ? 'Strikeout' : after.balls >= 4 ? 'Walk' : state.result === 'HBP' ? 'Hit by pitch' : state.result === 'In play' ? state.playType : null;
-        const p = { pitcher: state.pitcher, batter: state.batter, pitch: state.pitch, zone: state.zone, result: state.result, strikeType: state.result === 'Strike' ? state.strikeType : null, strikeSpot: state.result === 'Strike' ? state.strikeSpot : null, ballType: state.result === 'Ball' ? state.ballType : null, playType: state.result === 'In play' ? state.playType : null, countBefore: `${before.balls}-${before.strikes}`, countAfter: `${after.balls}-${after.strikes}`, plateResult, time: new Date().toISOString() };
-        state.history.push(p); if (plateResult) state.batter++;
-        save(); resetEntry(); render(); notify(plateResult ? `${plateResult} · Batter ${state.batter} ready` : `${p.pitcher}: ${p.pitch} logged`);
-      });
-      $('undoButton').addEventListener('click', () => { if (!state.history.length) return; const p = state.history.pop(); if (p.batter) state.batter = p.batter; save(); render(); notify(`Undid ${p.pitcher}'s ${p.pitch.toLowerCase()}`); });
-      $('newGameButton').addEventListener('click', () => { if (!state.history.length || !confirm('Start a new game? This clears the current pitch history. Export it first if you want to keep it.')) return; state.history = []; state.batter = 1; resetEntry(); save(); render(); notify('New game started'); });
-      $('exportButton').addEventListener('click', () => {
-        if (!state.history.length) return;
-        const columns = ['number', 'timestamp', 'pitcher', 'batter', 'called_pitch', 'called_location', 'result', 'strike_type', 'strike_spot', 'ball_detail', 'in_play_outcome', 'count_before', 'count_after', 'batter_outcome'];
+      function serializeCSV(rows) {
         const quote = value => `"${String(value ?? '').replaceAll('"', '""')}"`;
-        const rows = state.history.map((p, i) => [i + 1, p.time, p.pitcher, p.batter, p.pitch, p.zone, p.result, p.strikeType, p.strikeSpot, p.ballType, p.playType, p.countBefore, p.countAfter, p.plateResult].map(quote).join(','));
-        const blob = new Blob(['\uFEFF', columns.join(','), '\r\n', rows.join('\r\n')], { type: 'text/csv;charset=utf-8' });
+        const data = rows.map(p => [p.number, p.team, p.gameDate, p.gameId, p.time, p.pitcher, p.batter, p.pitch, p.zone, p.result, p.strikeType, p.strikeSpot, p.ballType, p.playType, p.countBefore, p.countAfter, p.plateResult].map(quote).join(','));
+        return '\uFEFF' + CSV_COLUMNS.join(',') + '\r\n' + data.join('\r\n');
+      }
+      function downloadCSV(rows, filename) {
+        const blob = new Blob([serializeCSV(rows)], { type: 'text/csv;charset=utf-8' });
         const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url;
-        a.download = `pitch-log-${new Date().toISOString().slice(0, 10)}.csv`; document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(url), 1000);
-      });
-      $('trackerTab').addEventListener('click', () => showTab('tracker'));
-      $('reportsTab').addEventListener('click', () => showTab('reports'));
-      $('currentSource').addEventListener('click', () => { report.source = 'current'; report.pitcher = ''; renderReport(); });
-      $('importedSource').addEventListener('click', () => { report.source = 'imported'; report.pitcher = ''; renderReport(); });
-      $('reportPitcher').addEventListener('change', event => { report.pitcher = event.target.value; renderReport(); });
-      $('importFile').addEventListener('change', async event => {
-        const file = event.target.files?.[0]; if (!file) return;
+        a.download = filename; document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(url), 1000);
+      }
+      function restoreGithubSettings() {
         try {
-          const parsed = parseCSV(await file.text());
-          report.rows = parsed; report.fileName = file.name; report.source = 'imported'; report.pitcher = '';
-          saveReport(); renderReport(); notify(`${parsed.length} pitches imported`);
-        } catch (error) { notify(error.message || 'Could not read that CSV.'); }
-        event.target.value = '';
-      });
-      restore(); restoreReport(); render();
-    })();
-  </script>
-</body>
-</html>
+          const saved = JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}');
+          if (typeof saved.repo === 'string') github.repo = saved.repo;
+          if (typeof saved.path === 'string') github.path = saved.path;
+          if (typeof saved.branch === 'string') github.branch = saved.branch;
+          if (typeof saved.clientId === 'string' && saved.clientId) github.clientId = saved.clientId;
+          if (typeof saved.workerUrl === 'string') github.workerUrl = saved.workerUrl;
+        } catch (_) { /* Repository details can be entered again. */ }
+        if (!github.repo && /\.github\.io$/i.test(window.location.hostname)) {
+          const owner = window.location.hostname.split('.')[0];
+          const folder = window.location.pathname.split('/').filter(Boolean)[0];
+          github.repo = `${owner}/${folder && folder !== 'index.html' ? folder : `${owner}.github.io`}`;
+        }
+      }
+      function openGithubModal() {
+        if (!state.history.length) return;
+        if (!state.team.trim()) { notify('Enter a team name before ending the game.'); $('teamInput').focus(); return; }
+        if (!state.gameDate) { notify('Choose the game date before ending the game.'); $('gameDateInput').focus(); return; }
+        $('githubRepo').value = github.repo; $('githubPath').value = github.path; $('githubBranch').value = github.branch;
+        $('githubClientId').value = github.clientId; $('githubWorkerUrl').value = github.workerUrl;
+        $('githubStatus').textContent = '';
+        $('githubSetup').open = !github.clientId || !github.workerUrl;
+        refreshGithubIdentity(); $('githubModal').hidden = false;
+        (!github.clientId ? $('githubClientId') : $('githubSave')).focus();
+      }
+      function closeGithubModal() { $('githubModal').hidden = true; $('githubStatus').textContent = ''; $('githubStatus').dataset.success = 'false'; }
+      function getAuth() {
+        if (!auth) {
+          try { auth = JSON.parse(sessionStorage.getItem(AUTH_KEY) || 'null'); } catch (_) { auth = null; }
+        }
+        if (auth && auth.expiresAt > Date.now() + 60000) return auth;
+        auth = null;
+        try { sessionStorage.removeItem(AUTH_KEY); } catch (_) { /* Session storage unavailable. */ }
+        return null;
+      }
+      function refreshGithubIdentity() {
+        const current = getAuth();
+        $('githubIdentity').textContent = current ? `Signed in as ${current.login}. Access expires when this session ends or GitHub's token expires.` : 'Sign in on GitHub to save this game.';
+        $('githubSave').textContent = current ? 'Save game' : 'Sign in with GitHub';
+      }
+      function saveGithubSettings() {
+        github.repo = $('githubRepo').value.trim(); github.path = $('githubPath').value.trim(); github.branch = $('githubBranch').value.trim();
+        github.clientId = $('githubClientId').value.trim(); github.workerUrl = $('githubWorkerUrl').value.trim().replace(/\/+$/, '');
+        try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(github)); } catch (_) { /* Ask for settings next time. */ }
+      }
+      function randomUrlSafe() {
+        const bytes = crypto.getRandomValues(new Uint8Array(32));
+        return btoa(String.fromCharCode(...bytes)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+      }
+      async function signInToGithub() {
+        if (location.origin + location.pathname !== CALLBACK_URL || !crypto.subtle) throw Error(`GitHub sign-in needs the published site at ${CALLBACK_URL}`);
+        if (!/^Iv[A-Za-z0-9._-]{8,}$/.test(github.clientId)) throw Error('Enter the GitHub App client ID from its settings.');
+        let worker;
+        try { worker = new URL(github.workerUrl); } catch (_) { throw Error('Enter the deployed sign-in Worker URL.'); }
+        if (worker.protocol !== 'https:' || worker.username || worker.password || worker.search || worker.hash) throw Error('Enter an HTTPS Worker URL without a query string.');
+        const verifier = randomUrlSafe(), stateToken = randomUrlSafe();
+        const challengeBytes = new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(verifier)));
+        const challenge = btoa(String.fromCharCode(...challengeBytes)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+        sessionStorage.setItem(PENDING_KEY, JSON.stringify({ stateToken, verifier, startedAt: Date.now() }));
+        const url = new URL('https://github.com/login/oauth/authorize');
+        url.searchParams.set('client_id', github.clientId); url.searchParams.set('redirect_uri', CALLBACK_URL);
+        url.searchParams.set('state', stateToken); url.searchParams.set('code_challenge', challenge); url.searchParams.set('code_challenge_method', 'S256');
+        location.assign(url.href);
+      }
+      async function completeGithubSignIn() {
+        const params = new URLSearchParams(location.search);
+        if (!params.has('code') && !params.has('error')) return;
+        history.replaceState(null, '', location.pathname + location.hash);
+        let pending;
+        try { pending = JSON.parse(sessionStorage.getItem(PENDING_KEY) || 'null'); } catch (_) { pending = null; }
+        sessionStorage.removeItem(PENDING_KEY);
+        openGithubModal();
+        if (params.has('error')) { $('githubStatus').textContent = 'GitHub sign-in was canceled. Your pitches are still here.'; return; }
+        if (!pending || Date.now() - pending.startedAt > 10 * 60 * 1000 || params.get('state') !== pending.stateToken) {
+          $('githubStatus').textContent = 'Sign-in could not be verified. Please try again.'; return;
+        }
+        $('githubStatus').textContent = 'Finishing GitHub sign-in…'; $('githubSave').disabled = true;
+        try {
+          const response = await fetch(`${github.workerUrl}/exchange`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ code: params.get('code'), code_verifier: pending.verifier }) });
+          const result = await response.json();
+          if (!response.ok || !result.access_token) throw Error(result.error || `Sign-in failed (${response.status}).`);
+          const userResponse = await fetch('https://api.github.com/user', { headers: { Accept: 'application/vnd.github+json', Authorization: `Bearer ${result.access_token}` } });
+          if (!userResponse.ok) throw await githubError(userResponse);
+          const user = await userResponse.json();
+          auth = { token: result.access_token, login: user.login, expiresAt: Date.now() + Math.min(Number(result.expires_in) || 28800, 28800) * 1000 };
+          sessionStorage.setItem(AUTH_KEY, JSON.stringify(auth)); refreshGithubIdentity();
+          $('githubStatus').textContent = 'Signed in. Select Save game to update the master CSV.'; $('githubStatus').dataset.success = 'true';
+        } catch (error) { $('githubStatus').dataset.success = 'false'; $('githubStatus').t
