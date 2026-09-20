@@ -1,0 +1,6 @@
+,1,2,3,4,5
+1,Inside,Middle,High Out,Change,Curve
+2,Change,Drop,High In,Outside,2 Seam
+3,Middle,Change,Inside,Low In,High
+4,Outside,Rise,Drop,Middle,Inside
+5,Low,Low Out,Rise,2 Seam,Outside
