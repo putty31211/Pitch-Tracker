@@ -34,7 +34,14 @@
     .choice.selected { color: #fff; background: #1761bc; border-color: #1761bc; box-shadow: 0 3px 9px #1761bc35; }
     .pitch-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 7px; }
     .pitch-grid .choice { min-height: 50px; }
+    .pitch-mode { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; margin-bottom: 13px; }
+    .pitch-mode .choice { padding-inline: 5px; }
+    .pitch-card-grid { display: grid; grid-template-columns: 24px repeat(5, minmax(0, 1fr)); gap: 4px; }
+    .pitch-card-axis { display: grid; place-items: center; color: #647b97; font-size: 12px; font-weight: 900; }
+    .pitch-card-grid .choice { min-width: 0; min-height: 56px; padding: 4px 2px; font-size: clamp(9px, 2.6vw, 12px); overflow-wrap: anywhere; }
+    .pitch-card-grid .choice small { display: block; font-size: 9px; opacity: .75; margin-bottom: 3px; }
     .two-columns { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .two-columns.card-result-only { grid-template-columns: 1fr; }
     .two-columns .card { margin: 0; }
     .zone-wrap { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; aspect-ratio: 1 / 1; }
     .zone { background: #f3f7fc; border: 1px solid #dce6f1; border-radius: 7px; color: #55708e; font-weight: 850; font-size: clamp(9px, 2.6vw, 12px); min-width: 0; padding: 2px; line-height: 1.1; }
@@ -175,10 +182,12 @@
       </section>
       <section class="card" aria-labelledby="pitchLabel">
         <div class="section-title"><h2 id="pitchLabel">2 · Called pitch</h2></div>
+        <div class="pitch-mode" role="group" aria-label="How to call pitches"><button type="button" class="choice" id="standardMode" aria-pressed="true">Pitch + location</button><button type="button" class="choice" id="cardMode" aria-pressed="false">5×5 pitch card</button></div>
         <div id="pitches" class="pitch-grid" role="group" aria-label="Called pitch"></div>
+        <div id="cardPanel" hidden><div id="pitchCardGrid" class="pitch-card-grid" role="group" aria-label="Coach's pitch card"></div><p id="cardStatus" class="hint" style="margin-top:11px"></p><p id="cardSelection" class="hint" style="margin-top:5px"></p></div>
       </section>
       <div class="two-columns">
-        <section class="card" aria-labelledby="zoneLabel">
+        <section class="card" id="targetCard" aria-labelledby="zoneLabel">
           <div class="section-title"><h2 id="zoneLabel">3 · Target</h2></div>
           <div class="zone-wrap" id="zone" role="group" aria-label="Called location"></div>
           <button type="button" class="skip" id="skipZone" aria-pressed="false">Skip location</button>
@@ -268,22 +277,61 @@
       'use strict';
       const KEY = 'lightning-pitch-log-v1';
       const pitcherNames = ['Ellie', 'Paige', 'Emery', 'Lila', 'Leelah'];
-      const pitchNames = ['Fastball', 'Change-up', 'Curve', 'Drop', 'Rise'];
+      const pitchNames = ['Fastball', '2 Seam', 'Change-up', 'Curve', 'Drop', 'Rise'];
       const zoneNames = ['Up / In', 'Up', 'Up / Out', 'In', 'Middle', 'Out', 'Down / In', 'Down', 'Down / Out'];
-      const state = { team: '', gameDate: '', gameId: '', pitcher: null, batter: 1, pitch: null, zone: null, result: null, strikeType: null, strikeSpot: null, ballType: null, playType: null, missDirection: null, history: [] };
+      const state = { team: '', gameDate: '', gameId: '', pitcher: null, batter: 1, pitch: null, zone: null, result: null, strikeType: null, strikeSpot: null, ballType: null, playType: null, missDirection: null, cardCall: null, cardRow: null, cardColumn: null, history: [] };
       const report = { tab: 'tracker', source: 'current', pitcher: '', team: '', games: '10', customGames: 10, rows: [], fileName: '', githubTried: false };
       const REPORT_KEY = 'lightning-pitch-reports-v1';
+      const MODE_KEY = 'lightning-pitch-mode-v1';
       const SETTINGS_KEY = 'lightning-pitch-github-settings-v1';
       const github = { repo: 'putty31211/Pitch-Tracker', path: 'master-pitch-log.csv', branch: '', clientId: 'Iv23li2FHU7P8zN9EuxG', workerUrl: 'https://pitch-tracker-auth.putty31211.workers.dev' };
       const AUTH_KEY = 'lightning-pitch-github-auth-v1';
       const PENDING_KEY = 'lightning-pitch-github-pending-v1';
       const CALLBACK_URL = 'https://putty31211.github.io/Pitch-Tracker/';
       let auth = null;
-      const CSV_COLUMNS = ['number', 'team', 'game_date', 'game_id', 'timestamp', 'pitcher', 'batter', 'called_pitch', 'called_location', 'result', 'strike_type', 'strike_spot', 'ball_detail', 'in_play_outcome', 'count_before', 'count_after', 'batter_outcome', 'miss_direction'];
+      const CSV_COLUMNS = ['number', 'team', 'game_date', 'game_id', 'timestamp', 'pitcher', 'batter', 'called_pitch', 'called_location', 'result', 'strike_type', 'strike_spot', 'ball_detail', 'in_play_outcome', 'count_before', 'count_after', 'batter_outcome', 'miss_direction', 'card_call', 'card_row', 'card_column'];
       const MISS_DIRECTIONS = ['High / In', 'High', 'High / Out', 'In', 'Out', 'Low / In', 'Low', 'Low / Out'];
+      const CARD_LOCATIONS = { Inside: 'In', Outside: 'Out', Middle: 'Middle', 'High Out': 'Up / Out', 'High In': 'Up / In', 'Low In': 'Down / In', High: 'Up', Low: 'Down', 'Low Out': 'Down / Out' };
+      const CARD_PITCHES = { Change: 'Change-up', Curve: 'Curve', Drop: 'Drop', Rise: 'Rise', '2 Seam': '2 Seam', Fastball: 'Fastball' };
+      const DEFAULT_PITCH_CARD = [['Inside', 'Middle', 'High Out', 'Change', 'Curve'], ['Change', 'Drop', 'High In', 'Outside', '2 Seam'], ['Middle', 'Change', 'Inside', 'Low In', 'High'], ['Outside', 'Rise', 'Drop', 'Middle', 'Inside'], ['Low', 'Low Out', 'Rise', '2 Seam', 'Outside']];
+      let pitchMode = 'standard';
+      let pitchCard = DEFAULT_PITCH_CARD;
       const $ = id => document.getElementById(id);
       const localDate = date => `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
       const createGameId = () => `game-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+      function parsePitchCardCSV(text) {
+        const rows = text.replace(/^\uFEFF/, '').trim().split(/\r?\n/).map(line => line.split(',').map(cell => cell.trim().replace(/^"|"$/g, '')));
+        if (rows.length !== 6 || rows.some(row => row.length !== 6) || rows[0].slice(1).some((label, index) => label !== String(index + 1)) || rows.slice(1).some((row, index) => row[0] !== String(index + 1) || row.slice(1).some(call => !CARD_LOCATIONS[call] && !CARD_PITCHES[call]))) throw Error('The pitch card needs numbered 1–5 rows and columns with known calls.');
+        return rows.slice(1).map(row => row.slice(1));
+      }
+      async function loadPitchCard() {
+        try {
+          const response = await fetch('pitchCard.csv', { cache: 'no-store' });
+          if (!response.ok) throw Error('Pitch card unavailable');
+          pitchCard = parsePitchCardCSV(await response.text());
+          $('cardStatus').textContent = 'Loaded from pitchCard.csv';
+        } catch (_) { $('cardStatus').textContent = 'Using included pitch card. Check pitchCard.csv in the site root for updates.'; }
+        renderPitchCard();
+      }
+      function renderPitchCard() {
+        const grid = $('pitchCardGrid'); grid.replaceChildren();
+        for (let row = 0; row <= 5; row++) for (let column = 0; column <= 5; column++) {
+          if (row === 0 || column === 0) { const axis = document.createElement('span'); axis.className = 'pitch-card-axis'; axis.textContent = row ? row : column || ''; grid.append(axis); continue; }
+          const call = pitchCard[row - 1][column - 1];
+          const button = document.createElement('button'); button.type = 'button'; button.className = `choice${state.cardRow === row && state.cardColumn === column ? ' selected' : ''}`;
+          const number = document.createElement('small'); number.textContent = `${row}–${column}`;
+          button.append(number, document.createTextNode(call));
+          button.setAttribute('aria-label', `Row ${row}, column ${column}: ${call}`);
+          button.setAttribute('aria-pressed', String(state.cardRow === row && state.cardColumn === column));
+          button.addEventListener('click', () => {
+            state.cardCall = call; state.cardRow = row; state.cardColumn = column;
+            state.pitch = CARD_PITCHES[call] || 'Fastball'; state.zone = CARD_LOCATIONS[call] || null;
+            state.strikeSpot = null; state.ballType = null; state.missDirection = null;
+            render();
+          });
+          grid.append(button);
+        }
+      }
       const choices = (id, values, key, { className = 'choice' } = {}) => {
         const container = $(id);
         container.replaceChildren(...values.map(value => {
@@ -321,6 +369,7 @@
       }
       function restore() {
         try {
+          pitchMode = localStorage.getItem(MODE_KEY) === 'card' ? 'card' : 'standard';
           const saved = JSON.parse(localStorage.getItem(KEY) || '{}');
           if (typeof saved.team === 'string') state.team = saved.team.slice(0, 80);
           if (pitcherNames.includes(saved.pitcher)) state.pitcher = saved.pitcher;
@@ -337,7 +386,7 @@
         if (!state.gameDate) state.gameDate = localDate(new Date());
         if (!state.gameId) state.gameId = createGameId();
       }
-      function resetEntry() { state.pitch = null; state.zone = null; state.result = null; state.strikeType = null; state.strikeSpot = null; state.ballType = null; state.playType = null; state.missDirection = null; }
+      function resetEntry() { state.pitch = null; state.zone = null; state.result = null; state.strikeType = null; state.strikeSpot = null; state.ballType = null; state.playType = null; state.missDirection = null; state.cardCall = null; state.cardRow = null; state.cardColumn = null; }
       function countFor(batter) {
         let balls = 0, strikes = 0;
         for (const p of state.history.filter(p => p.batter === batter)) {
@@ -351,18 +400,19 @@
       function notify(message) { const el = $('toast'); el.textContent = message; el.hidden = false; clearTimeout(toastTimer); toastTimer = setTimeout(() => { el.hidden = true; }, 2600); }
       function ready() {
         return !!(state.pitcher && state.pitch && state.result &&
-          (!['Strike', 'Ball'].includes(state.result) || state.zone) &&
+          (!['Strike', 'Ball'].includes(state.result) || state.zone || pitchMode === 'card' && !!state.cardCall) &&
           (['HBP', 'Foul'].includes(state.result) || (state.result === 'Strike' && state.strikeType && state.strikeSpot) || (state.result === 'Ball' && state.ballType) || (state.result === 'In play' && state.playType)) &&
-          (!missedTarget(state) || state.missDirection));
+          (!missedTarget(state) || state.zone && state.missDirection));
       }
       function buttonLabel() {
         if (!state.pitcher) return 'Choose a pitcher';
-        if (!state.pitch) return 'Choose a called pitch';
+        if (!state.pitch) return pitchMode === 'card' ? 'Choose a card square' : 'Choose a called pitch';
         if (!state.result) return 'Choose a result';
-        if (!state.zone && ['Strike', 'Ball'].includes(state.result)) return 'Choose a target to chart the pitch';
+        if (!state.zone && ['Strike', 'Ball'].includes(state.result) && pitchMode !== 'card') return 'Choose a target to chart the pitch';
         if (state.result === 'Strike' && (!state.strikeType || !state.strikeSpot)) return 'Finish strike details';
         if (state.result === 'Ball' && !state.ballType) return 'Choose a ball detail';
         if (state.result === 'In play' && !state.playType) return 'Choose what happened';
+        if (missedTarget(state) && !state.zone) return 'Choose a target to chart the miss';
         if (missedTarget(state) && !state.missDirection) return 'Choose where it missed';
         return 'Log pitch →';
       }
@@ -372,7 +422,7 @@
         state.history.slice().reverse().forEach((p, reverseIndex) => {
           const li = document.createElement('li');
           const info = document.createElement('div'); const head = document.createElement('b');
-          head.textContent = `#${state.history.length - reverseIndex} · ${p.pitcher} · ${p.pitch}${p.batter ? ` · Batter ${p.batter}` : ''}`;
+          head.textContent = `#${state.history.length - reverseIndex} · ${p.pitcher} · ${p.pitch}${p.cardRow && p.cardColumn ? ` · Card ${p.cardRow}–${p.cardColumn}` : ''}${p.batter ? ` · Batter ${p.batter}` : ''}`;
           const detail = document.createElement('span');
           const outcome = p.result === 'Strike' ? `${p.strikeType}, ${(p.strikeSpot || 'No spot').toLowerCase()}` : p.result === 'Ball' ? p.ballType : p.result === 'In play' ? p.playType : p.result;
           detail.textContent = `${outcome} · ${p.zone || 'No target'}${p.missDirection ? ` · Missed ${p.missDirection.toLowerCase()}` : ''}${p.plateResult ? ` · ${p.plateResult}` : ''}`;
@@ -412,6 +462,7 @@
             time: p.timestamp || '', pitcher: p.pitcher, batter: Number(p.batter) || null, pitch: p.called_pitch, zone: p.called_location || null, result: p.result,
             strikeType: p.strike_type || null, strikeSpot: p.strike_spot || null, ballType: p.ball_detail || null, playType: p.in_play_outcome || null,
             missDirection: MISS_DIRECTIONS.includes(p.miss_direction) ? p.miss_direction : null,
+            cardCall: p.card_call || null, cardRow: Number(p.card_row) || null, cardColumn: Number(p.card_column) || null,
             countBefore: p.count_before || null, countAfter: p.count_after || null, plateResult: p.batter_outcome || null };
         });
       }
@@ -420,7 +471,7 @@
       }
       function serializeCSV(rows) {
         const quote = value => `"${String(value ?? '').replaceAll('"', '""')}"`;
-        const data = rows.map(p => [p.number, p.team, p.gameDate, p.gameId, p.time, p.pitcher, p.batter, p.pitch, p.zone, p.result, p.strikeType, p.strikeSpot, p.ballType, p.playType, p.countBefore, p.countAfter, p.plateResult, p.missDirection].map(quote).join(','));
+        const data = rows.map(p => [p.number, p.team, p.gameDate, p.gameId, p.time, p.pitcher, p.batter, p.pitch, p.zone, p.result, p.strikeType, p.strikeSpot, p.ballType, p.playType, p.countBefore, p.countAfter, p.plateResult, p.missDirection, p.cardCall, p.cardRow, p.cardColumn].map(quote).join(','));
         return '\uFEFF' + CSV_COLUMNS.join(',') + '\r\n' + data.join('\r\n');
       }
       function downloadCSV(rows, filename) {
@@ -713,6 +764,15 @@
       function render() {
         $('teamInput').value = state.team;
         $('gameDateInput').value = state.gameDate;
+        for (const [id, active] of [['standardMode', pitchMode === 'standard'], ['cardMode', pitchMode === 'card']]) { $(id).classList.toggle('selected', active); $(id).setAttribute('aria-pressed', String(active)); }
+        $('pitches').hidden = pitchMode !== 'standard';
+        $('cardPanel').hidden = pitchMode !== 'card';
+        const showTarget = pitchMode === 'standard' || !!state.cardCall && !CARD_LOCATIONS[state.cardCall];
+        $('targetCard').hidden = !showTarget;
+        $('targetCard').parentElement.classList.toggle('card-result-only', !showTarget);
+        $('zoneLabel').textContent = pitchMode === 'card' ? 'Optional target for this pitch' : '3 · Target';
+        $('cardSelection').textContent = state.cardCall ? `Card ${state.cardRow}–${state.cardColumn}: ${state.cardCall} → ${state.pitch}${state.zone ? ` to ${state.zone}` : ' · no target called'}` : 'Choose a square to call the pitch.';
+        if (pitchMode === 'card') renderPitchCard();
         choices('pitchers', pitcherNames, 'pitcher');
         choices('pitches', pitchNames, 'pitch');
         choices('zone', zoneNames, 'zone', { className: 'zone' });
@@ -729,9 +789,9 @@
         $('detailsSubtitle').textContent = state.result || '';
         if (state.result === 'Strike') {
           choices('strikeTypes', ['Swinging', 'Looking'], 'strikeType');
-          choices('strikeSpots', ['Hit spot', 'Missed spot'], 'strikeSpot');
+          choices('strikeSpots', state.zone ? ['Hit spot', 'Missed spot'] : ['Not charted', 'Missed spot'], 'strikeSpot');
         }
-        if (state.result === 'Ball') choices('ballTypes', ['Missed spot', 'Wild pitch', 'Right spot · called ball'], 'ballType');
+        if (state.result === 'Ball') choices('ballTypes', state.zone ? ['Missed spot', 'Wild pitch', 'Right spot · called ball'] : ['No target called', 'Missed spot', 'Wild pitch'], 'ballType');
         $('missDetails').hidden = !missedTarget(state);
         $('missTargetHint').hidden = !missedTarget(state) || !!state.zone;
         if (missedTarget(state)) renderMissDirections();
@@ -761,6 +821,12 @@
       }
       $('teamInput').addEventListener('input', event => { state.team = event.target.value; save(); });
       $('gameDateInput').addEventListener('change', event => { state.gameDate = event.target.value; save(); });
+      for (const [id, mode] of [['standardMode', 'standard'], ['cardMode', 'card']]) $(id).addEventListener('click', () => {
+        if (pitchMode === mode) return;
+        pitchMode = mode; resetEntry();
+        try { localStorage.setItem(MODE_KEY, mode); } catch (_) { /* Keep the mode for this session. */ }
+        render();
+      });
       $('skipZone').addEventListener('click', () => { state.zone = null; state.ballType = null; state.strikeSpot = null; state.missDirection = null; render(); });
       $('manualBatter').addEventListener('click', () => {
         if (!state.history.some(p => p.batter === state.batter)) return;
@@ -771,7 +837,7 @@
         const before = countFor(state.batter);
         const after = { balls: before.balls + (state.result === 'Ball' ? 1 : 0), strikes: before.strikes + (state.result === 'Strike' || state.result === 'Foul' && before.strikes < 2 ? 1 : 0) };
         const plateResult = after.strikes >= 3 ? 'Strikeout' : after.balls >= 4 ? 'Walk' : state.result === 'HBP' ? 'Hit by pitch' : state.result === 'In play' ? state.playType : null;
-        const p = { pitcher: state.pitcher, batter: state.batter, pitch: state.pitch, zone: state.zone, result: state.result, strikeType: state.result === 'Strike' ? state.strikeType : null, strikeSpot: state.result === 'Strike' ? state.strikeSpot : null, ballType: state.result === 'Ball' ? state.ballType : null, playType: state.result === 'In play' ? state.playType : null, missDirection: missedTarget(state) ? state.missDirection : null, countBefore: `${before.balls}-${before.strikes}`, countAfter: `${after.balls}-${after.strikes}`, plateResult, time: new Date().toISOString() };
+        const p = { pitcher: state.pitcher, batter: state.batter, pitch: state.pitch, zone: state.zone, result: state.result, strikeType: state.result === 'Strike' ? state.strikeType : null, strikeSpot: state.result === 'Strike' ? state.strikeSpot : null, ballType: state.result === 'Ball' ? state.ballType : null, playType: state.result === 'In play' ? state.playType : null, missDirection: missedTarget(state) ? state.missDirection : null, cardCall: pitchMode === 'card' ? state.cardCall : null, cardRow: pitchMode === 'card' ? state.cardRow : null, cardColumn: pitchMode === 'card' ? state.cardColumn : null, countBefore: `${before.balls}-${before.strikes}`, countAfter: `${after.balls}-${after.strikes}`, plateResult, time: new Date().toISOString() };
         state.history.push(p); if (plateResult) state.batter++;
         save(); resetEntry(); render(); notify(plateResult ? `${plateResult} · Batter ${state.batter} ready` : `${p.pitcher}: ${p.pitch} logged`);
       });
@@ -822,7 +888,7 @@
         } catch (error) { notify(error.message || 'Could not read that CSV.'); }
         event.target.value = '';
       });
-      restore(); save(); restoreReport(); restoreGithubSettings(); render(); completeGithubSignIn();
+      restore(); save(); restoreReport(); restoreGithubSettings(); render(); loadPitchCard(); completeGithubSignIn();
     })();
   </script>
 </body>
