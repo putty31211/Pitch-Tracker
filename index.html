@@ -319,9 +319,9 @@
           if (row === 0 || column === 0) { const axis = document.createElement('span'); axis.className = 'pitch-card-axis'; axis.textContent = row ? row : column || ''; grid.append(axis); continue; }
           const call = pitchCard[row - 1][column - 1];
           const button = document.createElement('button'); button.type = 'button'; button.className = `choice${state.cardRow === row && state.cardColumn === column ? ' selected' : ''}`;
-          const number = document.createElement('small'); number.textContent = `${row}–${column}`;
+          const number = document.createElement('small'); number.textContent = `${column}–${row}`;
           button.append(number, document.createTextNode(call));
-          button.setAttribute('aria-label', `Row ${row}, column ${column}: ${call}`);
+          button.setAttribute('aria-label', `Top ${column}, left ${row}: ${call}`);
           button.setAttribute('aria-pressed', String(state.cardRow === row && state.cardColumn === column));
           button.addEventListener('click', () => {
             state.cardCall = call; state.cardRow = row; state.cardColumn = column;
@@ -422,7 +422,7 @@
         state.history.slice().reverse().forEach((p, reverseIndex) => {
           const li = document.createElement('li');
           const info = document.createElement('div'); const head = document.createElement('b');
-          head.textContent = `#${state.history.length - reverseIndex} · ${p.pitcher} · ${p.pitch}${p.cardRow && p.cardColumn ? ` · Card ${p.cardRow}–${p.cardColumn}` : ''}${p.batter ? ` · Batter ${p.batter}` : ''}`;
+          head.textContent = `#${state.history.length - reverseIndex} · ${p.pitcher} · ${p.pitch}${p.cardRow && p.cardColumn ? ` · Card ${p.cardColumn}–${p.cardRow}` : ''}${p.batter ? ` · Batter ${p.batter}` : ''}`;
           const detail = document.createElement('span');
           const outcome = p.result === 'Strike' ? `${p.strikeType}, ${(p.strikeSpot || 'No spot').toLowerCase()}` : p.result === 'Ball' ? p.ballType : p.result === 'In play' ? p.playType : p.result;
           detail.textContent = `${outcome} · ${p.zone || 'No target'}${p.missDirection ? ` · Missed ${p.missDirection.toLowerCase()}` : ''}${p.plateResult ? ` · ${p.plateResult}` : ''}`;
@@ -771,7 +771,7 @@
         $('targetCard').hidden = !showTarget;
         $('targetCard').parentElement.classList.toggle('card-result-only', !showTarget);
         $('zoneLabel').textContent = pitchMode === 'card' ? 'Optional target for this pitch' : '3 · Target';
-        $('cardSelection').textContent = state.cardCall ? `Card ${state.cardRow}–${state.cardColumn}: ${state.cardCall} → ${state.pitch}${state.zone ? ` to ${state.zone}` : ' · no target called'}` : 'Choose a square to call the pitch.';
+        $('cardSelection').textContent = state.cardCall ? `Card ${state.cardColumn}–${state.cardRow}: ${state.cardCall} → ${state.pitch}${state.zone ? ` to ${state.zone}` : ' · no target called'}` : 'Choose a square: top number first, then left number.';
         if (pitchMode === 'card') renderPitchCard();
         choices('pitchers', pitcherNames, 'pitcher');
         choices('pitches', pitchNames, 'pitch');
