@@ -245,7 +245,7 @@
       <details id="githubSetup"><summary>One-time sign-in setup</summary>
         <p>Enter the public client ID of your GitHub App and the URL of your deployed sign-in Worker. Keep the app's client secret in the Worker settings.</p>
         <label>GitHub App client ID<input id="githubClientId" autocomplete="off" spellcheck="false" value="Iv23li2FHU7P8zN9EuxG"></label>
-        <label>Sign-in Worker URL<input id="githubWorkerUrl" type="url" autocomplete="off" spellcheck="false" placeholder="https://your-worker.workers.dev"></label>
+        <label>Sign-in Worker URL<input id="githubWorkerUrl" type="url" autocomplete="off" spellcheck="false" value="https://pitch-tracker-auth.putty31211.workers.dev"></label>
       </details>
       <p id="githubIdentity" class="hint"></p>
       <p id="githubStatus" class="modal-status" role="alert"></p>
@@ -264,7 +264,7 @@
       const report = { tab: 'tracker', source: 'current', pitcher: '', team: '', games: '10', customGames: 10, rows: [], fileName: '', githubTried: false };
       const REPORT_KEY = 'lightning-pitch-reports-v1';
       const SETTINGS_KEY = 'lightning-pitch-github-settings-v1';
-      const github = { repo: 'putty31211/Pitch-Tracker', path: 'master-pitch-log.csv', branch: '', clientId: 'Iv23li2FHU7P8zN9EuxG', workerUrl: '' };
+      const github = { repo: 'putty31211/Pitch-Tracker', path: 'master-pitch-log.csv', branch: '', clientId: 'Iv23li2FHU7P8zN9EuxG', workerUrl: 'https://pitch-tracker-auth.putty31211.workers.dev' };
       const AUTH_KEY = 'lightning-pitch-github-auth-v1';
       const PENDING_KEY = 'lightning-pitch-github-pending-v1';
       const CALLBACK_URL = 'https://putty31211.github.io/Pitch-Tracker/';
@@ -409,7 +409,7 @@
           if (typeof saved.path === 'string') github.path = saved.path;
           if (typeof saved.branch === 'string') github.branch = saved.branch;
           if (typeof saved.clientId === 'string' && saved.clientId) github.clientId = saved.clientId;
-          if (typeof saved.workerUrl === 'string') github.workerUrl = saved.workerUrl;
+          if (typeof saved.workerUrl === 'string' && saved.workerUrl) github.workerUrl = saved.workerUrl;
         } catch (_) { /* Repository details can be entered again. */ }
         if (!github.repo && /\.github\.io$/i.test(window.location.hostname)) {
           const owner = window.location.hostname.split('.')[0];
