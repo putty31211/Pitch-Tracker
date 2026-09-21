@@ -122,6 +122,22 @@
       .print-grid { display: grid; height: calc(100% - .30in); }
       .print-grid span { border: 1px solid #9daaba; display: grid; place-items: center; padding: 2px; text-align: center; font-size: 9px; line-height: 1.15; overflow-wrap: anywhere; }
       .print-grid .pitch-card-axis { font-weight: 900; background: #edf2f7; }
+      body.print-report .print-sheet { display: block !important; height: auto; color: #172844; font-family: Arial, sans-serif; }
+      .report-print-header { border-bottom: 3px solid #1761bc; padding-bottom: 10px; margin-bottom: 12px; }
+      .report-print-header h1 { margin: 0; font-size: 22px; }
+      .report-print-header p { margin: 4px 0 0; color: #526a88; font-size: 10px; }
+      .report-print-section { break-inside: avoid; margin: 0 0 12px; }
+      .report-print-section h2 { margin: 0 0 6px; color: #172844; font-size: 14px; }
+      .report-print-section .card { box-shadow: none; margin: 0; padding: 0; border: 0; }
+      .report-print-section .hint { font-size: 8px; }
+      .report-print-section .report-kpis { grid-template-columns: repeat(4, 1fr); }
+      .report-print-section .report-kpi { padding: 8px; }
+      .report-print-section .report-kpi strong { font-size: 16px; }
+      .report-print-section .efficiency-chart-scroll { overflow: visible; }
+      .report-print-section .efficiency-chart-scroll svg { width: 100% !important; height: auto; }
+      .report-print-section .miss-bubble-cell { min-height: 84px; }
+      .report-print-section .report-table { font-size: 9px; }
+      .report-print-section .report-table th, .report-print-section .report-table td { padding: 5px; }
     }
     .two-columns { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
     .two-columns.card-result-only { grid-template-columns: 1fr; }
@@ -219,18 +235,44 @@
     .report-kpi { background: #fff; border: 1px solid #dfe8f1; border-radius: 14px; padding: 12px 9px; }
     .report-kpi strong { display: block; font-size: 21px; line-height: 1.1; color: #172844; font-variant-numeric: tabular-nums; }
     .report-kpi small { display: block; margin-top: 4px; font-size: 10px; font-weight: 850; text-transform: uppercase; letter-spacing: .06em; color: #6f8198; }
+    .report-top-actions { display: flex; justify-content: flex-end; margin: -4px 0 12px; }
+    .report-table-wrap { width: 100%; overflow-x: auto; }
+    .report-table { width: 100%; border-collapse: collapse; font-size: 12px; color: #405b78; }
+    .report-table th { padding: 8px 6px; border-bottom: 2px solid #dce6f1; color: #253d5a; font-size: 10px; letter-spacing: .04em; text-align: right; text-transform: uppercase; white-space: nowrap; }
+    .report-table th:first-child, .report-table td:first-child { text-align: left; }
+    .report-table td { padding: 9px 6px; border-bottom: 1px solid #e8eef5; text-align: right; font-variant-numeric: tabular-nums; vertical-align: top; }
+    .report-table td:first-child { color: #203753; font-weight: 850; }
+    .sample-note { display: block; margin-top: 2px; color: #8a9aae; font-size: 9px; font-weight: 700; }
+    .insight-list { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
+    .insight-list li { position: relative; padding: 10px 11px 10px 32px; border: 1px solid #dce7f2; border-radius: 12px; background: #f7fafd; color: #405b78; font-size: 12px; line-height: 1.4; }
+    .insight-list li::before { content: '◆'; position: absolute; left: 12px; top: 10px; color: #f09a3e; font-size: 11px; }
     .chart-row { margin: 12px 0; }
     .chart-label { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; margin-bottom: 5px; font-size: 13px; font-weight: 800; }
     .chart-label span:last-child { color: #627994; font-size: 12px; font-variant-numeric: tabular-nums; white-space: nowrap; }
     .bar-track { width: 100%; height: 13px; border-radius: 20px; background: #e9f0f8; overflow: hidden; }
     .bar-fill { height: 100%; border-radius: 20px; background: #1761bc; }
     .bar-fill.secondary { background: #f2a345; }
+    .efficiency-legend { display: flex; flex-wrap: wrap; gap: 7px 12px; margin: 3px 0 10px; }
+    .efficiency-key { display: inline-flex; align-items: center; gap: 6px; color: #405b78; font-size: 11px; font-weight: 850; }
+    .efficiency-key i { width: 10px; height: 10px; border-radius: 50%; flex: 0 0 auto; }
+    .efficiency-chart-scroll { width: 100%; overflow-x: auto; overscroll-behavior-inline: contain; padding-bottom: 3px; }
+    .efficiency-chart-scroll svg { display: block; min-width: 100%; }
+    .efficiency-grid-line { stroke: #dfe7f0; stroke-width: 1; }
+    .efficiency-axis-label { fill: #71849b; font-size: 10px; font-weight: 750; }
+    .efficiency-game-label { fill: #526b87; font-size: 9px; font-weight: 800; }
+    .efficiency-empty { min-height: 130px; display: grid; place-items: center; padding: 20px; border-radius: 12px; background: #f5f8fb; color: #7b8da4; font-size: 12px; font-weight: 750; text-align: center; }
     .zone-report { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
     .zone-report-cell { min-height: 80px; border-radius: 11px; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 3px; text-align: center; padding: 6px 2px; background: #e9f1fb; color: #234365; }
     .zone-report-cell span { font-size: 10px; font-weight: 850; line-height: 1.15; }
     .zone-report-cell strong { font-size: 19px; line-height: 1; font-variant-numeric: tabular-nums; }
     .zone-report-cell small { font-size: 10px; font-weight: 750; }
     .miss-report-center { background: #eaf2fc; color: #57708e; }
+    .miss-bubble-cell { position: relative; min-height: 112px; border: 1px solid #e0e8f1; border-radius: 12px; background: #f7f9fc; display: grid; place-items: center; padding: 25px 4px 20px; overflow: hidden; }
+    .miss-bubble-label { position: absolute; top: 8px; left: 4px; right: 4px; color: #405b78; font-size: 10px; font-weight: 900; line-height: 1.1; text-align: center; }
+    .miss-bubble { width: var(--bubble-size); height: var(--bubble-size); border-radius: 50%; display: grid; place-items: center; background: rgba(231, 130, 38, var(--bubble-opacity)); color: #172844; box-shadow: inset 0 0 0 1px #c96c1866; transition: width .2s ease, height .2s ease; }
+    .miss-bubble strong { font-size: clamp(12px, 4vw, 20px); line-height: 1; font-variant-numeric: tabular-nums; }
+    .miss-bubble-rate { position: absolute; bottom: 7px; left: 4px; right: 4px; color: #70849d; font-size: 10px; font-weight: 800; text-align: center; }
+    .miss-bubble-cell.no-misses::after { content: '—'; color: #b3bfcc; font-size: 21px; font-weight: 800; }
     .batter-report { list-style: none; padding: 0; margin: 0; max-height: 340px; overflow: auto; }
     .batter-report li { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 11px 0; border-top: 1px solid #edf1f6; font-size: 12px; color: #617893; }
     .batter-report b { color: #263b58; font-size: 13px; }
@@ -363,6 +405,7 @@
     </main>
     <main id="reportsView" hidden>
       <div class="page-heading"><h2>Reports</h2><p>Review the current game or filter your team's saved pitch history.</p></div>
+      <div class="report-top-actions"><button type="button" class="small-action" id="printCommandReport" disabled>Print command report</button></div>
       <section class="card">
         <div class="section-title"><h2>Report data</h2></div>
         <div class="source-row"><button type="button" class="choice selected" id="currentSource" aria-pressed="true">Current game</button><button type="button" class="choice" id="importedSource" aria-pressed="false">Team history</button></div>
@@ -377,15 +420,25 @@
         <label class="report-filter" id="customGamesRow" for="customGames" hidden>Number of games <input id="customGames" type="number" min="1" max="9999" value="10" inputmode="numeric"></label>
         <p class="hint" id="gameRange" style="margin-top:12px"></p>
       </section>
-      <section class="card"><label class="report-filter" for="reportPitcher">Pitcher <select id="reportPitcher"><option value="">All pitchers</option></select></label></section>
+      <section class="card"><label class="report-filter" for="reportPitcher">Pitcher <select id="reportPitcher"><option value="">All pitchers</option></select></label><label class="report-filter" for="reportPitchType">Pitch type <select id="reportPitchType"><option value="">All pitch types</option></select></label></section>
       <div id="reportEmpty" class="card report-empty" hidden><strong>No pitches to report yet</strong>Log a pitch in the current game or load your team history.</div>
       <div id="reportContent" hidden>
         <div class="report-kpis" id="reportKpis" aria-label="Game statistics"></div>
+        <section class="card" id="insightsSection"><div class="section-title"><h2>Coaching observations</h2><span>Based on selected data</span></div><ul class="insight-list" id="coachingInsights"></ul></section>
         <section class="card"><div class="section-title"><h2>Pitch mix</h2><span>Share · strike %</span></div><div id="pitchMix"></div></section>
+        <section class="card" id="pitchCommandSection"><div class="section-title"><h2>Pitch-type command</h2><span>Execution · result</span></div><div class="report-table-wrap"><table class="report-table"><thead><tr><th>Pitch</th><th>Usage</th><th>Spot hit</th><th>Strikes</th><th>Common miss</th></tr></thead><tbody id="pitchCommandBody"></tbody></table></div><p class="hint" style="margin-top:10px">Spot-hit percentages use charted hit-or-miss pitches. Small samples are labeled.</p></section>
         <section class="card"><div class="section-title"><h2>Pitch results</h2></div><div id="resultChart"></div></section>
         <section class="card"><div class="section-title"><h2>Called targets</h2><span>Pitch count</span></div><div class="zone-report" id="zoneReport"></div><p class="hint" style="margin-top:12px">These are intended targets, not where the pitch actually went. Strike % includes fouls.</p></section>
-        <section class="card"><div class="section-title"><h2>Target accuracy</h2><span>Charted pitches only</span></div><div id="accuracyChart"></div><p class="hint" style="margin-top:12px">Fouls and balls in play have no hit/miss choice yet, so they are excluded.</p></section>
-        <section class="card"><div class="section-title"><h2>Where pitches missed</h2><span id="missReportCount"></span></div><div class="zone-report" id="missReport"></div><p class="hint" style="margin-top:12px">This shows where missed pitches actually finished. Older relative-direction data is excluded.</p></section>
+        <section class="card" id="targetAccuracySection"><div class="section-title"><h2>Target accuracy</h2><span>Charted pitches only</span></div><div id="accuracyChart"></div><p class="hint" style="margin-top:12px">Fouls and balls in play have no hit/miss choice yet, so they are excluded.</p></section>
+        <section class="card" id="workloadSection"><div class="section-title"><h2>Workload and command</h2><span>Pitcher pitches per game</span></div><div id="workloadChart"></div><p class="hint" style="margin-top:12px">Pitch numbers restart for each pitcher in each game. This can reveal command changes as workload increases.</p></section>
+        <section class="card" id="countSection"><div class="section-title"><h2>Count performance</h2><span>Situation splits</span></div><div class="report-table-wrap"><table class="report-table"><thead><tr><th>Situation</th><th>Pitches</th><th>Spot hit</th><th>Strikes</th></tr></thead><tbody id="countPerformanceBody"></tbody></table></div></section>
+        <section class="card" id="batterSideSection"><div class="section-title"><h2>Batter-side splits</h2><span>Right · left</span></div><div class="report-table-wrap"><table class="report-table"><thead><tr><th>Batter</th><th>Pitches</th><th>Spot hit</th><th>Strikes</th><th>K / BB</th></tr></thead><tbody id="batterSideBody"></tbody></table></div></section>
+        <section class="card" id="plateAppearanceSection"><div class="section-title"><h2>Plate-appearance outcomes</h2><span id="plateAppearanceCount"></span></div><div id="plateAppearanceChart"></div></section>
+        <section class="card" id="callEffectivenessSection"><div class="section-title"><h2>Call effectiveness</h2><span>Pitch · target</span></div><div class="report-table-wrap"><table class="report-table"><thead><tr><th>Call</th><th>Uses</th><th>Spot hit</th><th>Strikes</th></tr></thead><tbody id="callEffectivenessBody"></tbody></table></div><p class="hint" style="margin-top:10px">Shows whether a called pitch and location was executed and whether it produced a strike.</p></section>
+        <section class="card" id="gameComparisonSection"><div class="section-title"><h2>Game comparison</h2><span>Exact selected-game results</span></div><div class="report-table-wrap"><table class="report-table"><thead><tr><th>Game</th><th>Pitches</th><th>Spot hit</th><th>Strikes</th><th>K / BB</th></tr></thead><tbody id="gameComparisonBody"></tbody></table></div></section>
+        <section class="card" id="cardUsageSection"><div class="section-title"><h2>Pitch-card usage</h2><span>Called from a card</span></div><div class="report-table-wrap"><table class="report-table"><thead><tr><th>Card</th><th>Calls</th><th>Spot hit</th><th>Strikes</th></tr></thead><tbody id="cardUsageBody"></tbody></table></div><p class="hint" id="cardUsageHint" style="margin-top:10px"></p></section>
+        <section class="card" id="efficiencySection"><div class="section-title"><h2>Spot efficiency trend</h2><span>Oldest → newest</span></div><div class="efficiency-legend" id="efficiencyLegend" aria-label="Pitcher chart legend"></div><div class="efficiency-chart-scroll" id="efficiencyChart"></div><p class="hint" style="margin-top:12px">Efficiency is the percentage of charted targets hit in each game. Fouls and balls in play are excluded, and games without a charted attempt have no point.</p></section>
+        <section class="card" id="missSection"><div class="section-title"><h2>Where pitches missed</h2><span id="missReportCount"></span></div><div class="zone-report" id="missReport" aria-label="Miss-location bubble heatmap"></div><p class="hint" style="margin-top:12px">Larger circles mean more misses in that location. Percentages use all located misses in the selected report. Older relative-direction data is excluded.</p></section>
         <section class="card"><div class="section-title"><h2>Batters faced</h2><span id="batterReportCount"></span></div><ol class="batter-report" id="batterReport"></ol></section>
       </div>
     </main>
@@ -441,7 +494,7 @@
       const pitchNames = ['Fastball', '2 Seam', 'Change-up', 'Curve', 'Drop', 'Rise', 'Screwball'];
       const zoneNames = ['Up / Out', 'Up', 'Up / In', 'Out', 'Middle', 'In', 'Down / Out', 'Down', 'Down / In'];
       const state = { team: '', opponent: '', gameDate: '', gameId: '', pitcher: null, batter: 1, batterSide: 'R', pitch: null, zone: null, result: null, strikeType: null, strikeSpot: null, ballType: null, playType: null, missLocation: null, cardCall: null, cardRow: null, cardColumn: null, history: [] };
-      const report = { tab: 'tracker', source: 'current', pitcher: '', team: '', game: '', games: '10', customGames: 10, rows: [], fileName: '', historyTried: false };
+      const report = { tab: 'tracker', source: 'current', pitcher: '', pitch: '', team: '', game: '', games: '10', customGames: 10, rows: [], fileName: '', historyTried: false };
       const REPORT_KEY = 'lightning-pitch-reports-v1';
       const MODE_KEY = 'lightning-pitch-mode-v1';
       const TEAM_CARDS_KEY = 'lightning-pitch-team-cards-v1';
@@ -1152,7 +1205,7 @@
             const game = gamesById.get(pitch.game_id);
             return { number: pitch.pitch_number, team: currentTeam.name, opponent: game?.opponent || '', gameDate: game?.played_on || '', gameId: pitch.game_id, time: pitch.pitched_at || '', pitcher: pitch.pitcher_name, pitcherNumber: pitch.pitcher_number, batter: pitch.batter_number, batterSide: pitch.batter_side, pitch: pitch.called_pitch, zone: normalizeZone(pitch.called_location), result: pitch.result, strikeType: pitch.strike_type, strikeSpot: pitch.strike_spot, ballType: pitch.ball_detail, playType: pitch.in_play_outcome, countBefore: pitch.count_before, countAfter: pitch.count_after, plateResult: pitch.batter_outcome, missDirection: null, missLocation: normalizeZone(pitch.miss_location), cardCall: pitch.card_call ? normalizeCardCall(pitch.card_call) : null, cardRow: pitch.card_row, cardColumn: pitch.card_column, cardName: pitch.card_name };
           });
-          report.fileName = 'Team database'; report.source = 'imported'; report.pitcher = ''; report.team = ''; report.game = '';
+          report.fileName = 'Team database'; report.source = 'imported'; report.pitcher = ''; report.pitch = ''; report.team = ''; report.game = '';
           renderReport();
           if (manual) notify(`Loaded ${report.rows.length} saved team pitches`);
         } catch (error) { if (manual) notify(error.message || 'Could not load team history.'); else throw error; }
@@ -1166,7 +1219,7 @@
           url.searchParams.set('fresh', Date.now());
           const response = await fetch(url, { cache: 'no-store' });
           if (!response.ok) throw Error(response.status === 404 ? 'No master-pitch-log.csv found beside index.html.' : `GitHub returned ${response.status}.`);
-          report.rows = parseCSV(await response.text()); report.fileName = 'master-pitch-log.csv'; report.source = 'imported'; report.pitcher = '';
+          report.rows = parseCSV(await response.text()); report.fileName = 'master-pitch-log.csv'; report.source = 'imported'; report.pitcher = ''; report.pitch = '';
           saveReport(); renderReport(); notify(`Loaded ${report.rows.length} master pitches`);
         } catch (error) { if (manual) notify(error.message || 'Could not load master CSV.'); }
       }
@@ -1199,6 +1252,254 @@
       }
       const isStrike = p => p.result === 'Strike' || p.result === 'Foul';
       const percent = (part, total) => total ? `${Math.round(part / total * 100)}%` : '—';
+      const isAccuracyAttempt = p => !!p.zone && (p.result === 'Strike' && !!p.strikeSpot || p.result === 'Ball' && !!p.ballType);
+      const hitCalledTarget = p => p.strikeSpot === 'Hit spot' || p.ballType === 'Right spot · called ball';
+      function renderEfficiencyTrend(rows, selectedGames = []) {
+        const chart = $('efficiencyChart'), legend = $('efficiencyLegend'); chart.replaceChildren(); legend.replaceChildren();
+        const charted = rows.filter(isAccuracyAttempt);
+        const gameList = selectedGames.length ? selectedGames : [...new Map(rows.map(p => {
+          const id = p.gameId || 'current-game';
+          return [id, { id, date: p.gameDate || '', opponent: p.opponent || '', lastTime: p.time || '' }];
+        })).values()].sort((a, b) => a.date.localeCompare(b.date) || a.lastTime.localeCompare(b.lastTime) || a.id.localeCompare(b.id));
+        const pitchers = [...new Set(charted.map(p => p.pitcher).filter(Boolean))].sort();
+        const colors = ['#1761bc', '#e67e22', '#1b8f67', '#8b5bb7', '#d6485f', '#64748b', '#b17a12', '#247f99'];
+        const series = pitchers.map((name, colorIndex) => {
+          const points = gameList.map((game, gameIndex) => {
+            const attempts = charted.filter(p => (p.gameId || 'current-game') === game.id && p.pitcher === name);
+            if (!attempts.length) return null;
+            const hits = attempts.filter(hitCalledTarget).length;
+            return { gameIndex, hits, attempts: attempts.length, value: hits / attempts.length * 100 };
+          }).filter(Boolean);
+          return { name, color: colors[colorIndex % colors.length], points };
+        }).filter(item => item.points.length);
+        if (!gameList.length || !series.length) {
+          const empty = document.createElement('div'); empty.className = 'efficiency-empty';
+          empty.textContent = 'No charted hit-or-miss pitches are available for this selection.'; chart.append(empty); return;
+        }
+        for (const item of series) {
+          const key = document.createElement('span'); key.className = 'efficiency-key';
+          const swatch = document.createElement('i'); swatch.style.background = item.color;
+          const attempts = item.points.reduce((sum, point) => sum + point.attempts, 0), hits = item.points.reduce((sum, point) => sum + point.hits, 0);
+          key.append(swatch, document.createTextNode(`${item.name} · ${percent(hits, attempts)}`)); legend.append(key);
+        }
+        const ns = 'http://www.w3.org/2000/svg';
+        const svgNode = (tag, attributes = {}, value = '') => {
+          const node = document.createElementNS(ns, tag);
+          for (const [key, attribute] of Object.entries(attributes)) node.setAttribute(key, attribute);
+          if (value) node.textContent = value;
+          return node;
+        };
+        const left = 38, right = 16, top = 15, bottom = 52, plotHeight = 150;
+        const width = Math.max(340, left + right + Math.max(1, gameList.length - 1) * 72);
+        const height = top + plotHeight + bottom, plotWidth = width - left - right;
+        const xAt = index => gameList.length === 1 ? left + plotWidth / 2 : left + index * plotWidth / (gameList.length - 1);
+        const yAt = value => top + (100 - value) / 100 * plotHeight;
+        const svg = svgNode('svg', { viewBox: `0 0 ${width} ${height}`, width, height, role: 'img', 'aria-label': `Spot efficiency by game for ${series.map(item => item.name).join(', ')}` });
+        for (const value of [100, 75, 50, 25, 0]) {
+          const y = yAt(value);
+          svg.append(svgNode('line', { x1: left, y1: y, x2: width - right, y2: y, class: 'efficiency-grid-line' }));
+          svg.append(svgNode('text', { x: left - 7, y: y + 3, 'text-anchor': 'end', class: 'efficiency-axis-label' }, `${value}%`));
+        }
+        gameList.forEach((game, index) => {
+          const x = xAt(index), label = svgNode('text', { x, y: top + plotHeight + 17, 'text-anchor': 'middle', class: 'efficiency-game-label' });
+          const dateText = /^\d{4}-\d{2}-\d{2}$/.test(game.date) ? new Date(`${game.date}T12:00:00`).toLocaleDateString(undefined, { month: 'numeric', day: 'numeric' }) : 'Game';
+          label.append(svgNode('tspan', { x, dy: 0 }, dateText));
+          if (game.opponent) label.append(svgNode('tspan', { x, dy: 12 }, `vs ${game.opponent.length > 11 ? `${game.opponent.slice(0, 10)}…` : game.opponent}`));
+          svg.append(label);
+        });
+        for (const item of series) {
+          const pointText = item.points.map(point => `${xAt(point.gameIndex)},${yAt(point.value)}`).join(' ');
+          if (item.points.length > 1) svg.append(svgNode('polyline', { points: pointText, fill: 'none', stroke: item.color, 'stroke-width': 3, 'stroke-linecap': 'round', 'stroke-linejoin': 'round' }));
+          for (const point of item.points) {
+            const dot = svgNode('circle', { cx: xAt(point.gameIndex), cy: yAt(point.value), r: 5, fill: '#fff', stroke: item.color, 'stroke-width': 3, tabindex: 0 });
+            const game = gameList[point.gameIndex], title = svgNode('title', {}, `${item.name}: ${Math.round(point.value)}% (${point.hits}/${point.attempts})${game.date ? ` on ${game.date}` : ''}${game.opponent ? ` vs ${game.opponent}` : ''}`);
+            dot.append(title); svg.append(dot);
+          }
+        }
+        chart.append(svg);
+      }
+      const tableCell = (value, note = '') => {
+        const cell = document.createElement('td'); cell.textContent = value;
+        if (note) { const small = document.createElement('span'); small.className = 'sample-note'; small.textContent = note; cell.append(small); }
+        return cell;
+      };
+      const mostCommonLocation = rows => {
+        const located = rows.filter(p => zoneNames.includes(p.missLocation));
+        if (!located.length) return null;
+        const counts = zoneNames.map(location => ({ location, count: located.filter(p => p.missLocation === location).length }));
+        return counts.sort((a, b) => b.count - a.count)[0];
+      };
+      function renderPitchCommand(rows) {
+        const body = $('pitchCommandBody'); body.replaceChildren();
+        const groups = [...new Set(rows.map(p => p.pitch).filter(Boolean))].map(name => ({ name, rows: rows.filter(p => p.pitch === name) })).sort((a, b) => b.rows.length - a.rows.length || a.name.localeCompare(b.name));
+        for (const group of groups) {
+          const attempts = group.rows.filter(isAccuracyAttempt), hits = attempts.filter(hitCalledTarget).length;
+          const strikes = group.rows.filter(isStrike).length, commonMiss = mostCommonLocation(group.rows.filter(missedTarget));
+          const tr = document.createElement('tr');
+          tr.append(tableCell(group.name), tableCell(`${group.rows.length} · ${percent(group.rows.length, rows.length)}`),
+            tableCell(percent(hits, attempts.length), `${hits}/${attempts.length}${attempts.length && attempts.length < 10 ? ' · small sample' : ''}`),
+            tableCell(percent(strikes, group.rows.length), `${strikes}/${group.rows.length}`),
+            tableCell(commonMiss ? zoneLabel(commonMiss.location) : '—', commonMiss ? `${commonMiss.count} ${commonMiss.count === 1 ? 'miss' : 'misses'}` : 'No located misses'));
+          body.append(tr);
+        }
+      }
+      function buildWorkloadStats(rows, baseRows) {
+        const appearanceNumber = new Map(), groups = new Map();
+        for (const pitch of baseRows) {
+          const key = `${pitch.gameId || 'current-game'}:${pitch.pitcher || 'unknown'}`;
+          if (!groups.has(key)) groups.set(key, []);
+          groups.get(key).push(pitch);
+        }
+        for (const pitches of groups.values()) pitches.sort((a, b) => (Number(a.number) || Number.MAX_SAFE_INTEGER) - (Number(b.number) || Number.MAX_SAFE_INTEGER) || String(a.time || '').localeCompare(String(b.time || ''))).forEach((pitch, index) => appearanceNumber.set(pitch, index + 1));
+        const definitions = [
+          { label: 'Pitches 1–20', includes: number => number <= 20 },
+          { label: 'Pitches 21–40', includes: number => number >= 21 && number <= 40 },
+          { label: 'Pitches 41–60', includes: number => number >= 41 && number <= 60 },
+          { label: 'Pitches 61+', includes: number => number >= 61 }
+        ];
+        return definitions.map(definition => {
+          const bucketRows = rows.filter(pitch => definition.includes(appearanceNumber.get(pitch) || 0));
+          const attempts = bucketRows.filter(isAccuracyAttempt), hits = attempts.filter(hitCalledTarget).length;
+          return { ...definition, rows: bucketRows, attempts: attempts.length, hits, strikes: bucketRows.filter(isStrike).length };
+        });
+      }
+      function renderWorkload(rows, baseRows) {
+        const stats = buildWorkloadStats(rows, baseRows), chart = $('workloadChart');
+        chart.replaceChildren(...stats.map(bucket => chartRow(bucket.label,
+          bucket.rows.length ? `${percent(bucket.hits, bucket.attempts)} spots (${bucket.hits}/${bucket.attempts}) · ${percent(bucket.strikes, bucket.rows.length)} strikes · ${bucket.rows.length} pitches` : 'No pitches',
+          bucket.attempts ? bucket.hits / bucket.attempts : 0,
+          bucket.attempts > 0 && bucket.hits / bucket.attempts < .5)));
+        return stats;
+      }
+      const parsedCount = pitch => {
+        const match = /^(\d)-(\d)$/.exec(pitch.countBefore || '');
+        return match ? { balls: Number(match[1]), strikes: Number(match[2]) } : null;
+      };
+      const appearanceKey = pitch => pitch.batter ? `${pitch.gameId || 'current-game'}:${pitch.batter}` : '';
+      function plateOutcomesFor(rows, baseRows = rows) {
+        const selectedKeys = new Set(rows.map(appearanceKey).filter(Boolean)), groups = new Map();
+        for (const pitch of baseRows) {
+          const key = appearanceKey(pitch); if (!key || !selectedKeys.has(key)) continue;
+          if (!groups.has(key)) groups.set(key, []);
+          groups.get(key).push(pitch);
+        }
+        return [...groups.entries()].map(([key, pitches]) => {
+          const terminal = pitches.slice().reverse().find(p => p.plateResult);
+          return { key, side: pitches.find(p => ['R', 'L'].includes(p.batterSide))?.batterSide || '', result: terminal?.plateResult || 'In progress', pitches };
+        });
+      }
+      function renderCountPerformance(rows) {
+        const situations = [
+          ['First pitch (0–0)', count => count.balls === 0 && count.strikes === 0],
+          ['Pitcher ahead', count => count.strikes > count.balls],
+          ['Even count', count => count.balls === count.strikes && count.balls > 0],
+          ['Pitcher behind', count => count.balls > count.strikes],
+          ['Two strikes', count => count.strikes === 2],
+          ['Three balls', count => count.balls === 3]
+        ];
+        const body = $('countPerformanceBody'); body.replaceChildren();
+        for (const [label, matches] of situations) {
+          const group = rows.filter(pitch => { const count = parsedCount(pitch); return count && matches(count); });
+          const attempts = group.filter(isAccuracyAttempt), hits = attempts.filter(hitCalledTarget).length, strikes = group.filter(isStrike).length;
+          const tr = document.createElement('tr');
+          tr.append(tableCell(label), tableCell(group.length), tableCell(percent(hits, attempts.length), `${hits}/${attempts.length}${attempts.length && attempts.length < 10 ? ' · small sample' : ''}`), tableCell(percent(strikes, group.length), `${strikes}/${group.length}`));
+          body.append(tr);
+        }
+      }
+      function renderBatterSideSplits(rows, baseRows) {
+        const body = $('batterSideBody'); body.replaceChildren();
+        const outcomes = plateOutcomesFor(rows, baseRows);
+        for (const [side, label] of [['R', 'Right-handed'], ['L', 'Left-handed']]) {
+          const group = rows.filter(p => p.batterSide === side), attempts = group.filter(isAccuracyAttempt), hits = attempts.filter(hitCalledTarget).length;
+          const sideOutcomes = outcomes.filter(outcome => outcome.side === side), strikeouts = sideOutcomes.filter(outcome => outcome.result === 'Strikeout').length, walks = sideOutcomes.filter(outcome => outcome.result === 'Walk').length;
+          const tr = document.createElement('tr');
+          tr.append(tableCell(label), tableCell(group.length), tableCell(percent(hits, attempts.length), `${hits}/${attempts.length}${attempts.length && attempts.length < 10 ? ' · small sample' : ''}`), tableCell(percent(group.filter(isStrike).length, group.length)), tableCell(`${strikeouts} / ${walks}`)); body.append(tr);
+        }
+      }
+      function renderPlateAppearances(rows, baseRows) {
+        const appearances = plateOutcomesFor(rows, baseRows), outcomes = appearances.map(appearance => appearance.result);
+        const order = ['Strikeout', 'Walk', 'Hit', 'Out', 'Error', 'Hit by pitch', 'Other', 'In progress'];
+        const counts = [...new Set([...order, ...outcomes])].map(name => [name, outcomes.filter(outcome => outcome === name).length]).filter(([, count]) => count);
+        $('plateAppearanceCount').textContent = `${appearances.length} ${appearances.length === 1 ? 'batter' : 'batters'}`;
+        $('plateAppearanceChart').replaceChildren(...counts.map(([name, count]) => chartRow(name, `${count} · ${percent(count, appearances.length)}`, appearances.length ? count / appearances.length : 0, ['Walk', 'Hit by pitch'].includes(name))));
+      }
+      function renderCallEffectiveness(rows) {
+        const groups = new Map();
+        for (const pitch of rows) {
+          const key = `${pitch.pitch || 'Unknown'}|||${pitch.zone || 'No target'}`;
+          if (!groups.has(key)) groups.set(key, []);
+          groups.get(key).push(pitch);
+        }
+        const body = $('callEffectivenessBody'); body.replaceChildren();
+        for (const [key, group] of [...groups.entries()].sort((a, b) => b[1].length - a[1].length || a[0].localeCompare(b[0]))) {
+          const [pitch, location] = key.split('|||'), attempts = group.filter(isAccuracyAttempt), hits = attempts.filter(hitCalledTarget).length, strikes = group.filter(isStrike).length;
+          const tr = document.createElement('tr');
+          tr.append(tableCell(`${pitch} · ${location === 'No target' ? 'No target' : zoneLabel(location)}`), tableCell(group.length), tableCell(percent(hits, attempts.length), `${hits}/${attempts.length}${attempts.length && attempts.length < 10 ? ' · small sample' : ''}`), tableCell(percent(strikes, group.length), `${strikes}/${group.length}`)); body.append(tr);
+        }
+      }
+      function renderGameComparison(rows, chronologicalGames, baseRows) {
+        const body = $('gameComparisonBody'); body.replaceChildren();
+        for (const game of chronologicalGames) {
+          const group = rows.filter(p => (p.gameId || 'current-game') === game.id), attempts = group.filter(isAccuracyAttempt), hits = attempts.filter(hitCalledTarget).length;
+          const outcomes = plateOutcomesFor(group, baseRows.filter(p => (p.gameId || 'current-game') === game.id)), strikeouts = outcomes.filter(outcome => outcome.result === 'Strikeout').length, walks = outcomes.filter(outcome => outcome.result === 'Walk').length;
+          const date = /^\d{4}-\d{2}-\d{2}$/.test(game.date) ? new Date(`${game.date}T12:00:00`).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) : 'Game';
+          const tr = document.createElement('tr');
+          tr.append(tableCell(`${date}${game.opponent ? ` vs ${game.opponent}` : ''}`), tableCell(group.length), tableCell(percent(hits, attempts.length), `${hits}/${attempts.length}`), tableCell(percent(group.filter(isStrike).length, group.length)), tableCell(`${strikeouts} / ${walks}`)); body.append(tr);
+        }
+      }
+      function renderCardUsage(rows) {
+        const cardRows = rows.filter(p => p.cardCall || p.cardName), groups = new Map();
+        for (const pitch of cardRows) {
+          const name = pitch.cardName || 'Starter card';
+          if (!groups.has(name)) groups.set(name, []);
+          groups.get(name).push(pitch);
+        }
+        const body = $('cardUsageBody'); body.replaceChildren();
+        if (!groups.size) {
+          const tr = document.createElement('tr'), td = document.createElement('td'); td.colSpan = 4; td.textContent = 'No pitches from a pitch card in this selection.'; tr.append(td); body.append(tr);
+          $('cardUsageHint').textContent = 'Card usage begins appearing after pitches are logged in Card mode.'; return;
+        }
+        for (const [name, group] of [...groups.entries()].sort((a, b) => b[1].length - a[1].length || a[0].localeCompare(b[0]))) {
+          const attempts = group.filter(isAccuracyAttempt), hits = attempts.filter(hitCalledTarget).length, strikes = group.filter(isStrike).length;
+          const tr = document.createElement('tr'); tr.append(tableCell(name), tableCell(group.length), tableCell(percent(hits, attempts.length), `${hits}/${attempts.length}`), tableCell(percent(strikes, group.length), `${strikes}/${group.length}`)); body.append(tr);
+        }
+        $('cardUsageHint').textContent = `${cardRows.length} of ${rows.length} selected pitches were called from a pitch card.`;
+      }
+      function renderCoachingInsights(rows, baseRows, chronologicalGames) {
+        const insights = [], attempts = rows.filter(isAccuracyAttempt), hits = attempts.filter(hitCalledTarget).length;
+        if (attempts.length) insights.push(`Spot efficiency was ${percent(hits, attempts.length)} (${hits}/${attempts.length}) across charted target attempts${attempts.length < 10 ? '; treat this as a small sample' : ''}.`);
+        const pitchGroups = [...new Set(rows.map(p => p.pitch).filter(Boolean))].map(name => {
+          const group = rows.filter(p => p.pitch === name && isAccuracyAttempt(p));
+          return { name, attempts: group.length, hits: group.filter(hitCalledTarget).length, rate: group.length ? group.filter(hitCalledTarget).length / group.length : 0 };
+        }).filter(group => group.attempts >= 5).sort((a, b) => b.rate - a.rate || b.attempts - a.attempts);
+        if (pitchGroups.length) insights.push(`${pitchGroups[0].name} had the best charted command at ${percent(pitchGroups[0].hits, pitchGroups[0].attempts)} (${pitchGroups[0].hits}/${pitchGroups[0].attempts}).`);
+        const commonMiss = mostCommonLocation(rows.filter(missedTarget));
+        const locatedMisses = rows.filter(p => missedTarget(p) && zoneNames.includes(p.missLocation)).length;
+        if (commonMiss && locatedMisses >= 5) insights.push(`${zoneLabel(commonMiss.location)} was the most common miss location: ${commonMiss.count} of ${locatedMisses} located misses (${percent(commonMiss.count, locatedMisses)}).`);
+        const firstPitches = rows.filter(p => p.countBefore === '0-0');
+        if (firstPitches.length >= 5) { const firstStrikes = firstPitches.filter(isStrike).length; insights.push(`First-pitch strike rate was ${percent(firstStrikes, firstPitches.length)} (${firstStrikes}/${firstPitches.length}).`); }
+        const workload = buildWorkloadStats(rows, baseRows), early = workload[0], late = { attempts: workload[2].attempts + workload[3].attempts, hits: workload[2].hits + workload[3].hits };
+        if (early.attempts >= 5 && late.attempts >= 5) {
+          const earlyRate = early.hits / early.attempts, lateRate = late.hits / late.attempts, difference = Math.round((lateRate - earlyRate) * 100);
+          insights.push(`After pitch 40, spot efficiency was ${Math.abs(difference)} percentage points ${difference >= 0 ? 'higher' : 'lower'} than during pitches 1–20 (${percent(late.hits, late.attempts)} vs ${percent(early.hits, early.attempts)}).`);
+        }
+        const sideRates = ['R', 'L'].map(side => { const group = attempts.filter(p => p.batterSide === side); return { side, attempts: group.length, hits: group.filter(hitCalledTarget).length }; }).filter(group => group.attempts >= 5);
+        if (sideRates.length === 2) {
+          const right = sideRates.find(group => group.side === 'R'), left = sideRates.find(group => group.side === 'L'), difference = Math.round((right.hits / right.attempts - left.hits / left.attempts) * 100);
+          insights.push(Math.abs(difference) < 5 ? `Spot efficiency was similar against right- and left-handed batters (${percent(right.hits, right.attempts)} vs ${percent(left.hits, left.attempts)}).` : `Spot efficiency was ${Math.abs(difference)} points higher against ${difference > 0 ? 'right' : 'left'}-handed batters (${percent(difference > 0 ? right.hits : left.hits, difference > 0 ? right.attempts : left.attempts)} vs ${percent(difference > 0 ? left.hits : right.hits, difference > 0 ? left.attempts : right.attempts)}).`);
+        }
+        const gameIds = chronologicalGames.map(game => game.id).filter(id => rows.some(p => (p.gameId || 'current-game') === id));
+        if (gameIds.length >= 4) {
+          const midpoint = Math.floor(gameIds.length / 2), earlyIds = new Set(gameIds.slice(0, midpoint)), recentIds = new Set(gameIds.slice(midpoint));
+          const earlyAttempts = attempts.filter(p => earlyIds.has(p.gameId || 'current-game')), recentAttempts = attempts.filter(p => recentIds.has(p.gameId || 'current-game'));
+          if (earlyAttempts.length >= 5 && recentAttempts.length >= 5) {
+            const earlyHits = earlyAttempts.filter(hitCalledTarget).length, recentHits = recentAttempts.filter(hitCalledTarget).length, difference = Math.round((recentHits / recentAttempts.length - earlyHits / earlyAttempts.length) * 100);
+            if (Math.abs(difference) >= 5) insights.push(`Spot efficiency ${difference > 0 ? 'improved' : 'declined'} by ${Math.abs(difference)} points in the more recent half of the selected games (${percent(recentHits, recentAttempts.length)} vs ${percent(earlyHits, earlyAttempts.length)}).`);
+          }
+        }
+        if (!insights.length) insights.push('More charted pitches are needed before reliable command patterns can be identified.');
+        $('coachingInsights').replaceChildren(...insights.slice(0, 6).map(text => { const item = document.createElement('li'); item.textContent = text; return item; }));
+      }
       function renderReport() {
         const all = report.source === 'current' ? currentGameRows() : report.rows;
         const master = report.source === 'imported';
@@ -1255,21 +1556,34 @@
           const option = document.createElement('option'); option.value = name; option.textContent = name ? `${number ? `#${number} ` : ''}${name}` : 'All pitchers'; picker.append(option);
         }
         picker.value = report.pitcher;
+        const pitcherRows = report.pitcher ? scoped.filter(p => p.pitcher === report.pitcher) : scoped;
+        const availablePitches = [...new Set(pitcherRows.map(p => p.pitch).filter(Boolean))].sort();
+        if (report.pitch && !availablePitches.includes(report.pitch)) report.pitch = '';
+        const pitchPicker = $('reportPitchType'); pitchPicker.replaceChildren();
+        for (const name of ['', ...availablePitches]) {
+          const option = document.createElement('option'); option.value = name; option.textContent = name || 'All pitch types'; pitchPicker.append(option);
+        }
+        pitchPicker.value = report.pitch;
         for (const [id, active] of [['currentSource', report.source === 'current'], ['importedSource', report.source === 'imported']]) {
           $(id).classList.toggle('selected', active); $(id).setAttribute('aria-pressed', String(active));
         }
         $('importName').textContent = report.fileName || 'No team history loaded';
-        const rows = report.pitcher ? scoped.filter(p => p.pitcher === report.pitcher) : scoped;
+        const rows = report.pitch ? pitcherRows.filter(p => p.pitch === report.pitch) : pitcherRows;
+        const chronologicalGames = master ? sortedGames.filter(game => selected.has(game.id)).reverse() : [...new Map(rows.map(p => [p.gameId || 'current-game', { id: p.gameId || 'current-game', date: p.gameDate || state.gameDate || '', opponent: p.opponent || state.opponent || '', lastTime: p.time || '' }])).values()];
         $('reportEmpty').hidden = rows.length > 0; $('reportContent').hidden = !rows.length;
+        $('printCommandReport').disabled = !rows.length;
         if (!rows.length) return;
         const strikes = rows.filter(isStrike).length;
-        const batters = new Set(rows.filter(p => p.batter).map(p => `${p.gameId}:${p.batter}`));
+        const plateAppearances = plateOutcomesFor(rows, pitcherRows), batters = new Set(plateAppearances.map(appearance => appearance.key));
         const first = rows.filter(p => p.countBefore === '0-0');
+        const chartedKpi = rows.filter(isAccuracyAttempt), spotHitsKpi = chartedKpi.filter(hitCalledTarget).length;
         const kpis = [
           ['Pitches', rows.length], ['Batters faced', batters.size], ['Strike %', percent(strikes, rows.length)],
-          ['Strikeouts', rows.filter(p => p.plateResult === 'Strikeout').length],
-          ['Walks', rows.filter(p => p.plateResult === 'Walk').length],
-          ['First pitch strikes', first.length ? `${first.filter(isStrike).length}/${first.length}` : '—']
+          ['Spot hit %', percent(spotHitsKpi, chartedKpi.length)],
+          ['Strikeouts', plateAppearances.filter(appearance => appearance.result === 'Strikeout').length],
+          ['Walks', plateAppearances.filter(appearance => appearance.result === 'Walk').length],
+          ['First pitch strikes', first.length ? `${first.filter(isStrike).length}/${first.length}` : '—'],
+          ['Pitches / batter', batters.size ? (rows.length / batters.size).toFixed(1) : '—']
         ];
         $('reportKpis').replaceChildren(...kpis.map(([label, value]) => {
           const card = document.createElement('div'); card.className = 'report-kpi';
@@ -1279,6 +1593,7 @@
         }));
         const pitchCounts = [...new Set([...pitchNames, ...rows.map(p => p.pitch)])].map(name => [name, rows.filter(p => p.pitch === name)]).filter(([, group]) => group.length);
         $('pitchMix').replaceChildren(...pitchCounts.map(([name, group]) => chartRow(name, `${group.length} (${percent(group.length, rows.length)}) · ${percent(group.filter(isStrike).length, group.length)} strikes`, group.length / rows.length)));
+        renderPitchCommand(rows);
         const resultCounts = ['Strike', 'Ball', 'Foul', 'In play', 'HBP'].map(name => [name, rows.filter(p => p.result === name).length]);
         $('resultChart').replaceChildren(...resultCounts.filter(([, count]) => count).map(([name, count]) => chartRow(name, `${count} · ${percent(count, rows.length)}`, count / rows.length, name === 'Ball')));
         const maxZone = Math.max(1, ...zoneNames.map(name => rows.filter(p => p.zone === name).length));
@@ -1292,23 +1607,37 @@
           const rate = document.createElement('small'); rate.textContent = matches.length ? `${percent(matches.filter(isStrike).length, matches.length)} strikes` : 'No calls';
           tile.append(label, count, rate); return tile;
         }));
-        const charted = rows.filter(p => p.zone && (p.result === 'Strike' && p.strikeSpot || p.result === 'Ball' && p.ballType));
-        const onTarget = charted.filter(p => p.strikeSpot === 'Hit spot' || p.ballType === 'Right spot · called ball').length;
+        const charted = rows.filter(isAccuracyAttempt);
+        const onTarget = charted.filter(hitCalledTarget).length;
         $('accuracyChart').replaceChildren(chartRow('Hit called target', `${onTarget}/${charted.length} · ${percent(onTarget, charted.length)}`, charted.length ? onTarget / charted.length : 0), chartRow('Missed called target', `${charted.length - onTarget}/${charted.length}`, charted.length ? (charted.length - onTarget) / charted.length : 0, true));
+        renderWorkload(rows, pitcherRows);
+        renderCountPerformance(rows);
+        renderBatterSideSplits(rows, pitcherRows);
+        renderPlateAppearances(rows, pitcherRows);
+        renderCallEffectiveness(rows);
+        renderGameComparison(rows, chronologicalGames, pitcherRows);
+        renderCardUsage(rows);
+        renderEfficiencyTrend(rows, chronologicalGames);
+        renderCoachingInsights(rows, pitcherRows, chronologicalGames);
         const misses = rows.filter(missedTarget);
         const located = misses.filter(p => zoneNames.includes(p.missLocation));
         $('missReportCount').textContent = `${located.length} of ${misses.length} misses located`;
         const maxMiss = Math.max(1, ...zoneNames.map(location => located.filter(p => p.missLocation === location).length));
         $('missReport').replaceChildren(...zoneNames.map(location => {
-          const tile = document.createElement('div'); tile.className = 'zone-report-cell';
+          const tile = document.createElement('div'); tile.className = 'miss-bubble-cell';
           const count = located.filter(p => p.missLocation === location).length;
           const strength = count / maxMiss;
-          tile.style.background = count ? `rgba(231, 130, 38, ${(.12 + strength * .69).toFixed(2)})` : '#f1f5fa';
-          tile.style.color = strength > .62 ? '#fff' : '#234365';
-          const label = document.createElement('span'); label.textContent = zoneLabel(location);
-          const total = document.createElement('strong'); total.textContent = count;
-          const rate = document.createElement('small'); rate.textContent = count ? percent(count, located.length) : 'No misses';
-          tile.append(label, total, rate); return tile;
+          const share = percent(count, located.length);
+          tile.setAttribute('aria-label', `${zoneLabel(location)}: ${count} ${count === 1 ? 'miss' : 'misses'}${count ? `, ${share}` : ''}`);
+          const label = document.createElement('span'); label.className = 'miss-bubble-label'; label.textContent = zoneLabel(location); tile.append(label);
+          if (count) {
+            const bubble = document.createElement('div'); bubble.className = 'miss-bubble'; bubble.setAttribute('aria-hidden', 'true');
+            bubble.style.setProperty('--bubble-size', `${Math.max(24, Math.round(76 * Math.sqrt(strength)))}px`);
+            bubble.style.setProperty('--bubble-opacity', (.55 + strength * .35).toFixed(2));
+            const total = document.createElement('strong'); total.textContent = count; bubble.append(total); tile.append(bubble);
+            const rate = document.createElement('span'); rate.className = 'miss-bubble-rate'; rate.textContent = share; tile.append(rate);
+          } else tile.classList.add('no-misses');
+          return tile;
         }));
         const groups = new Map();
         for (const p of rows) {
@@ -1326,6 +1655,26 @@
           const outcome = document.createElement('strong'); outcome.textContent = pitches.at(-1).plateResult || 'In progress';
           li.append(left, outcome); return li;
         }));
+      }
+      function printCommandReport() {
+        if ($('reportContent').hidden) return;
+        const sheet = $('printSheet'); sheet.className = 'print-sheet report-print-sheet'; sheet.replaceChildren(); sheet.style.removeProperty('--print-rows');
+        const header = document.createElement('header'); header.className = 'report-print-header';
+        const title = document.createElement('h1'); title.textContent = `${currentTeam?.name || state.team || 'Team'} · Pitcher Command Report`;
+        const details = document.createElement('p');
+        const pitcher = report.pitcher ? pitcherLabel(report.pitcher) : 'All pitchers', pitch = report.pitch || 'All pitch types';
+        const range = report.source === 'current' ? `${state.gameDate || 'Current game'}${state.opponent ? ` vs ${state.opponent}` : ''}` : $('gameRange').textContent || 'Selected team history';
+        details.textContent = `${pitcher} · ${pitch} · ${range} · Printed ${new Date().toLocaleDateString()}`; header.append(title, details); sheet.append(header);
+        const appendClone = (source, heading = '') => {
+          const wrapper = document.createElement('section'); wrapper.className = 'report-print-section';
+          if (heading) { const h2 = document.createElement('h2'); h2.textContent = heading; wrapper.append(h2); }
+          const clone = source.cloneNode(true); clone.removeAttribute('id'); clone.querySelectorAll('[id]').forEach(node => node.removeAttribute('id')); wrapper.append(clone); sheet.append(wrapper);
+        };
+        appendClone($('reportKpis'), 'Summary');
+        for (const id of ['insightsSection', 'pitchCommandSection', 'targetAccuracySection', 'workloadSection', 'countSection', 'batterSideSection', 'plateAppearanceSection', 'callEffectivenessSection', 'gameComparisonSection', 'cardUsageSection', 'efficiencySection', 'missSection']) appendClone($(id));
+        document.body.classList.add('print-report');
+        window.print();
+        document.body.classList.remove('print-report'); sheet.className = 'print-sheet'; sheet.replaceChildren();
       }
       function render() {
         $('opponentInput').value = state.opponent;
@@ -1727,7 +2076,7 @@
         $('githubStatus').textContent = 'Saving game to GitHub…'; $('githubStatus').dataset.working = 'true'; $('githubSave').disabled = $('githubCancel').disabled = true;
         try {
           const merged = await saveGameToGithub(getAuth().token, repo, path, branch);
-          report.rows = merged; report.fileName = path.split('/').at(-1); report.source = 'imported'; report.pitcher = ''; report.team = ''; report.game = '';
+          report.rows = merged; report.fileName = path.split('/').at(-1); report.source = 'imported'; report.pitcher = ''; report.pitch = ''; report.team = ''; report.game = '';
           saveReport(); closeGithubModal(); showTab('reports'); notify(`Saved game to GitHub · ${merged.length} master pitches`);
         } catch (error) { $('githubStatus').textContent = error.message || 'Could not save. Your local pitches are safe.'; }
         finally { $('githubStatus').dataset.working = 'false'; $('githubSave').disabled = $('githubCancel').disabled = false; }
@@ -1736,19 +2085,21 @@
       $('reportsTab').addEventListener('click', () => showTab('reports'));
       $('cardsTab').addEventListener('click', () => showTab('cards'));
       $('settingsTab').addEventListener('click', () => showTab('settings'));
-      $('currentSource').addEventListener('click', () => { report.source = 'current'; report.pitcher = ''; renderReport(); });
-      $('importedSource').addEventListener('click', () => { report.source = 'imported'; report.pitcher = ''; renderReport(); if (!report.historyTried) loadTeamHistory(true); });
+      $('printCommandReport').addEventListener('click', printCommandReport);
+      $('currentSource').addEventListener('click', () => { report.source = 'current'; report.pitcher = ''; report.pitch = ''; renderReport(); });
+      $('importedSource').addEventListener('click', () => { report.source = 'imported'; report.pitcher = ''; report.pitch = ''; renderReport(); if (!report.historyTried) loadTeamHistory(true); });
       $('loadTeamHistory').addEventListener('click', () => loadTeamHistory(true));
-      $('reportTeam').addEventListener('change', event => { report.team = event.target.value; report.game = ''; report.pitcher = ''; renderReport(); });
-      $('reportGame').addEventListener('change', event => { report.game = event.target.value; report.pitcher = ''; renderReport(); });
-      $('gamesFilter').addEventListener('change', event => { report.games = event.target.value; report.game = ''; report.pitcher = ''; renderReport(); });
+      $('reportTeam').addEventListener('change', event => { report.team = event.target.value; report.game = ''; report.pitcher = ''; report.pitch = ''; renderReport(); });
+      $('reportGame').addEventListener('change', event => { report.game = event.target.value; report.pitcher = ''; report.pitch = ''; renderReport(); });
+      $('gamesFilter').addEventListener('change', event => { report.games = event.target.value; report.game = ''; report.pitcher = ''; report.pitch = ''; renderReport(); });
       $('customGames').addEventListener('input', event => { report.customGames = Math.max(1, Math.min(9999, Number(event.target.value) || 1)); renderReport(); });
       $('reportPitcher').addEventListener('change', event => { report.pitcher = event.target.value; renderReport(); });
+      $('reportPitchType').addEventListener('change', event => { report.pitch = event.target.value; renderReport(); });
       $('importFile').addEventListener('change', async event => {
         const file = event.target.files?.[0]; if (!file) return;
         try {
           const parsed = parseCSV(await file.text());
-          report.rows = parsed; report.fileName = file.name; report.source = 'imported'; report.pitcher = ''; report.team = ''; report.game = '';
+          report.rows = parsed; report.fileName = file.name; report.source = 'imported'; report.pitcher = ''; report.pitch = ''; report.team = ''; report.game = '';
           saveReport(); renderReport(); notify(`${parsed.length} pitches imported`);
         } catch (error) { notify(error.message || 'Could not read that CSV.'); }
         event.target.value = '';
