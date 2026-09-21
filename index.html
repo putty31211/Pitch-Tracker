@@ -350,17 +350,17 @@
           <div class="history-actions"><button type="button" class="link-button" id="exportButton" disabled>Export CSV</button><button type="button" class="link-button" id="newGameButton" disabled>New game</button></div>
         </details>
       </section>
-      <button type="button" class="end-game" id="endGameButton" disabled>End game · Save to GitHub</button>
-      <p class="hint" style="text-align:center;margin:9px 0">Updates master-pitch-log.csv. Your local game stays available for corrections.</p>
+      <button type="button" class="end-game" id="endGameButton" disabled>End game · Save to team history</button>
+      <p class="hint" style="text-align:center;margin:9px 0">Saves this game to your team's secure database. Save again after corrections to update it.</p>
     </main>
     <main id="reportsView" hidden>
-      <div class="page-heading"><h2>Reports</h2><p>Review the current game or filter your master pitch history.</p></div>
+      <div class="page-heading"><h2>Reports</h2><p>Review the current game or filter your team's saved pitch history.</p></div>
       <section class="card">
         <div class="section-title"><h2>Report data</h2></div>
-        <div class="source-row"><button type="button" class="choice selected" id="currentSource" aria-pressed="true">Current game</button><button type="button" class="choice" id="importedSource" aria-pressed="false">Master CSV</button></div>
-        <div class="import-row"><label class="import-label">Import master CSV<input class="file-input" id="importFile" type="file" accept=".csv,text/csv"></label><span class="import-name" id="importName">No master loaded</span></div>
-        <button type="button" class="link-button" id="loadGithubMaster">↻ Load / refresh master from GitHub</button>
-        <p class="hint">Importing or loading a master will not change the game you are logging.</p>
+        <div class="source-row"><button type="button" class="choice selected" id="currentSource" aria-pressed="true">Current game</button><button type="button" class="choice" id="importedSource" aria-pressed="false">Team history</button></div>
+        <div class="import-row"><label class="import-label">Import legacy CSV<input class="file-input" id="importFile" type="file" accept=".csv,text/csv"></label><span class="import-name" id="importName">No team history loaded</span></div>
+        <button type="button" class="link-button" id="loadTeamHistory">↻ Refresh team history</button>
+        <p class="hint">Team history loads from the secure database. CSV import remains available for older games.</p>
       </section>
       <section class="card" id="masterFilters" hidden>
         <label class="report-filter" for="reportTeam">Opponent <select id="reportTeam"><option value="">All opponents</option></select></label>
@@ -369,7 +369,7 @@
         <p class="hint" id="gameRange" style="margin-top:12px"></p>
       </section>
       <section class="card"><label class="report-filter" for="reportPitcher">Pitcher <select id="reportPitcher"><option value="">All pitchers</option></select></label></section>
-      <div id="reportEmpty" class="card report-empty" hidden><strong>No pitches to report yet</strong>Log a pitch in the current game or load the master CSV.</div>
+      <div id="reportEmpty" class="card report-empty" hidden><strong>No pitches to report yet</strong>Log a pitch in the current game or load your team history.</div>
       <div id="reportContent" hidden>
         <div class="report-kpis" id="reportKpis" aria-label="Game statistics"></div>
         <section class="card"><div class="section-title"><h2>Pitch mix</h2><span>Share · strike %</span></div><div id="pitchMix"></div></section>
@@ -431,7 +431,7 @@
       const pitchNames = ['Fastball', '2 Seam', 'Change-up', 'Curve', 'Drop', 'Rise', 'Screwball'];
       const zoneNames = ['Up / Out', 'Up', 'Up / In', 'Out', 'Middle', 'In', 'Down / Out', 'Down', 'Down / In'];
       const state = { team: '', opponent: '', gameDate: '', gameId: '', pitcher: null, batter: 1, batterSide: 'R', pitch: null, zone: null, result: null, strikeType: null, strikeSpot: null, ballType: null, playType: null, missLocation: null, cardCall: null, cardRow: null, cardColumn: null, history: [] };
-      const report = { tab: 'tracker', source: 'current', pitcher: '', team: '', games: '10', customGames: 10, rows: [], fileName: '', githubTried: false };
+      const report = { tab: 'tracker', source: 'current', pitcher: '', team: '', games: '10', customGames: 10, rows: [], fileName: '', historyTried: false };
       const REPORT_KEY = 'lightning-pitch-reports-v1';
       const MODE_KEY = 'lightning-pitch-mode-v1';
       const TEAM_CARDS_KEY = 'lightning-pitch-team-cards-v1';
@@ -461,7 +461,14 @@
       let authMode = 'signin';
       const $ = id => document.getElementById(id);
       const localDate = date => `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
-      const createGameId = () => `game-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+      const createGameId = () => {
+        if (crypto.randomUUID) return crypto.randomUUID();
+        const bytes = crypto.getRandomValues(new Uint8Array(16));
+        bytes[6] = bytes[6] & 15 | 64; bytes[8] = bytes[8] & 63 | 128;
+        const hex = [...bytes].map(value => value.toString(16).padStart(2, '0')).join('');
+        return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
+      };
+      const isUuid = value => /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value || '');
       const teamKey = () => state.team.trim().toLocaleLowerCase();
       const profile = () => teamProfiles[teamKey()] || null;
       const teamPitchNames = () => profile()?.pitches || pitchNames;
@@ -537,6 +544,7 @@
         const team = Array.isArray(membership.teams) ? membership.teams[0] : membership.teams;
         if (!team) throw Error('Your team membership could not be loaded.');
         currentTeam = { id: membership.team_id, name: team.name, role: membership.role };
+        report.historyTried = false;
         try {
           const previousTeamId = localStorage.getItem(ACTIVE_TEAM_KEY);
           if (previousTeamId && previousTeamId !== currentTeam.id) {
@@ -884,6 +892,32 @@
       function currentGameRows() {
         return state.history.map((p, index) => ({ ...p, number: index + 1, team: state.team.trim(), opponent: state.opponent.trim(), gameDate: state.gameDate, gameId: state.gameId }));
       }
+      async function saveGameToDatabase() {
+        if (!currentTeam || !currentUser) throw Error('Sign in to save this game.');
+        if (currentTeam.role === 'viewer') throw Error('This account has view-only access.');
+        if (!isUuid(state.gameId)) { state.gameId = createGameId(); save(); }
+        const teamId = currentTeam.id, gameId = state.gameId;
+        const { data: existing, error: lookupError } = await dbClient.from('games').select('id, status').eq('id', gameId).eq('team_id', teamId).maybeSingle();
+        if (lookupError) throw lookupError;
+        if (existing) {
+          const { error } = await dbClient.from('games').update({ opponent: state.opponent.trim(), played_on: state.gameDate }).eq('id', gameId).eq('team_id', teamId);
+          if (error) throw error;
+        } else {
+          const { error } = await dbClient.from('games').insert({ id: gameId, team_id: teamId, opponent: state.opponent.trim(), played_on: state.gameDate, status: 'draft', created_by: currentUser.id });
+          if (error) throw error;
+        }
+        const rows = state.history.map((pitch, index) => {
+          const pitcher = cloudPitchers.find(saved => saved.display_name === pitch.pitcher) || cloudPitchers.find(saved => saved.jersey_number === pitch.pitcherNumber);
+          if (!pitcher) throw Error(`Could not match ${pitch.pitcher} to a saved team pitcher.`);
+          return { team_id: teamId, game_id: gameId, pitcher_id: pitcher.id, pitcher_name: pitch.pitcher, pitcher_number: pitch.pitcherNumber || pitcher.jersey_number, pitch_number: index + 1, pitched_at: pitch.time || new Date().toISOString(), batter_number: pitch.batter ?? null, batter_side: pitch.batterSide ?? null, called_pitch: pitch.pitch, called_location: pitch.zone ?? null, result: pitch.result, strike_type: pitch.strikeType ?? null, strike_spot: pitch.strikeSpot ?? null, ball_detail: pitch.ballType ?? null, in_play_outcome: pitch.playType ?? null, count_before: pitch.countBefore ?? null, count_after: pitch.countAfter ?? null, batter_outcome: pitch.plateResult ?? null, miss_location: pitch.missLocation ?? null, card_call: pitch.cardCall ?? null, card_row: pitch.cardRow ?? null, card_column: pitch.cardColumn ?? null, card_name: pitch.cardName ?? null };
+        });
+        const { error: pitchError } = await dbClient.from('pitches').upsert(rows, { onConflict: 'game_id,pitch_number' });
+        if (pitchError) throw pitchError;
+        const { error: trimError } = await dbClient.from('pitches').delete().eq('game_id', gameId).eq('team_id', teamId).gt('pitch_number', rows.length);
+        if (trimError) throw trimError;
+        const { error: completeError } = await dbClient.from('games').update({ status: 'completed', completed_at: new Date().toISOString() }).eq('id', gameId).eq('team_id', teamId);
+        if (completeError) throw completeError;
+      }
       function serializeCSV(rows) {
         const quote = value => `"${String(value ?? '').replaceAll('"', '""')}"`;
         const data = rows.map(p => [p.number, p.team, p.opponent, p.gameDate, p.gameId, p.time, p.pitcher, p.pitcherNumber, p.batter, p.batterSide, p.pitch, p.zone, p.result, p.strikeType, p.strikeSpot, p.ballType, p.playType, p.countBefore, p.countAfter, p.plateResult, p.missDirection, p.cardCall, p.cardRow, p.cardColumn, p.cardName, p.missLocation ? zoneLabel(p.missLocation) : null].map(quote).join(','));
@@ -1034,6 +1068,39 @@
           if (typeof saved.fileName === 'string') report.fileName = saved.fileName;
         } catch (_) { /* Keep reporting available if saved data is invalid. */ }
       }
+      async function loadTeamHistory(manual = false) {
+        report.historyTried = true;
+        if (!currentTeam || !dbClient) { if (manual) notify('Sign in to load team history.'); return; }
+        const button = $('loadTeamHistory'), originalLabel = button.textContent;
+        button.disabled = true; button.textContent = 'Loading team history…';
+        try {
+          const savedGames = [];
+          for (let offset = 0; ; offset += 1000) {
+            const { data, error } = await dbClient.from('games').select('id, opponent, played_on').eq('team_id', currentTeam.id).eq('status', 'completed').order('played_on', { ascending: false }).order('id').range(offset, offset + 999);
+            if (error) throw error;
+            savedGames.push(...(data || []));
+            if (!data || data.length < 1000) break;
+          }
+          const gamesById = new Map(savedGames.map(game => [game.id, game]));
+          const savedPitches = [];
+          for (let offset = 0; ; offset += 1000) {
+            const { data, error } = await dbClient.from('pitches')
+              .select('id, game_id, pitch_number, pitched_at, pitcher_name, pitcher_number, batter_number, batter_side, called_pitch, called_location, result, strike_type, strike_spot, ball_detail, in_play_outcome, count_before, count_after, batter_outcome, miss_location, card_call, card_row, card_column, card_name')
+              .eq('team_id', currentTeam.id).order('pitched_at').order('id').range(offset, offset + 999);
+            if (error) throw error;
+            savedPitches.push(...(data || []));
+            if (!data || data.length < 1000) break;
+          }
+          report.rows = savedPitches.filter(pitch => gamesById.has(pitch.game_id)).map(pitch => {
+            const game = gamesById.get(pitch.game_id);
+            return { number: pitch.pitch_number, team: currentTeam.name, opponent: game?.opponent || '', gameDate: game?.played_on || '', gameId: pitch.game_id, time: pitch.pitched_at || '', pitcher: pitch.pitcher_name, pitcherNumber: pitch.pitcher_number, batter: pitch.batter_number, batterSide: pitch.batter_side, pitch: pitch.called_pitch, zone: normalizeZone(pitch.called_location), result: pitch.result, strikeType: pitch.strike_type, strikeSpot: pitch.strike_spot, ballType: pitch.ball_detail, playType: pitch.in_play_outcome, countBefore: pitch.count_before, countAfter: pitch.count_after, plateResult: pitch.batter_outcome, missDirection: null, missLocation: normalizeZone(pitch.miss_location), cardCall: pitch.card_call ? normalizeCardCall(pitch.card_call) : null, cardRow: pitch.card_row, cardColumn: pitch.card_column, cardName: pitch.card_name };
+          });
+          report.fileName = 'Team database'; report.source = 'imported'; report.pitcher = ''; report.team = '';
+          renderReport();
+          if (manual) notify(`Loaded ${report.rows.length} saved team pitches`);
+        } catch (error) { if (manual) notify(error.message || 'Could not load team history.'); else throw error; }
+        finally { button.disabled = false; button.textContent = originalLabel; }
+      }
       async function loadGithubMaster(manual = false) {
         report.githubTried = true;
         if (!/^https?:$/.test(window.location.protocol)) { if (manual) notify('Open the GitHub Pages site to load its master, or import a CSV.'); return; }
@@ -1111,7 +1178,7 @@
         for (const [id, active] of [['currentSource', report.source === 'current'], ['importedSource', report.source === 'imported']]) {
           $(id).classList.toggle('selected', active); $(id).setAttribute('aria-pressed', String(active));
         }
-        $('importName').textContent = report.fileName || 'No master loaded';
+        $('importName').textContent = report.fileName || 'No team history loaded';
         const rows = report.pitcher ? scoped.filter(p => p.pitcher === report.pitcher) : scoped;
         $('reportEmpty').hidden = rows.length > 0; $('reportContent').hidden = !rows.length;
         if (!rows.length) return;
@@ -1238,7 +1305,8 @@
         $('undoButton').disabled = !state.history.length;
         $('gameCount').textContent = `${state.history.length} game ${state.history.length === 1 ? 'pitch' : 'pitches'}`;
         $('historySummary').textContent = `Pitch history (${state.history.length})`;
-        $('exportButton').disabled = $('newGameButton').disabled = $('endGameButton').disabled = !state.history.length;
+        $('exportButton').disabled = $('newGameButton').disabled = !state.history.length;
+        $('endGameButton').disabled = !state.history.length || currentTeam?.role === 'viewer';
         renderHistory();
       }
       $('showSignIn').addEventListener('click', () => setAuthMode('signin'));
@@ -1511,7 +1579,22 @@
         if (!state.gameDate) { notify('Choose a game date before exporting.'); $('gameDateInput').focus(); return; }
         downloadCSV(currentGameRows(), `pitch-log-${state.gameDate}-${state.opponent.trim().replace(/[^0-9A-Za-z]+/g, '-').replace(/^-|-$/g, '') || 'game'}.csv`);
       });
-      $('endGameButton').addEventListener('click', openGithubModal);
+      $('endGameButton').addEventListener('click', async () => {
+        if (!state.history.length) return;
+        if (!state.team.trim()) { notify('Set your team name before ending the game.'); openTeamSettings(); return; }
+        if (!state.opponent.trim()) { notify('Enter the opponent before ending the game.'); $('opponentInput').focus(); return; }
+        if (!state.gameDate) { notify('Choose the game date before ending the game.'); $('gameDateInput').focus(); return; }
+        const button = $('endGameButton'), originalLabel = button.textContent;
+        let gameSaved = false;
+        button.disabled = true; button.textContent = 'Saving game…';
+        try {
+          await saveGameToDatabase();
+          gameSaved = true;
+          await loadTeamHistory(false);
+          showTab('reports'); notify(`Saved ${state.history.length} pitches to team history`);
+        } catch (error) { notify(gameSaved ? 'Game saved, but reports could not refresh.' : error.message || 'Could not save. Your local pitches are safe.'); }
+        finally { button.textContent = originalLabel; render(); }
+      });
       $('githubCancel').addEventListener('click', closeGithubModal);
       $('githubForm').addEventListener('submit', async event => {
         event.preventDefault();
@@ -1537,8 +1620,8 @@
       $('cardsTab').addEventListener('click', () => showTab('cards'));
       $('settingsTab').addEventListener('click', () => showTab('settings'));
       $('currentSource').addEventListener('click', () => { report.source = 'current'; report.pitcher = ''; renderReport(); });
-      $('importedSource').addEventListener('click', () => { report.source = 'imported'; report.pitcher = ''; renderReport(); if (!report.rows.length && !report.githubTried) loadGithubMaster(); });
-      $('loadGithubMaster').addEventListener('click', () => loadGithubMaster(true));
+      $('importedSource').addEventListener('click', () => { report.source = 'imported'; report.pitcher = ''; renderReport(); if (!report.historyTried) loadTeamHistory(true); });
+      $('loadTeamHistory').addEventListener('click', () => loadTeamHistory(true));
       $('reportTeam').addEventListener('change', event => { report.team = event.target.value; report.pitcher = ''; renderReport(); });
       $('gamesFilter').addEventListener('change', event => { report.games = event.target.value; report.pitcher = ''; renderReport(); });
       $('customGames').addEventListener('input', event => { report.customGames = Math.max(1, Math.min(9999, Number(event.target.value) || 1)); renderReport(); });
@@ -1552,7 +1635,7 @@
         } catch (error) { notify(error.message || 'Could not read that CSV.'); }
         event.target.value = '';
       });
-      restore(); restoreTeamName(); restoreProfiles(); save(); restoreReport(); restoreGithubSettings(); render(); loadPitchCard(); completeGithubSignIn(); initializeAuth();
+      restore(); restoreTeamName(); restoreProfiles(); save(); restoreReport(); restoreGithubSettings(); render(); loadPitchCard(); initializeAuth();
     })();
   </script>
 </body>
