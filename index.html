@@ -12,6 +12,28 @@
     button { font: inherit; cursor: pointer; -webkit-tap-highlight-color: transparent; }
     button:focus-visible, summary:focus-visible { outline: 3px solid #f6ac50; outline-offset: 2px; }
     .app { max-width: 560px; margin: auto; min-height: 100dvh; background: #f7f9fc; padding-bottom: calc(22px + env(safe-area-inset-bottom)); box-shadow: 0 10px 40px #14274412; }
+    .auth-shell { min-height: 100dvh; display: grid; place-items: center; padding: 22px; background: radial-gradient(circle at top, #1a3c69 0, #0d1c35 48%, #081426 100%); }
+    .auth-card { width: min(100%, 430px); background: #fff; border-radius: 23px; padding: 25px; box-shadow: 0 24px 70px #02091470; }
+    .auth-brand { display: flex; align-items: center; gap: 10px; color: #526a88; font-size: 11px; font-weight: 900; text-transform: uppercase; letter-spacing: .13em; }
+    .auth-card h1 { margin: 17px 0 5px; color: #172844; font-size: 28px; }
+    .auth-card > p { margin: 0 0 18px; color: #6b809a; font-size: 13px; line-height: 1.45; }
+    .auth-form label, .setup-field { display: block; margin: 12px 0; color: #526a88; font-size: 12px; font-weight: 850; }
+    .auth-form input, .setup-field input { display: block; width: 100%; margin-top: 6px; border: 1px solid #ccd9e8; border-radius: 11px; background: #f8fafc; color: #172844; min-height: 47px; padding: 10px 12px; font: inherit; }
+    .auth-primary { width: 100%; min-height: 50px; margin-top: 7px; border: 0; border-radius: 12px; background: #1761bc; color: #fff; font-weight: 900; }
+    .auth-primary:disabled { opacity: .58; cursor: wait; }
+    .auth-links { display: flex; flex-wrap: wrap; justify-content: center; gap: 5px 13px; margin-top: 13px; }
+    .auth-links button { border: 0; background: transparent; color: #1761bc; padding: 5px 0; font-size: 12px; font-weight: 800; }
+    .auth-message { min-height: 20px; margin-top: 12px; color: #a02f38; font-size: 12px; line-height: 1.4; text-align: center; }
+    .auth-message.success { color: #18764a; }
+    .setup-pitchers { margin: 15px 0; }
+    .setup-pitcher-row { display: grid; grid-template-columns: 1fr 74px 38px; gap: 7px; margin: 8px 0; }
+    .setup-pitcher-row input { min-width: 0; border: 1px solid #ccd9e8; border-radius: 10px; background: #f8fafc; padding: 9px; font: inherit; }
+    .setup-pitcher-row input:last-of-type { text-align: center; }
+    .setup-pitcher-row button { border: 0; border-radius: 10px; background: #f4e9ea; color: #a02f38; font-weight: 900; }
+    .setup-add { border: 1px solid #bcd1ed; border-radius: 10px; background: #eff5fc; color: #1761bc; padding: 9px 11px; font-size: 12px; font-weight: 850; }
+    .account-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    .account-row strong { display: block; font-size: 14px; }
+    .account-row small { display: block; margin-top: 3px; color: #71849a; }
     .hero { background: #0d1c35; color: white; padding: 24px 20px 18px; border-radius: 0 0 25px 25px; }
     .brand { display: flex; align-items: center; gap: 10px; color: #b9c8dd; font-size: 12px; font-weight: 850; text-transform: uppercase; letter-spacing: .15em; }
     .ball-icon { height: 28px; width: 28px; display: grid; place-items: center; border-radius: 50%; background: #ffb157; color: #182841; font-size: 17px; }
@@ -59,6 +81,7 @@
     .pitcher-editor h3 { margin: 0 0 8px; font-size: 15px; }
     .pitcher-edit-row { display: flex; gap: 7px; margin: 7px 0; }
     .pitcher-edit-row input { flex: 1; min-width: 0; border: 1px solid #dbe4ee; border-radius: 10px; padding: 9px; font: inherit; font-size: 13px; }
+    .pitcher-edit-row .pitcher-number { flex: 0 0 72px; text-align: center; }
     .team-tools { margin-top: 14px; border-top: 1px solid #e5ecf3; padding-top: 12px; }
     .team-tools h3 { margin: 0 0 8px; font-size: 15px; }
     .team-tools .hint { margin: 7px 0 12px; }
@@ -142,9 +165,17 @@
     .history-list b { display: block; font-size: 13px; color: #263b58; margin-bottom: 2px; }
     .history-list time { flex: 0 0 auto; font-variant-numeric: tabular-nums; }
     .history-actions { display: flex; justify-content: space-between; gap: 10px; margin-top: 4px; }
-    .tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; background: #e8eef6; border-radius: 13px; margin: 16px 15px 0; padding: 4px; }
-    .tab { border: 0; background: transparent; color: #5e7390; border-radius: 10px; min-height: 44px; font-size: 14px; font-weight: 850; }
+    .tabs { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; background: #e8eef6; border-radius: 13px; margin: 16px 15px 0; padding: 4px; }
+    .tab { border: 0; background: transparent; color: #5e7390; border-radius: 10px; min-height: 44px; padding: 6px 3px; font-size: 12px; font-weight: 850; }
     .tab.active { background: #fff; color: #1761bc; box-shadow: 0 2px 7px #1427441a; }
+    .page-heading { margin: 1px 1px 15px; }
+    .page-heading h2 { margin: 0; color: #172844; font-size: 23px; letter-spacing: -.025em; }
+    .page-heading p { margin: 5px 0 0; color: #70849d; font-size: 13px; line-height: 1.45; }
+    .manage-grid { margin-top: 13px; }
+    .settings-summary { display: flex; flex-wrap: wrap; gap: 7px; margin: 10px 0 3px; }
+    .settings-summary span { padding: 7px 10px; border-radius: 20px; background: #edf4fc; color: #365675; font-size: 12px; font-weight: 800; }
+    .card-action-row { display: grid; grid-template-columns: repeat(2, 1fr); gap: 7px; margin-top: 13px; }
+    .card-action-row .small-action { width: 100%; }
     .source-row { display: grid; grid-template-columns: repeat(2, 1fr); gap: 7px; }
     .source-row .choice { width: 100%; }
     .import-row { display: flex; align-items: center; gap: 9px; margin-top: 12px; }
@@ -197,14 +228,45 @@
     .muted { color: #8192a6; font-size: 12px; }
     .toast { position: fixed; left: 50%; bottom: max(18px, env(safe-area-inset-bottom)); transform: translateX(-50%); padding: 11px 17px; background: #142844; color: #fff; border-radius: 12px; box-shadow: 0 8px 24px #10223e40; font-size: 13px; font-weight: 750; z-index: 2; white-space: nowrap; max-width: calc(100vw - 30px); overflow: hidden; text-overflow: ellipsis; }
     .toast[hidden], [hidden] { display: none !important; }
-    @media (max-width: 375px) { .card { padding: 12px; } main { padding-inline: 10px; } .two-columns { gap: 8px; } .choice { font-size: 12px; } .zone { font-size: 9px; } .game-fields { grid-template-columns: 1fr; } }
+    @media (max-width: 375px) { .card { padding: 12px; } main { padding-inline: 10px; } .two-columns { gap: 8px; } .choice { font-size: 12px; } .zone { font-size: 9px; } .game-fields { grid-template-columns: 1fr; } .tab { font-size: 11px; } }
     @media (min-width: 561px) { body { padding: 26px 0; } .app { border-radius: 25px; overflow: hidden; min-height: calc(100dvh - 52px); } .hero { border-radius: 0 0 25px 25px; } }
   </style>
 </head>
 <body>
-  <div class="app">
+  <div id="authGate" class="auth-shell">
+    <section class="auth-card">
+      <div class="auth-brand"><span class="ball-icon" aria-hidden="true">✦</span> Pitch Tracker</div>
+      <h1 id="authTitle">Sign in</h1>
+      <p id="authIntro">Access your team's pitchers, cards, games, and reports.</p>
+      <form id="authForm" class="auth-form">
+        <label id="authEmailRow">Email<input id="authEmail" type="email" autocomplete="email" required></label>
+        <label id="authPasswordRow">Password<input id="authPassword" type="password" autocomplete="current-password" minlength="8" required></label>
+        <label id="authConfirmRow" hidden>Confirm password<input id="authConfirm" type="password" autocomplete="new-password" minlength="8"></label>
+        <button class="auth-primary" id="authSubmit" type="submit">Sign in</button>
+      </form>
+      <div class="auth-links"><button type="button" id="showSignIn" hidden>Sign in</button><button type="button" id="showCreate">Create account</button><button type="button" id="showReset">Forgot password?</button></div>
+      <div id="authMessage" class="auth-message" role="status"></div>
+    </section>
+  </div>
+  <div id="onboardingGate" class="auth-shell" hidden>
+    <section class="auth-card">
+      <div class="auth-brand"><span class="ball-icon" aria-hidden="true">✦</span> Pitch Tracker</div>
+      <h1>Set up your team</h1>
+      <p>This creates your private team workspace. You can add more pitchers later.</p>
+      <form id="onboardingForm">
+        <label class="setup-field">Team name<input id="setupTeamName" maxlength="80" required placeholder="e.g. Amherst Lightning 12U"></label>
+        <div class="section-title"><h2>Pitchers</h2><span>Name · jersey number</span></div>
+        <div id="setupPitchers" class="setup-pitchers"></div>
+        <button type="button" class="setup-add" id="setupAddPitcher">+ Add pitcher</button>
+        <button class="auth-primary" id="setupSubmit" type="submit">Create team</button>
+      </form>
+      <div id="setupMessage" class="auth-message" role="status"></div>
+      <div class="auth-links"><button type="button" id="setupSignOut">Sign out</button></div>
+    </section>
+  </div>
+  <div class="app" id="pitchApp" hidden>
     <header class="hero">
-      <div class="brand"><span class="ball-icon" aria-hidden="true">✦</span> Lightning Softball · Pitch Log</div>
+      <div class="brand"><span class="ball-icon" aria-hidden="true">✦</span><span id="brandTeam">Pitch Tracker</span> · Pitch Log</div>
       <h1 id="pitcherHeading">Choose a pitcher</h1>
       <p id="heroSubtitle">Tap through a pitch. The pitcher stays selected.</p>
       <div class="hero-summary" id="heroSummary" aria-live="polite">
@@ -213,20 +275,11 @@
         <div class="metric"><strong id="strikeRate">—</strong><small>Strike %</small></div>
       </div>
     </header>
-    <nav class="tabs" aria-label="App sections"><button type="button" class="tab active" id="trackerTab" aria-current="page">Log pitches</button><button type="button" class="tab" id="reportsTab">Reports</button></nav>
+    <nav class="tabs" aria-label="App sections"><button type="button" class="tab active" id="trackerTab" aria-current="page">Track</button><button type="button" class="tab" id="reportsTab">Reports</button><button type="button" class="tab" id="cardsTab">Cards</button><button type="button" class="tab" id="settingsTab">Settings</button></nav>
     <main id="trackerView">
       <section class="card" aria-label="Game details" id="gameDetails">
-        <div class="game-top"><strong>Game details</strong><details class="options-menu" id="optionsMenu"><summary aria-label="Options menu" title="Options">☰</summary><div class="options-list"><button type="button" id="menuTeamSettings">Team settings</button><button type="button" class="options-parent" id="menuCards" aria-expanded="false" aria-controls="cardSubmenu">Pitch cards <span aria-hidden="true">›</span></button><div class="options-submenu" id="cardSubmenu" hidden><button type="button" id="newCard">New card</button><button type="button" id="editCard">Edit card</button><button type="button" id="deleteCard">Delete card</button><button type="button" id="menuPrintCards">Print cards</button></div><button type="button" id="menuPitchers">Edit pitchers</button><button type="button" id="menuPitches">Edit pitch types</button></div></details></div>
+        <div class="game-top"><strong>Game details</strong><details class="options-menu" id="optionsMenu"><summary aria-label="Options menu" title="Options">☰</summary><div class="options-list"><button type="button" id="menuTeamSettings">Team settings</button><button type="button" class="options-parent" id="menuCards" aria-expanded="false" aria-controls="cardSubmenu">Pitch cards <span aria-hidden="true">›</span></button><div class="options-submenu" id="cardSubmenu" hidden><button type="button" id="newCardShortcut">New card</button><button type="button" id="editCardShortcut">Edit card</button><button type="button" id="deleteCardShortcut">Delete card</button><button type="button" id="menuPrintCards">Print cards</button></div><button type="button" id="menuPitchers">Edit pitchers</button><button type="button" id="menuPitches">Edit pitch types</button></div></details></div>
         <div class="game-fields"><label for="opponentInput">Opponent<input id="opponentInput" type="text" maxlength="80" placeholder="Enter opponent" autocomplete="off"></label><label for="gameDateInput">Game date<input id="gameDateInput" type="date"></label></div>
-        <div id="teamSettings" class="team-tools" hidden><h3>Team settings</h3><p class="hint">Your team name is saved in this browser and used for every game.</p><div class="team-field"><input id="teamNameSetting" maxlength="80" placeholder="Your team name" aria-label="Your team name"></div><div class="editor-actions"><button type="button" class="small-action" id="cancelTeamSettings">Cancel</button><button type="button" class="small-action" id="saveTeamSettings">Save team</button></div></div>
-        <div id="pitcherEditor" class="pitcher-editor" hidden><h3>Edit team pitchers</h3><p class="hint">Changes to names also update this game's pitch history.</p><div id="pitcherEditRows"></div><button type="button" class="small-action" id="addPitcher">+ Add pitcher</button><div class="editor-actions"><button type="button" class="small-action" id="cancelPitchers">Cancel</button><button type="button" class="small-action" id="savePitchers">Save pitchers</button></div></div>
-        <div id="teamTools" class="team-tools" hidden><h3>Edit team pitch types</h3>
-          <p class="hint">Choose the pitches this team throws. Cards and pitch lists are saved for this team in this browser.</p>
-          <div id="teamPitches" class="team-pitches" role="group" aria-label="Team pitch types"></div>
-          <div class="team-field"><input id="customPitch" maxlength="40" placeholder="Other pitch name" aria-label="Other pitch name"><button class="small-action" type="button" id="addPitch">Add pitch</button></div>
-          <p id="teamToolsHint" class="hint"></p><div class="editor-actions"><button type="button" class="small-action" id="closeTeamTools">Done</button></div>
-        </div>
-        <div id="printOptions" class="team-tools" hidden><h3>Print pitch cards</h3><p class="hint">Choose a card and how many copies to place on one letter-size sheet.</p><div class="card-controls"><select id="printCardChoice" aria-label="Pitch card to print"></select><select id="printCopies" aria-label="Cards per sheet"><option value="4">4 per sheet</option><option value="6">6 per sheet</option></select></div><div class="editor-actions"><button type="button" class="small-action" id="cancelPrint">Cancel</button><button id="printCard" class="small-action" type="button">Print cards</button></div></div>
       </section>
       <section class="card pitcher-card" aria-label="Pitcher selection">
         <details id="pitcherPanel" open>
@@ -247,7 +300,6 @@
         <div id="cardPanel" hidden>
           <div class="card-controls"><select id="activeCard" aria-label="Choose team pitch card"></select></div>
           <div id="pitchCardGrid" class="pitch-card-grid" role="group" aria-label="Coach's pitch card"></div><p id="cardStatus" class="hint" style="margin-top:11px"></p><p id="cardSelection" class="hint" style="margin-top:5px"></p>
-          <div id="cardEditor" class="card-editor" hidden><label for="cardName">Card name<input id="cardName" maxlength="60" placeholder="e.g. Game day card"></label><div id="editorGrid" class="editor-grid" role="group" aria-label="Edit 5 by 5 pitch card"></div><div class="editor-actions"><button id="cancelCard" class="small-action" type="button">Cancel</button><button id="saveCard" class="small-action" type="button">Save card</button></div></div>
         </div>
       </section>
       <div class="two-columns">
@@ -292,6 +344,7 @@
       <p class="hint" style="text-align:center;margin:9px 0">Updates master-pitch-log.csv. Your local game stays available for corrections.</p>
     </main>
     <main id="reportsView" hidden>
+      <div class="page-heading"><h2>Reports</h2><p>Review the current game or filter your master pitch history.</p></div>
       <section class="card">
         <div class="section-title"><h2>Report data</h2></div>
         <div class="source-row"><button type="button" class="choice selected" id="currentSource" aria-pressed="true">Current game</button><button type="button" class="choice" id="importedSource" aria-pressed="false">Master CSV</button></div>
@@ -317,6 +370,25 @@
         <section class="card"><div class="section-title"><h2>Batters faced</h2><span id="batterReportCount"></span></div><ol class="batter-report" id="batterReport"></ol></section>
       </div>
     </main>
+    <main id="cardsView" hidden>
+      <div class="page-heading"><h2>Pitch cards</h2><p>Create, manage, and print the 5×5 cards your team uses to call pitches.</p></div>
+      <section class="card">
+        <div class="section-title"><h2>Selected card</h2><span>Top number · left number</span></div>
+        <div class="card-controls"><select id="manageCardChoice" aria-label="Choose team pitch card"></select></div>
+        <div id="manageCardGrid" class="pitch-card-grid manage-grid" aria-label="Selected pitch card preview"></div>
+        <p id="manageCardStatus" class="hint" style="margin-top:11px"></p>
+        <div class="card-action-row"><button type="button" class="small-action" id="newCard">New card</button><button type="button" class="small-action" id="editCard">Edit card</button><button type="button" class="small-action" id="deleteCard">Delete card</button><button type="button" class="small-action" id="showPrintCards">Print cards</button></div>
+        <div id="cardEditor" class="card-editor" hidden><label for="cardName">Card name<input id="cardName" maxlength="60" placeholder="e.g. Game day card"></label><div id="editorGrid" class="editor-grid" role="group" aria-label="Edit 5 by 5 pitch card"></div><div class="editor-actions"><button id="cancelCard" class="small-action" type="button">Cancel</button><button id="saveCard" class="small-action" type="button">Save card</button></div></div>
+        <div id="printOptions" class="team-tools" hidden><h3>Print pitch cards</h3><p class="hint">Choose a card and how many copies to place on one letter-size sheet.</p><div class="card-controls"><select id="printCardChoice" aria-label="Pitch card to print"></select><select id="printCopies" aria-label="Cards per sheet"><option value="4">4 per sheet</option><option value="6">6 per sheet</option></select></div><div class="editor-actions"><button type="button" class="small-action" id="cancelPrint">Cancel</button><button id="printCard" class="small-action" type="button">Print cards</button></div></div>
+      </section>
+    </main>
+    <main id="settingsView" hidden>
+      <div class="page-heading"><h2>Team settings</h2><p>Manage the team information used across games, cards, and reports.</p></div>
+      <section class="card" id="teamSettings"><div class="section-title"><h2>Team</h2></div><p class="hint">Your team name is saved in this browser and used for every game.</p><div class="team-field"><input id="teamNameSetting" maxlength="80" placeholder="Your team name" aria-label="Your team name"></div><div class="editor-actions"><button type="button" class="small-action" id="cancelTeamSettings">Cancel</button><button type="button" class="small-action" id="saveTeamSettings">Save team</button></div></section>
+      <section class="card"><div class="section-title"><h2>Pitchers</h2><button type="button" class="small-action" id="settingsEditPitchers">Edit</button></div><p class="hint">Add each pitcher's display name and jersey number.</p><div id="settingsPitcherList" class="settings-summary"></div><div id="pitcherEditor" class="pitcher-editor" hidden><h3>Edit team pitchers</h3><p class="hint">Name and number changes also update this game's pitch history.</p><div id="pitcherEditRows"></div><button type="button" class="small-action" id="addPitcher">+ Add pitcher</button><div class="editor-actions"><button type="button" class="small-action" id="cancelPitchers">Cancel</button><button type="button" class="small-action" id="savePitchers">Save pitchers</button></div></div></section>
+      <section class="card" id="teamTools"><div class="section-title"><h2>Pitch types</h2></div><p class="hint">Choose the pitches this team throws. Cards and pitch lists use this selection.</p><div id="teamPitches" class="team-pitches" role="group" aria-label="Team pitch types"></div><div class="team-field"><input id="customPitch" maxlength="40" placeholder="Other pitch name" aria-label="Other pitch name"><button class="small-action" type="button" id="addPitch">Add pitch</button></div><p id="teamToolsHint" class="hint" style="margin-top:10px"></p><button type="button" id="closeTeamTools" hidden>Done</button></section>
+      <section class="card"><div class="section-title"><h2>Account</h2></div><div class="account-row"><div><strong id="accountEmail"></strong><small id="accountRole"></small></div><button type="button" class="small-action" id="signOutButton">Sign out</button></div></section>
+    </main>
   </div>
   <div id="githubModal" class="modal-backdrop" hidden>
     <form id="githubForm" class="modal-card" aria-labelledby="githubTitle">
@@ -337,11 +409,15 @@
   </div>
   <div id="toast" class="toast" role="status" hidden></div>
   <div id="printSheet" class="print-sheet" aria-hidden="true"></div>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
     (() => {
       'use strict';
+      const SUPABASE_URL = 'https://bcaetjgfevsxuiaikfkv.supabase.co';
+      const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_VJiWXmXy411EhkeTyxYxHg_LI87_t_A';
+      const dbClient = window.supabase?.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
       const KEY = 'lightning-pitch-log-v1';
-      const pitcherNames = ['Ellie', 'Paige', 'Emery', 'Lila', 'Leelah'];
+      const pitcherNames = [];
       const pitchNames = ['Fastball', '2 Seam', 'Change-up', 'Curve', 'Drop', 'Rise', 'Screwball'];
       const zoneNames = ['Up / Out', 'Up', 'Up / In', 'Out', 'Middle', 'In', 'Down / Out', 'Down', 'Down / In'];
       const state = { team: '', opponent: '', gameDate: '', gameId: '', pitcher: null, batter: 1, batterSide: 'R', pitch: null, zone: null, result: null, strikeType: null, strikeSpot: null, ballType: null, playType: null, missLocation: null, cardCall: null, cardRow: null, cardColumn: null, history: [] };
@@ -350,13 +426,14 @@
       const MODE_KEY = 'lightning-pitch-mode-v1';
       const TEAM_CARDS_KEY = 'lightning-pitch-team-cards-v1';
       const TEAM_NAME_KEY = 'lightning-pitch-team-name-v1';
+      const ACTIVE_TEAM_KEY = 'pitch-tracker-active-team-v1';
       const SETTINGS_KEY = 'lightning-pitch-github-settings-v1';
       const github = { repo: 'putty31211/Pitch-Tracker', path: 'master-pitch-log.csv', branch: '', clientId: 'Iv23li2FHU7P8zN9EuxG', workerUrl: 'https://pitch-tracker-auth.putty31211.workers.dev' };
       const AUTH_KEY = 'lightning-pitch-github-auth-v1';
       const PENDING_KEY = 'lightning-pitch-github-pending-v1';
       const CALLBACK_URL = 'https://putty31211.github.io/Pitch-Tracker/';
       let auth = null;
-      const CSV_COLUMNS = ['number', 'team', 'opponent', 'game_date', 'game_id', 'timestamp', 'pitcher', 'batter', 'batter_side', 'called_pitch', 'called_location', 'result', 'strike_type', 'strike_spot', 'ball_detail', 'in_play_outcome', 'count_before', 'count_after', 'batter_outcome', 'miss_direction', 'card_call', 'card_row', 'card_column', 'card_name', 'miss_location'];
+      const CSV_COLUMNS = ['number', 'team', 'opponent', 'game_date', 'game_id', 'timestamp', 'pitcher', 'pitcher_number', 'batter', 'batter_side', 'called_pitch', 'called_location', 'result', 'strike_type', 'strike_spot', 'ball_detail', 'in_play_outcome', 'count_before', 'count_after', 'batter_outcome', 'miss_direction', 'card_call', 'card_row', 'card_column', 'card_name', 'miss_location'];
       const MISS_DIRECTIONS = ['High / In', 'High', 'High / Out', 'In', 'Out', 'Low / In', 'Low', 'Low / Out'];
       const CARD_LOCATIONS = { Inside: 'In', Outside: 'Out', Middle: 'Middle', 'High Out': 'Up / Out', 'High In': 'Up / In', 'Low In': 'Down / In', High: 'Up', Low: 'Down', 'Low Out': 'Down / Out' };
       const CARD_PITCHES = { Change: 'Change-up' };
@@ -366,6 +443,11 @@
       let teamProfiles = {};
       let editorDraft = null;
       let pitcherDraft = null;
+      let currentUser = null;
+      let currentTeam = null;
+      let cloudPitchers = [];
+      let setupPitchers = [{ name: '', number: '' }];
+      let authMode = 'signin';
       const $ = id => document.getElementById(id);
       const localDate = date => `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
       const createGameId = () => `game-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
@@ -373,6 +455,8 @@
       const profile = () => teamProfiles[teamKey()] || null;
       const teamPitchNames = () => profile()?.pitches || pitchNames;
       const teamPitcherNames = () => profile()?.pitchers || pitcherNames;
+      const pitcherNumber = name => profile()?.pitcherNumbers?.[name] || '';
+      const pitcherLabel = name => `${pitcherNumber(name) ? `#${pitcherNumber(name)} ` : ''}${name}`;
       const activeCard = () => profile()?.cards.find(card => card.id === profile().selectedCardId) || null;
       const cardGrid = () => activeCard()?.grid || pitchCard;
       const zoneLabel = zone => ({ 'Up / In': 'High / In', Up: 'High', 'Up / Out': 'High / Out', 'Down / In': 'Low / In', Down: 'Low', 'Down / Out': 'Low / Out' }[zone] || zone);
@@ -388,14 +472,109 @@
       const calledPitch = call => calledTarget(call) ? 'Fastball' : CARD_PITCHES[call] || call;
       const validCall = call => calledTarget(call) ? teamPitchNames().includes('Fastball') : teamPitchNames().includes(calledPitch(call));
       const reservedPitchName = name => [...Object.keys(CARD_LOCATIONS), ...Object.values(CARD_LOCATIONS), 'Change'].some(label => label.toLocaleLowerCase() === name.toLocaleLowerCase());
+      const authRedirectUrl = () => `${window.location.origin}${window.location.pathname}`;
+      function showGate(view) {
+        $('authGate').hidden = view !== 'auth';
+        $('onboardingGate').hidden = view !== 'onboarding';
+        $('pitchApp').hidden = view !== 'app';
+      }
+      function setAuthMessage(message = '', success = false) {
+        $('authMessage').textContent = message; $('authMessage').classList.toggle('success', success);
+      }
+      function setAuthMode(mode) {
+        authMode = mode; setAuthMessage();
+        const create = mode === 'create', reset = mode === 'reset', update = mode === 'update';
+        $('authTitle').textContent = create ? 'Create account' : reset ? 'Reset password' : update ? 'Choose a new password' : 'Sign in';
+        $('authIntro').textContent = create ? 'Create your account, verify your email, and set up your team.' : reset ? 'We will email you a secure password-reset link.' : update ? 'Enter the new password you want to use.' : "Access your team's pitchers, cards, games, and reports.";
+        $('authEmailRow').hidden = update;
+        $('authPasswordRow').hidden = reset;
+        $('authConfirmRow').hidden = !create && !update;
+        $('authEmail').required = !update;
+        $('authPassword').required = !reset;
+        $('authConfirm').required = create || update;
+        $('authPassword').autocomplete = create || update ? 'new-password' : 'current-password';
+        $('authSubmit').textContent = create ? 'Create account' : reset ? 'Send reset email' : update ? 'Update password' : 'Sign in';
+        $('showSignIn').hidden = mode === 'signin';
+        $('showCreate').hidden = create || update;
+        $('showReset').hidden = reset || update;
+        showGate('auth');
+      }
+      function renderSetupPitchers() {
+        const rows = $('setupPitchers'); rows.replaceChildren();
+        setupPitchers.forEach((pitcher, index) => {
+          const row = document.createElement('div'); row.className = 'setup-pitcher-row';
+          const name = document.createElement('input'); name.maxLength = 60; name.placeholder = 'Pitcher name'; name.value = pitcher.name; name.setAttribute('aria-label', `Pitcher ${index + 1} name`);
+          name.addEventListener('input', () => { pitcher.name = name.value; });
+          const number = document.createElement('input'); number.maxLength = 3; number.inputMode = 'numeric'; number.placeholder = 'No.'; number.value = pitcher.number; number.setAttribute('aria-label', `Pitcher ${index + 1} jersey number`);
+          number.addEventListener('input', () => { number.value = number.value.replace(/\D/g, '').slice(0, 3); pitcher.number = number.value; });
+          const remove = document.createElement('button'); remove.type = 'button'; remove.textContent = '×'; remove.setAttribute('aria-label', `Remove pitcher ${index + 1}`);
+          remove.addEventListener('click', () => { if (setupPitchers.length === 1) { pitcher.name = ''; pitcher.number = ''; } else setupPitchers.splice(index, 1); renderSetupPitchers(); });
+          row.append(name, number, remove); rows.append(row);
+        });
+      }
+      async function loadSignedInTeam(user) {
+        currentUser = user;
+        const { data: membership, error } = await dbClient.from('team_members').select('team_id, role, teams(id, name)').eq('user_id', user.id).limit(1).maybeSingle();
+        if (error) throw error;
+        if (!membership) { currentTeam = null; setupPitchers = [{ name: '', number: '' }]; renderSetupPitchers(); $('setupMessage').textContent = ''; showGate('onboarding'); return; }
+        const team = Array.isArray(membership.teams) ? membership.teams[0] : membership.teams;
+        if (!team) throw Error('Your team membership could not be loaded.');
+        currentTeam = { id: membership.team_id, name: team.name, role: membership.role };
+        try {
+          const previousTeamId = localStorage.getItem(ACTIVE_TEAM_KEY);
+          if (previousTeamId && previousTeamId !== currentTeam.id) {
+            state.opponent = ''; state.pitcher = null; state.batter = 1; state.batterSide = 'R'; state.history = []; state.gameDate = localDate(new Date()); state.gameId = createGameId(); resetEntry();
+            report.rows = []; report.fileName = ''; report.source = 'current'; report.pitcher = ''; report.team = '';
+          }
+          localStorage.setItem(ACTIVE_TEAM_KEY, currentTeam.id);
+        } catch (_) { /* The signed-in team still loads if browser storage is blocked. */ }
+        const [pitchersResult, pitchesResult, cardsResult] = await Promise.all([
+          dbClient.from('pitchers').select('id, display_name, jersey_number, active, sort_order').eq('team_id', currentTeam.id).order('sort_order').order('display_name'),
+          dbClient.from('pitch_types').select('name, active, sort_order').eq('team_id', currentTeam.id).eq('active', true).order('sort_order').order('name'),
+          dbClient.from('pitch_cards').select('id, name, grid').eq('team_id', currentTeam.id).order('name')
+        ]);
+        const loadError = pitchersResult.error || pitchesResult.error || cardsResult.error; if (loadError) throw loadError;
+        cloudPitchers = pitchersResult.data || [];
+        const activePitchers = cloudPitchers.filter(pitcher => pitcher.active);
+        state.team = currentTeam.name;
+        const key = teamKey();
+        teamProfiles[key] = {
+          pitchers: activePitchers.map(pitcher => pitcher.display_name),
+          pitcherNumbers: Object.fromEntries(activePitchers.map(pitcher => [pitcher.display_name, pitcher.jersey_number])),
+          pitches: (pitchesResult.data || []).map(pitch => pitch.name),
+          cards: (cardsResult.data || []).filter(card => Array.isArray(card.grid) && card.grid.length === 5).map(card => ({ id: card.id, name: card.name, grid: card.grid.map(row => row.map(normalizeCardCall)) })),
+          selectedCardId: ''
+        };
+        try { localStorage.setItem(TEAM_NAME_KEY, state.team); } catch (_) { /* Account data remains available from Supabase. */ }
+        saveProfiles();
+        if (state.pitcher && !teamPitcherNames().includes(state.pitcher)) state.pitcher = null;
+        $('accountEmail').textContent = user.email || 'Signed-in account';
+        $('accountRole').textContent = `${currentTeam.name} · ${currentTeam.role}`;
+        $('brandTeam').textContent = currentTeam.name;
+        render(); renderPitchCard(); showGate('app');
+      }
+      async function initializeAuth() {
+        if (!dbClient) { setAuthMode('signin'); setAuthMessage('The account service could not load. Check your internet connection and refresh.'); return; }
+        setAuthMode('signin');
+        const { data, error } = await dbClient.auth.getSession();
+        if (error) { setAuthMessage(error.message); return; }
+        if (data.session?.user) {
+          try { await loadSignedInTeam(data.session.user); } catch (loadError) { setAuthMessage(loadError.message || 'Could not load your team.'); }
+        }
+        dbClient.auth.onAuthStateChange((event, session) => {
+          if (event === 'PASSWORD_RECOVERY') { setAuthMode('update'); return; }
+          if (event === 'SIGNED_OUT') { currentUser = null; currentTeam = null; setAuthMode('signin'); return; }
+          if (event === 'SIGNED_IN' && session?.user && session.user.id !== currentUser?.id) setTimeout(() => loadSignedInTeam(session.user).catch(loadError => { setAuthMode('signin'); setAuthMessage(loadError.message || 'Could not load your team.'); }), 0);
+        });
+      }
       function openTeamSettings() {
-        $('optionsMenu').open = false; $('pitcherEditor').hidden = true; $('teamTools').hidden = true; $('printOptions').hidden = true;
-        $('teamNameSetting').value = state.team; $('teamSettings').hidden = false;
+        $('optionsMenu').open = false; showTab('settings');
+        $('teamNameSetting').value = state.team;
         $('teamSettings').scrollIntoView({ behavior: 'smooth', block: 'center' }); $('teamNameSetting').focus();
       }
       function ensureProfile() {
         if (!teamKey()) { notify('Set your team name first.'); openTeamSettings(); return null; }
-        return teamProfiles[teamKey()] ||= { pitches: [...pitchNames], pitchers: [...pitcherNames], cards: [], selectedCardId: '' };
+        return teamProfiles[teamKey()] ||= { pitches: [...pitchNames], pitchers: [], pitcherNumbers: {}, cards: [], selectedCardId: '' };
       }
       function restoreTeamName() {
         try { const name = localStorage.getItem(TEAM_NAME_KEY); if (typeof name === 'string') state.team = name.trim().slice(0, 80); }
@@ -413,9 +592,18 @@
             if (!key || !item || !Array.isArray(item.pitches) || !Array.isArray(item.cards)) continue;
             const pitches = [...new Set(item.pitches.filter(name => typeof name === 'string' && name.trim() && name.length <= 40 && !reservedPitchName(name.trim())))];
             if (!pitches.length) continue;
-            const pitchers = Array.isArray(item.pitchers) ? [...new Set(item.pitchers.filter(name => typeof name === 'string' && name.trim() && name.length <= 60))] : [...pitcherNames];
+            const pitchers = Array.isArray(item.pitchers) ? [...new Set(item.pitchers.map(entry => typeof entry === 'string' ? entry : entry?.name).filter(name => typeof name === 'string' && name.trim() && name.length <= 60))] : [];
+            const pitcherNumbers = Object.fromEntries(pitchers.map(name => {
+              const objectEntry = Array.isArray(item.pitchers) ? item.pitchers.find(entry => entry && typeof entry === 'object' && entry.name === name) : null;
+              const number = String(item.pitcherNumbers?.[name] ?? objectEntry?.number ?? '').trim();
+              return [name, /^\d{1,3}$/.test(number) ? number : ''];
+            }));
             const cards = item.cards.map(card => card && Array.isArray(card.grid) ? { ...card, grid: card.grid.map(row => Array.isArray(row) ? row.map(normalizeCardCall) : row) } : card).filter(card => card && typeof card.id === 'string' && typeof card.name === 'string' && card.name.trim() && card.name.length <= 60 && Array.isArray(card.grid) && card.grid.length === 5 && card.grid.every(row => Array.isArray(row) && row.length === 5 && row.every(call => typeof call === 'string' && call.length <= 40 && (calledTarget(call) || pitches.includes(calledPitch(call))))));
-            teamProfiles[key] = { pitches, pitchers: pitchers.length ? pitchers : [...pitcherNames], cards, selectedCardId: cards.some(card => card.id === item.selectedCardId) ? item.selectedCardId : '' };
+            teamProfiles[key] = { pitches, pitchers, pitcherNumbers, cards, selectedCardId: cards.some(card => card.id === item.selectedCardId) ? item.selectedCardId : '' };
+          }
+          if (teamKey() && !teamProfiles[teamKey()]) {
+            const legacyPitchers = [...new Set([state.pitcher, ...state.history.map(pitch => pitch.pitcher)].filter(Boolean))];
+            if (legacyPitchers.length) teamProfiles[teamKey()] = { pitches: [...pitchNames], pitchers: legacyPitchers, pitcherNumbers: Object.fromEntries(legacyPitchers.map(name => [name, ''])), cards: [], selectedCardId: '' };
           }
         } catch (_) { /* Use the starter profile when settings cannot be read. */ }
       }
@@ -440,30 +628,35 @@
           const selected = teamPitchNames().includes(name);
           const button = document.createElement('button'); button.type = 'button'; button.className = `choice${selected ? ' selected' : ''}`;
           button.textContent = name; button.setAttribute('aria-pressed', String(selected));
-          button.addEventListener('click', () => {
+          button.addEventListener('click', async () => {
             const item = ensureProfile(); if (!item) return;
             if (editorDraft) { notify('Save or cancel the card before changing team pitches.'); return; }
             if (selected) {
               if (item.pitches.length === 1) { notify('Keep at least one pitch for this team.'); return; }
               if (item.cards.some(card => card.grid.flat().some(call => calledPitch(call) === name))) { notify('Edit team cards using this pitch before removing it.'); return; }
+              if (currentTeam) { const { error } = await dbClient.from('pitch_types').update({ active: false }).eq('team_id', currentTeam.id).eq('name', name); if (error) { notify(error.message); return; } }
               item.pitches = item.pitches.filter(pitch => pitch !== name);
               if (state.pitch === name) resetEntry();
-            } else item.pitches.push(name);
+            } else {
+              if (currentTeam) { const { error } = await dbClient.from('pitch_types').upsert({ team_id: currentTeam.id, name, active: true, sort_order: item.pitches.length + 1 }, { onConflict: 'team_id,name' }); if (error) { notify(error.message); return; } }
+              item.pitches.push(name);
+            }
             saveProfiles(); render();
           }); return button;
         }));
       }
       function renderCardPicker() {
         const cards = [{ id: '', name: 'Starter card (pitchCard.csv)' }, ...(profile()?.cards || [])];
-        for (const picker of [$('activeCard'), $('printCardChoice')]) {
+        for (const picker of [$('activeCard'), $('manageCardChoice'), $('printCardChoice')]) {
           picker.replaceChildren();
           for (const card of cards) {
             const option = document.createElement('option'); option.value = card.id; option.textContent = card.name; picker.append(option);
           }
           picker.value = activeCard()?.id || '';
         }
-        $('deleteCard').disabled = !activeCard();
+        $('deleteCard').disabled = $('deleteCardShortcut').disabled = !activeCard();
         $('cardStatus').textContent = activeCard() ? `Team card · ${activeCard().name}` : 'Starter card · pitchCard.csv (or included copy)';
+        $('manageCardStatus').textContent = activeCard() ? `${activeCard().name} · saved for ${state.team || 'this team'}` : 'Starter card · create a team card to customize it.';
       }
       function renderPitchCard() {
         renderCardPicker();
@@ -484,6 +677,13 @@
             render();
           });
           grid.append(button);
+        }
+        const preview = $('manageCardGrid'); preview.replaceChildren();
+        for (let row = 0; row <= 5; row++) for (let column = 0; column <= 5; column++) {
+          const cell = document.createElement('span');
+          if (!row || !column) { cell.className = 'pitch-card-axis'; cell.textContent = row || column || ''; }
+          else { cell.className = 'choice'; const number = document.createElement('small'); number.textContent = `${column}–${row}`; cell.append(number, document.createTextNode(normalizeCardCall(cardGrid()[row - 1][column - 1]))); }
+          preview.append(cell);
         }
       }
       function renderCardEditor() {
@@ -508,22 +708,25 @@
         pitcherDraft.forEach((entry, index) => {
           const row = document.createElement('div'); row.className = 'pitcher-edit-row';
           const input = document.createElement('input'); input.type = 'text'; input.maxLength = 60;
-          input.value = entry.name; input.setAttribute('aria-label', `Pitcher ${index + 1} name`);
+          input.placeholder = 'Pitcher name'; input.value = entry.name; input.setAttribute('aria-label', `Pitcher ${index + 1} name`);
           input.addEventListener('input', () => { entry.name = input.value; });
+          const number = document.createElement('input'); number.type = 'text'; number.inputMode = 'numeric'; number.maxLength = 3; number.className = 'pitcher-number';
+          number.placeholder = 'No.'; number.value = entry.number; number.setAttribute('aria-label', `Pitcher ${index + 1} jersey number`);
+          number.addEventListener('input', () => { number.value = number.value.replace(/\D/g, '').slice(0, 3); entry.number = number.value; });
           const remove = document.createElement('button'); remove.type = 'button'; remove.className = 'small-action'; remove.textContent = 'Remove';
           remove.setAttribute('aria-label', `Remove pitcher ${index + 1}`);
           remove.addEventListener('click', () => {
             if (pitcherDraft.length === 1) { notify('Keep at least one pitcher.'); return; }
             pitcherDraft.splice(index, 1); renderPitcherEditor();
           });
-          row.append(input, remove); rows.append(row);
+          row.append(input, number, remove); rows.append(row);
         });
       }
-      const choices = (id, values, key, { className = 'choice' } = {}) => {
+      const choices = (id, values, key, { className = 'choice', labelFor = null } = {}) => {
         const container = $(id);
         container.replaceChildren(...values.map(value => {
           const button = document.createElement('button');
-          button.type = 'button'; button.className = className; button.textContent = key === 'zone' ? zoneLabel(value) : value;
+          button.type = 'button'; button.className = className; button.textContent = key === 'zone' ? zoneLabel(value) : labelFor ? labelFor(value) : value;
           button.setAttribute('aria-pressed', String(state[key] === value));
           if (state[key] === value) button.classList.add('selected');
           button.addEventListener('click', () => {
@@ -611,7 +814,7 @@
         state.history.slice().reverse().forEach((p, reverseIndex) => {
           const li = document.createElement('li');
           const info = document.createElement('div'); const head = document.createElement('b');
-          head.textContent = `#${state.history.length - reverseIndex} · ${p.pitcher} · ${p.pitch}${p.cardRow && p.cardColumn ? ` · Card ${p.cardColumn}–${p.cardRow}` : ''}${p.batter ? ` · Batter ${p.batter}${p.batterSide ? ` (${p.batterSide})` : ''}` : ''}`;
+          head.textContent = `Pitch ${state.history.length - reverseIndex} · ${p.pitcherNumber ? `#${p.pitcherNumber} ` : ''}${p.pitcher} · ${p.pitch}${p.cardRow && p.cardColumn ? ` · Card ${p.cardColumn}–${p.cardRow}` : ''}${p.batter ? ` · Batter ${p.batter}${p.batterSide ? ` (${p.batterSide})` : ''}` : ''}`;
           const detail = document.createElement('span');
           const outcome = p.result === 'Strike' ? `${p.strikeType}, ${(p.strikeSpot || 'No spot').toLowerCase()}` : p.result === 'Ball' ? p.ballType : p.result === 'In play' ? p.playType : p.result;
           detail.textContent = `${outcome} · ${p.zone ? zoneLabel(p.zone) : 'No target'}${p.missLocation ? ` · Missed to ${zoneLabel(p.missLocation).toLowerCase()}` : p.missDirection ? ` · Missed ${p.missDirection.toLowerCase()} (relative)` : ''}${p.plateResult ? ` · ${p.plateResult}` : ''}`;
@@ -649,7 +852,7 @@
         return data.map((p, index) => {
           const when = new Date(p.timestamp);
           return { number: Number(p.number) || index + 1, team: hasOpponentColumn ? p.team || '' : '', opponent: hasOpponentColumn ? p.opponent || '' : p.team || '', gameDate: p.game_date || (Number.isNaN(when.getTime()) ? '' : localDate(when)), gameId: p.game_id || legacyId,
-            time: p.timestamp || '', pitcher: p.pitcher, batter: Number(p.batter) || null, batterSide: ['R', 'L'].includes(p.batter_side) ? p.batter_side : null, pitch: p.called_pitch, zone: normalizeZone(p.called_location), result: p.result,
+            time: p.timestamp || '', pitcher: p.pitcher, pitcherNumber: /^\d{1,3}$/.test(p.pitcher_number || '') ? p.pitcher_number : '', batter: Number(p.batter) || null, batterSide: ['R', 'L'].includes(p.batter_side) ? p.batter_side : null, pitch: p.called_pitch, zone: normalizeZone(p.called_location), result: p.result,
             strikeType: p.strike_type || null, strikeSpot: p.strike_spot || null, ballType: p.ball_detail || null, playType: p.in_play_outcome || null,
             missDirection: MISS_DIRECTIONS.includes(p.miss_direction) ? p.miss_direction : null,
             missLocation: normalizeZone(p.miss_location),
@@ -662,7 +865,7 @@
       }
       function serializeCSV(rows) {
         const quote = value => `"${String(value ?? '').replaceAll('"', '""')}"`;
-        const data = rows.map(p => [p.number, p.team, p.opponent, p.gameDate, p.gameId, p.time, p.pitcher, p.batter, p.batterSide, p.pitch, p.zone, p.result, p.strikeType, p.strikeSpot, p.ballType, p.playType, p.countBefore, p.countAfter, p.plateResult, p.missDirection, p.cardCall, p.cardRow, p.cardColumn, p.cardName, p.missLocation ? zoneLabel(p.missLocation) : null].map(quote).join(','));
+        const data = rows.map(p => [p.number, p.team, p.opponent, p.gameDate, p.gameId, p.time, p.pitcher, p.pitcherNumber, p.batter, p.batterSide, p.pitch, p.zone, p.result, p.strikeType, p.strikeSpot, p.ballType, p.playType, p.countBefore, p.countAfter, p.plateResult, p.missDirection, p.cardCall, p.cardRow, p.cardColumn, p.cardName, p.missLocation ? zoneLabel(p.missLocation) : null].map(quote).join(','));
         return '\uFEFF' + CSV_COLUMNS.join(',') + '\r\n' + data.join('\r\n');
       }
       function downloadCSV(rows, filename) {
@@ -824,15 +1027,18 @@
       }
       function showTab(tab) {
         report.tab = tab;
-        $('trackerView').hidden = tab !== 'tracker'; $('reportsView').hidden = tab !== 'reports';
-        $('heroSummary').hidden = tab === 'reports';
-        $('trackerTab').classList.toggle('active', tab === 'tracker');
-        $('reportsTab').classList.toggle('active', tab === 'reports');
-        $('trackerTab').setAttribute('aria-current', tab === 'tracker' ? 'page' : 'false');
-        $('reportsTab').setAttribute('aria-current', tab === 'reports' ? 'page' : 'false');
-        $('pitcherHeading').textContent = tab === 'reports' ? 'Game reports' : state.pitcher || 'Choose a pitcher';
-        $('heroSubtitle').textContent = tab === 'reports' ? 'Review pitch calls, results, and batters faced.' : 'Tap through a pitch. The pitcher stays selected.';
+        const pages = { tracker: 'trackerView', reports: 'reportsView', cards: 'cardsView', settings: 'settingsView' };
+        const tabs = { tracker: 'trackerTab', reports: 'reportsTab', cards: 'cardsTab', settings: 'settingsTab' };
+        for (const [name, id] of Object.entries(pages)) $(id).hidden = name !== tab;
+        for (const [name, id] of Object.entries(tabs)) { $(id).classList.toggle('active', name === tab); $(id).setAttribute('aria-current', name === tab ? 'page' : 'false'); }
+        $('heroSummary').hidden = tab !== 'tracker';
+        const headings = { reports: 'Game reports', cards: 'Pitch cards', settings: 'Team settings' };
+        const subtitles = { reports: 'Review pitch calls, results, and batters faced.', cards: 'Build and print the cards used to call pitches.', settings: 'Manage your team, pitchers, and available pitches.' };
+        $('pitcherHeading').textContent = headings[tab] || state.pitcher || 'Choose a pitcher';
+        $('heroSubtitle').textContent = subtitles[tab] || 'Tap through a pitch. The pitcher stays selected.';
         if (tab === 'reports') renderReport();
+        if (tab === 'cards') renderPitchCard();
+        if (tab === 'settings') { $('teamNameSetting').value = state.team; renderTeamPitches(); }
         window.scrollTo(0, 0);
       }
       function chartRow(label, valueText, fraction, secondary = false) {
@@ -877,7 +1083,8 @@
         if (report.pitcher && !pitchers.includes(report.pitcher)) report.pitcher = '';
         picker.replaceChildren();
         for (const name of ['', ...pitchers]) {
-          const option = document.createElement('option'); option.value = name; option.textContent = name || 'All pitchers'; picker.append(option);
+          const number = name ? scoped.find(p => p.pitcher === name && p.pitcherNumber)?.pitcherNumber || pitcherNumber(name) : '';
+          const option = document.createElement('option'); option.value = name; option.textContent = name ? `${number ? `#${number} ` : ''}${name}` : 'All pitchers'; picker.append(option);
         }
         picker.value = report.pitcher;
         for (const [id, active] of [['currentSource', report.source === 'current'], ['importedSource', report.source === 'imported']]) {
@@ -964,8 +1171,9 @@
         $('zoneLabel').textContent = pitchMode === 'card' && calledTarget(state.cardCall) ? '3 · Called target from card' : pitchMode === 'card' ? 'Optional target for this pitch' : '3 · Target';
         $('cardSelection').textContent = state.cardCall ? `Card ${state.cardColumn}–${state.cardRow}: ${state.cardCall} → ${state.pitch}${state.zone ? ` to ${zoneLabel(state.zone)}` : ' · no target called'}` : 'Choose a square: top number first, then left number.';
         if (pitchMode === 'card') renderPitchCard();
-        choices('pitchers', teamPitcherNames(), 'pitcher');
+        choices('pitchers', teamPitcherNames(), 'pitcher', { labelFor: pitcherLabel });
         choices('pitches', teamPitchNames(), 'pitch');
+        $('settingsPitcherList').replaceChildren(...(teamPitcherNames().length ? teamPitcherNames().map(name => { const chip = document.createElement('span'); chip.textContent = pitcherLabel(name); return chip; }) : (() => { const empty = document.createElement('span'); empty.textContent = 'No pitchers added'; return [empty]; })()));
         renderTeamPitches();
         choices('zone', zoneOrderForBatter(), 'zone', { className: 'zone' });
         $('zone').children[4].classList.add('center');
@@ -992,7 +1200,7 @@
         const pitcherPitches = state.history.filter(p => p.pitcher === state.pitcher);
         const strikes = pitcherPitches.filter(p => ['Strike', 'Foul'].includes(p.result)).length;
         const current = countFor(state.batter);
-        $('selectedPitcher').textContent = state.pitcher || 'Choose a pitcher';
+        $('selectedPitcher').textContent = state.pitcher ? pitcherLabel(state.pitcher) : 'Choose a pitcher';
         $('pitcherAction').textContent = state.pitcher ? 'Change ▾' : 'Tap to choose ▾';
         $('batterHeading').textContent = `Batter ${state.batter}`;
         for (const [id, side] of [['batterRight', 'R'], ['batterLeft', 'L']]) { const active = state.batterSide === side; $(id).classList.toggle('selected', active); $(id).setAttribute('aria-pressed', String(active)); }
@@ -1001,7 +1209,7 @@
         $('strikeouts').textContent = pitcherPitches.filter(p => p.plateResult === 'Strikeout').length;
         $('walks').textContent = pitcherPitches.filter(p => p.plateResult === 'Walk').length;
         $('manualBatter').disabled = !state.history.some(p => p.batter === state.batter);
-        $('pitcherHeading').textContent = state.pitcher || 'Choose a pitcher';
+        if (report.tab === 'tracker') $('pitcherHeading').textContent = state.pitcher ? pitcherLabel(state.pitcher) : 'Choose a pitcher';
         $('pitchCount').textContent = pitcherPitches.length;
         $('strikeCount').textContent = strikes;
         $('strikeRate').textContent = pitcherPitches.length ? `${Math.round(strikes / pitcherPitches.length * 100)}%` : '—';
@@ -1012,14 +1220,68 @@
         $('exportButton').disabled = $('newGameButton').disabled = $('endGameButton').disabled = !state.history.length;
         renderHistory();
       }
+      $('showSignIn').addEventListener('click', () => setAuthMode('signin'));
+      $('showCreate').addEventListener('click', () => setAuthMode('create'));
+      $('showReset').addEventListener('click', () => setAuthMode('reset'));
+      $('authForm').addEventListener('submit', async event => {
+        event.preventDefault(); if (!dbClient) return;
+        const email = $('authEmail').value.trim(); const password = $('authPassword').value; const confirmation = $('authConfirm').value;
+        if ((authMode === 'create' || authMode === 'update') && password !== confirmation) { setAuthMessage('The passwords do not match.'); return; }
+        $('authSubmit').disabled = true; setAuthMessage(authMode === 'reset' ? 'Sending reset email…' : 'Working…');
+        try {
+          if (authMode === 'create') {
+            const { data, error } = await dbClient.auth.signUp({ email, password, options: { emailRedirectTo: authRedirectUrl() } });
+            if (error) throw error;
+            if (data.session?.user) await loadSignedInTeam(data.session.user);
+            else setAuthMessage('Account created. Check your email and click the confirmation link, then return here to sign in.', true);
+          } else if (authMode === 'reset') {
+            const { error } = await dbClient.auth.resetPasswordForEmail(email, { redirectTo: authRedirectUrl() }); if (error) throw error;
+            setAuthMessage('Password-reset email sent. Check your inbox.', true);
+          } else if (authMode === 'update') {
+            const { error } = await dbClient.auth.updateUser({ password }); if (error) throw error;
+            setAuthMessage('Password updated. Loading your account…', true);
+            const { data } = await dbClient.auth.getUser(); if (data.user) await loadSignedInTeam(data.user);
+          } else {
+            const { data, error } = await dbClient.auth.signInWithPassword({ email, password }); if (error) throw error;
+            await loadSignedInTeam(data.user);
+          }
+        } catch (authError) { setAuthMessage(authError.message || 'Account request failed.'); }
+        finally { $('authSubmit').disabled = false; }
+      });
+      $('setupAddPitcher').addEventListener('click', () => { setupPitchers.push({ name: '', number: '' }); renderSetupPitchers(); $('setupPitchers').lastElementChild?.querySelector('input')?.focus(); });
+      $('onboardingForm').addEventListener('submit', async event => {
+        event.preventDefault(); if (!dbClient || !currentUser) return;
+        const teamName = $('setupTeamName').value.trim().replace(/\s+/g, ' ');
+        const pitchers = setupPitchers.map(pitcher => ({ name: pitcher.name.trim().replace(/\s+/g, ' '), number: pitcher.number.trim() }));
+        if (!teamName) { $('setupMessage').textContent = 'Enter your team name.'; return; }
+        if (pitchers.some(pitcher => !pitcher.name || !/^\d{1,3}$/.test(pitcher.number))) { $('setupMessage').textContent = 'Enter a name and jersey number for every pitcher.'; return; }
+        if (new Set(pitchers.map(pitcher => pitcher.name.toLocaleLowerCase())).size !== pitchers.length) { $('setupMessage').textContent = 'Each pitcher needs a different name.'; return; }
+        if (new Set(pitchers.map(pitcher => pitcher.number)).size !== pitchers.length) { $('setupMessage').textContent = 'Each pitcher needs a different jersey number.'; return; }
+        $('setupSubmit').disabled = true; $('setupMessage').textContent = 'Creating your team…';
+        try {
+          const { data: teamId, error: teamError } = await dbClient.rpc('create_pitch_tracker_team', { team_name: teamName }); if (teamError) throw teamError;
+          const { error: pitcherError } = await dbClient.from('pitchers').insert(pitchers.map((pitcher, index) => ({ team_id: teamId, display_name: pitcher.name, jersey_number: pitcher.number, sort_order: index + 1 }))); if (pitcherError) throw pitcherError;
+          await loadSignedInTeam(currentUser);
+          notify(`${teamName} is ready`);
+        } catch (setupError) { $('setupMessage').textContent = setupError.message || 'Could not create the team.'; }
+        finally { $('setupSubmit').disabled = false; }
+      });
+      const signOut = async () => { if (!dbClient) return; await dbClient.auth.signOut(); };
+      $('setupSignOut').addEventListener('click', signOut);
+      $('signOutButton').addEventListener('click', signOut);
       $('opponentInput').addEventListener('input', event => { state.opponent = event.target.value; save(); });
       const setCardSubmenu = open => { $('cardSubmenu').hidden = !open; $('menuCards').setAttribute('aria-expanded', String(open)); };
       const closeOptions = () => { $('optionsMenu').open = false; setCardSubmenu(false); };
       $('menuTeamSettings').addEventListener('click', () => { closeOptions(); openTeamSettings(); });
-      $('cancelTeamSettings').addEventListener('click', () => { $('teamSettings').hidden = true; });
-      $('saveTeamSettings').addEventListener('click', () => {
+      $('cancelTeamSettings').addEventListener('click', () => { $('teamNameSetting').value = state.team; });
+      $('saveTeamSettings').addEventListener('click', async () => {
         const name = $('teamNameSetting').value.trim().replace(/\s+/g, ' ');
         if (!name) { notify('Enter your team name.'); $('teamNameSetting').focus(); return; }
+        if (currentTeam) {
+          const { error } = await dbClient.from('teams').update({ name, updated_at: new Date().toISOString() }).eq('id', currentTeam.id);
+          if (error) { notify(error.message || 'Could not update the team name.'); return; }
+          currentTeam.name = name; $('brandTeam').textContent = name; $('accountRole').textContent = `${name} · ${currentTeam.role}`;
+        }
         const oldKey = teamKey(); const newKey = name.toLocaleLowerCase(); const legacyKey = state.opponent.trim().toLocaleLowerCase();
         if (!teamProfiles[newKey]) {
           const source = teamProfiles[oldKey] || teamProfiles[legacyKey];
@@ -1028,54 +1290,76 @@
         state.team = name;
         try { localStorage.setItem(TEAM_NAME_KEY, name); } catch (_) { notify('Browser storage is unavailable.'); }
         saveProfiles();
-        $('teamSettings').hidden = true; resetEntry(); editorDraft = null; pitcherDraft = null; renderCardEditor(); renderPitcherEditor();
+        resetEntry(); editorDraft = null; pitcherDraft = null; renderCardEditor(); renderPitcherEditor();
         if (state.pitcher && !teamPitcherNames().includes(state.pitcher)) { state.pitcher = null; $('pitcherPanel').open = true; }
         save(); render(); notify(`${name} saved as your team`);
       });
       $('menuCards').addEventListener('click', () => setCardSubmenu($('cardSubmenu').hidden));
       $('menuPitchers').addEventListener('click', () => {
         closeOptions(); if (!ensureProfile()) return;
-        $('teamSettings').hidden = true; $('teamTools').hidden = true; $('printOptions').hidden = true;
-        pitcherDraft = teamPitcherNames().map(name => ({ original: name, name }));
+        showTab('settings');
+        pitcherDraft = teamPitcherNames().map(name => ({ id: cloudPitchers.find(pitcher => pitcher.active && pitcher.display_name === name)?.id || null, original: name, name, number: pitcherNumber(name) }));
         renderPitcherEditor(); $('pitcherEditor').scrollIntoView({ behavior: 'smooth', block: 'center' });
       });
       $('menuPitches').addEventListener('click', () => {
         closeOptions(); if (!ensureProfile()) return;
         pitcherDraft = null; renderPitcherEditor();
-        $('teamSettings').hidden = true; $('printOptions').hidden = true; $('teamTools').hidden = false; renderTeamPitches();
+        showTab('settings'); renderTeamPitches();
         $('teamTools').scrollIntoView({ behavior: 'smooth', block: 'center' });
       });
       $('menuPrintCards').addEventListener('click', () => {
         closeOptions(); if (!ensureProfile()) return;
-        pitcherDraft = null; renderPitcherEditor(); $('teamSettings').hidden = true; $('teamTools').hidden = true;
+        showTab('cards'); pitcherDraft = null; renderPitcherEditor();
         renderCardPicker(); $('printOptions').hidden = false;
         $('printOptions').scrollIntoView({ behavior: 'smooth', block: 'center' });
       });
       $('closeTeamTools').addEventListener('click', () => { $('teamTools').hidden = true; });
       $('cancelPrint').addEventListener('click', () => { $('printOptions').hidden = true; });
-      $('addPitcher').addEventListener('click', () => { if (!pitcherDraft) return; pitcherDraft.push({ original: null, name: '' }); renderPitcherEditor(); $('pitcherEditRows').lastElementChild?.querySelector('input')?.focus(); });
+      $('addPitcher').addEventListener('click', () => { if (!pitcherDraft) return; pitcherDraft.push({ original: null, name: '', number: '' }); renderPitcherEditor(); $('pitcherEditRows').lastElementChild?.querySelector('input')?.focus(); });
       $('cancelPitchers').addEventListener('click', () => { pitcherDraft = null; renderPitcherEditor(); });
-      $('savePitchers').addEventListener('click', () => {
+      $('savePitchers').addEventListener('click', async () => {
         const item = ensureProfile(); if (!item || !pitcherDraft) return;
         const names = pitcherDraft.map(entry => entry.name.trim().replace(/\s+/g, ' '));
+        const numbers = pitcherDraft.map(entry => String(entry.number || '').trim());
+        if (!names.length) { notify('Add at least one pitcher.'); return; }
         if (names.some(name => !name || name.length > 60)) { notify('Enter a name for every pitcher.'); return; }
+        if (numbers.some(number => !/^\d{1,3}$/.test(number))) { notify('Enter a jersey number for every pitcher.'); return; }
         if (new Set(names.map(name => name.toLocaleLowerCase())).size !== names.length) { notify('Each pitcher needs a different name.'); return; }
+        if (new Set(numbers).size !== numbers.length) { notify('Each pitcher needs a different jersey number.'); return; }
+        if (currentTeam) {
+          const keptIds = new Set(pitcherDraft.map(entry => entry.id).filter(Boolean));
+          const removedIds = cloudPitchers.filter(pitcher => pitcher.active && !keptIds.has(pitcher.id)).map(pitcher => pitcher.id);
+          if (removedIds.length) { const { error } = await dbClient.from('pitchers').update({ active: false, updated_at: new Date().toISOString() }).in('id', removedIds); if (error) { notify(error.message); return; } }
+          for (let index = 0; index < pitcherDraft.length; index++) {
+            const entry = pitcherDraft[index]; const values = { display_name: names[index], jersey_number: numbers[index], active: true, sort_order: index + 1, updated_at: new Date().toISOString() };
+            if (entry.id) { const { error } = await dbClient.from('pitchers').update(values).eq('id', entry.id); if (error) { notify(error.message); return; } }
+            else {
+              const reusable = cloudPitchers.find(pitcher => !pitcher.active && pitcher.jersey_number === numbers[index]);
+              if (reusable) { const { error } = await dbClient.from('pitchers').update(values).eq('id', reusable.id); if (error) { notify(error.message); return; } entry.id = reusable.id; }
+              else { const { data, error } = await dbClient.from('pitchers').insert({ ...values, team_id: currentTeam.id }).select('id').single(); if (error) { notify(error.message); return; } entry.id = data.id; }
+            }
+          }
+          const { data, error } = await dbClient.from('pitchers').select('id, display_name, jersey_number, active, sort_order').eq('team_id', currentTeam.id).order('sort_order'); if (error) { notify(error.message); return; }
+          cloudPitchers = data || [];
+        }
         const renamed = new Map(pitcherDraft.map((entry, index) => [entry.original, names[index]]).filter(([oldName, newName]) => oldName && oldName !== newName));
         // Update names at once so exchanging two names does not merge their game history.
-        state.history.forEach(pitch => { if (renamed.has(pitch.pitcher)) pitch.pitcher = renamed.get(pitch.pitcher); });
+        state.history.forEach(pitch => { const index = pitcherDraft.findIndex(entry => entry.original === pitch.pitcher); if (index >= 0) { pitch.pitcher = names[index]; pitch.pitcherNumber = numbers[index]; } });
         if (renamed.has(state.pitcher)) state.pitcher = renamed.get(state.pitcher);
         item.pitchers = names;
+        item.pitcherNumbers = Object.fromEntries(names.map((name, index) => [name, numbers[index]]));
         if (state.pitcher && !names.includes(state.pitcher)) { state.pitcher = null; $('pitcherPanel').open = true; resetEntry(); }
         pitcherDraft = null; saveProfiles(); save(); renderPitcherEditor(); render(); notify('Pitchers saved');
       });
       document.addEventListener('click', event => { if (!$('optionsMenu').contains(event.target)) closeOptions(); });
       document.addEventListener('keydown', event => { if (event.key === 'Escape') closeOptions(); });
-      $('addPitch').addEventListener('click', () => {
+      $('addPitch').addEventListener('click', async () => {
         const name = $('customPitch').value.trim().replace(/\s+/g, ' ');
         if (!name) { $('customPitch').focus(); return; }
         if (reservedPitchName(name)) { notify('That name is already used for a card location or call.'); return; }
         const item = ensureProfile(); if (!item) return;
         if (item.pitches.some(pitch => pitch.toLowerCase() === name.toLowerCase())) { notify('That pitch is already in the team list.'); return; }
+        if (currentTeam) { const { error } = await dbClient.from('pitch_types').upsert({ team_id: currentTeam.id, name, active: true, sort_order: item.pitches.length + 1 }, { onConflict: 'team_id,name' }); if (error) { notify(error.message); return; } }
         item.pitches.push(name); $('customPitch').value = ''; saveProfiles(); render(); notify(`${name} added`);
       });
       $('customPitch').addEventListener('keydown', event => { if (event.key === 'Enter') { event.preventDefault(); $('addPitch').click(); } });
@@ -1083,30 +1367,32 @@
         const item = ensureProfile(); if (!item) { event.target.value = ''; return; }
         item.selectedCardId = event.target.value; editorDraft = null; renderCardEditor(); resetEntry(); saveProfiles(); render();
       });
+      $('manageCardChoice').addEventListener('change', event => {
+        const item = ensureProfile(); if (!item) { event.target.value = ''; return; }
+        item.selectedCardId = event.target.value; editorDraft = null; renderCardEditor(); resetEntry(); saveProfiles(); render(); renderPitchCard();
+      });
       $('printCardChoice').addEventListener('change', event => {
         const item = ensureProfile(); if (!item) return;
         item.selectedCardId = event.target.value; resetEntry(); saveProfiles(); render();
         $('printOptions').hidden = false;
       });
       $('newCard').addEventListener('click', () => {
-        closeOptions(); $('cardMode').click();
-        $('teamSettings').hidden = true; $('printOptions').hidden = true;
+        closeOptions(); showTab('cards'); $('printOptions').hidden = true;
         if (!ensureProfile()) return;
         const first = teamPitchNames().includes('Fastball') ? 'Inside' : teamPitchNames()[0];
         editorDraft = { id: null, isNew: true, name: '', grid: Array.from({ length: 5 }, () => Array(5).fill(first)) };
-        renderCardEditor(); $('cardPanel').scrollIntoView({ behavior: 'smooth', block: 'center' }); $('cardName').focus();
+        renderCardEditor(); $('cardEditor').scrollIntoView({ behavior: 'smooth', block: 'center' }); $('cardName').focus();
       });
       $('editCard').addEventListener('click', () => {
-        closeOptions(); $('cardMode').click();
-        $('teamSettings').hidden = true; $('printOptions').hidden = true;
+        closeOptions(); showTab('cards'); $('printOptions').hidden = true;
         if (!ensureProfile()) return;
         const card = activeCard();
         editorDraft = { id: card?.id || null, isNew: false, name: card?.name || 'My pitch card', grid: cardGrid().map(row => [...row]) };
-        renderCardEditor(); $('cardPanel').scrollIntoView({ behavior: 'smooth', block: 'center' }); $('cardName').focus();
+        renderCardEditor(); $('cardEditor').scrollIntoView({ behavior: 'smooth', block: 'center' }); $('cardName').focus();
         if (!card) notify('Editing the starter card will save a new team card.');
       });
       $('cancelCard').addEventListener('click', () => { editorDraft = null; renderCardEditor(); });
-      $('saveCard').addEventListener('click', () => {
+      $('saveCard').addEventListener('click', async () => {
         const item = ensureProfile(); if (!item || !editorDraft) return;
         const name = $('cardName').value.trim();
         if (!name) { notify('Give this card a name.'); $('cardName').focus(); return; }
@@ -1114,19 +1400,30 @@
         const cells = [...$('editorGrid').querySelectorAll('select')];
         const grid = Array.from({ length: 5 }, (_, row) => cells.slice(row * 5, row * 5 + 5).map(select => select.value));
         if (grid.some(row => row.some(call => !validCall(call)))) { notify('Every square needs an enabled team pitch.'); return; }
-        const id = editorDraft.id || `card-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`;
+        let id = editorDraft.id;
+        if (currentTeam) {
+          if (id) { const { error } = await dbClient.from('pitch_cards').update({ name, grid, updated_at: new Date().toISOString() }).eq('id', id); if (error) { notify(error.message); return; } }
+          else { const { data, error } = await dbClient.from('pitch_cards').insert({ team_id: currentTeam.id, name, grid, created_by: currentUser.id }).select('id').single(); if (error) { notify(error.message); return; } id = data.id; }
+        }
+        id ||= `card-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`;
         const existing = item.cards.find(card => card.id === id);
         if (existing) { existing.name = name; existing.grid = grid; }
         else item.cards.push({ id, name, grid });
         item.selectedCardId = id; editorDraft = null; resetEntry(); saveProfiles(); renderCardEditor(); render(); notify(`${name} saved`);
       });
-      $('deleteCard').addEventListener('click', () => {
+      $('deleteCard').addEventListener('click', async () => {
         closeOptions();
         $('printOptions').hidden = true;
         const card = activeCard(); if (!card || !confirm(`Delete the team card "${card.name}"? Logged pitches will stay in the game history.`)) return;
+        if (currentTeam) { const { error } = await dbClient.from('pitch_cards').delete().eq('id', card.id); if (error) { notify(error.message); return; } }
         const item = profile(); item.cards = item.cards.filter(saved => saved.id !== card.id); item.selectedCardId = '';
         editorDraft = null; renderCardEditor(); resetEntry(); saveProfiles(); render(); notify('Card deleted');
       });
+      $('newCardShortcut').addEventListener('click', () => { closeOptions(); showTab('cards'); $('newCard').click(); });
+      $('editCardShortcut').addEventListener('click', () => { closeOptions(); showTab('cards'); $('editCard').click(); });
+      $('deleteCardShortcut').addEventListener('click', () => { closeOptions(); showTab('cards'); $('deleteCard').click(); });
+      $('showPrintCards').addEventListener('click', () => { if (!ensureProfile()) return; renderCardPicker(); $('printOptions').hidden = false; $('printOptions').scrollIntoView({ behavior: 'smooth', block: 'center' }); });
+      $('settingsEditPitchers').addEventListener('click', () => { if (!ensureProfile()) return; pitcherDraft = teamPitcherNames().map(name => ({ id: cloudPitchers.find(pitcher => pitcher.active && pitcher.display_name === name)?.id || null, original: name, name, number: pitcherNumber(name) })); renderPitcherEditor(); $('pitcherEditor').scrollIntoView({ behavior: 'smooth', block: 'center' }); });
       $('printCard').addEventListener('click', () => {
         const sheet = $('printSheet'); sheet.replaceChildren();
         const copies = Number($('printCopies').value);
@@ -1167,7 +1464,7 @@
         const before = countFor(state.batter);
         const after = { balls: before.balls + (state.result === 'Ball' ? 1 : 0), strikes: before.strikes + (state.result === 'Strike' || state.result === 'Foul' && before.strikes < 2 ? 1 : 0) };
         const plateResult = after.strikes >= 3 ? 'Strikeout' : after.balls >= 4 ? 'Walk' : state.result === 'HBP' ? 'Hit by pitch' : state.result === 'In play' ? state.playType : null;
-        const p = { pitcher: state.pitcher, batter: state.batter, batterSide: state.batterSide, pitch: state.pitch, zone: state.zone, result: state.result, strikeType: state.result === 'Strike' ? state.strikeType : null, strikeSpot: state.result === 'Strike' ? state.strikeSpot : null, ballType: state.result === 'Ball' ? state.ballType : null, playType: state.result === 'In play' ? state.playType : null, missDirection: null, missLocation: missedTarget(state) ? state.missLocation : null, cardCall: pitchMode === 'card' ? state.cardCall : null, cardRow: pitchMode === 'card' ? state.cardRow : null, cardColumn: pitchMode === 'card' ? state.cardColumn : null, cardName: pitchMode === 'card' ? activeCard()?.name || 'Starter card' : null, countBefore: `${before.balls}-${before.strikes}`, countAfter: `${after.balls}-${after.strikes}`, plateResult, time: new Date().toISOString() };
+        const p = { pitcher: state.pitcher, pitcherNumber: pitcherNumber(state.pitcher), batter: state.batter, batterSide: state.batterSide, pitch: state.pitch, zone: state.zone, result: state.result, strikeType: state.result === 'Strike' ? state.strikeType : null, strikeSpot: state.result === 'Strike' ? state.strikeSpot : null, ballType: state.result === 'Ball' ? state.ballType : null, playType: state.result === 'In play' ? state.playType : null, missDirection: null, missLocation: missedTarget(state) ? state.missLocation : null, cardCall: pitchMode === 'card' ? state.cardCall : null, cardRow: pitchMode === 'card' ? state.cardRow : null, cardColumn: pitchMode === 'card' ? state.cardColumn : null, cardName: pitchMode === 'card' ? activeCard()?.name || 'Starter card' : null, countBefore: `${before.balls}-${before.strikes}`, countAfter: `${after.balls}-${after.strikes}`, plateResult, time: new Date().toISOString() };
         state.history.push(p); if (plateResult) { state.batter++; state.batterSide = 'R'; }
         save(); resetEntry(); render(); notify(plateResult ? `${plateResult} · Batter ${state.batter} ready` : `${p.pitcher}: ${p.pitch} logged`);
       });
@@ -1203,6 +1500,8 @@
       });
       $('trackerTab').addEventListener('click', () => showTab('tracker'));
       $('reportsTab').addEventListener('click', () => showTab('reports'));
+      $('cardsTab').addEventListener('click', () => showTab('cards'));
+      $('settingsTab').addEventListener('click', () => showTab('settings'));
       $('currentSource').addEventListener('click', () => { report.source = 'current'; report.pitcher = ''; renderReport(); });
       $('importedSource').addEventListener('click', () => { report.source = 'imported'; report.pitcher = ''; renderReport(); if (!report.rows.length && !report.githubTried) loadGithubMaster(); });
       $('loadGithubMaster').addEventListener('click', () => loadGithubMaster(true));
@@ -1219,7 +1518,7 @@
         } catch (error) { notify(error.message || 'Could not read that CSV.'); }
         event.target.value = '';
       });
-      restore(); restoreTeamName(); restoreProfiles(); save(); restoreReport(); restoreGithubSettings(); render(); loadPitchCard(); completeGithubSignIn();
+      restore(); restoreTeamName(); restoreProfiles(); save(); restoreReport(); restoreGithubSettings(); render(); loadPitchCard(); completeGithubSignIn(); initializeAuth();
     })();
   </script>
 </body>
