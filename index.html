@@ -364,6 +364,7 @@
       </section>
       <section class="card" id="masterFilters" hidden>
         <label class="report-filter" for="reportTeam">Opponent <select id="reportTeam"><option value="">All opponents</option></select></label>
+        <label class="report-filter" for="reportGame">Specific game <select id="reportGame"><option value="">Use games filter below</option></select></label>
         <label class="report-filter" for="gamesFilter">Games <select id="gamesFilter"><option value="all">All games</option><option value="5">Last 5</option><option value="10" selected>Last 10</option><option value="20">Last 20</option><option value="custom">Last N…</option></select></label>
         <label class="report-filter" id="customGamesRow" for="customGames" hidden>Number of games <input id="customGames" type="number" min="1" max="9999" value="10" inputmode="numeric"></label>
         <p class="hint" id="gameRange" style="margin-top:12px"></p>
@@ -431,7 +432,7 @@
       const pitchNames = ['Fastball', '2 Seam', 'Change-up', 'Curve', 'Drop', 'Rise', 'Screwball'];
       const zoneNames = ['Up / Out', 'Up', 'Up / In', 'Out', 'Middle', 'In', 'Down / Out', 'Down', 'Down / In'];
       const state = { team: '', opponent: '', gameDate: '', gameId: '', pitcher: null, batter: 1, batterSide: 'R', pitch: null, zone: null, result: null, strikeType: null, strikeSpot: null, ballType: null, playType: null, missLocation: null, cardCall: null, cardRow: null, cardColumn: null, history: [] };
-      const report = { tab: 'tracker', source: 'current', pitcher: '', team: '', games: '10', customGames: 10, rows: [], fileName: '', historyTried: false };
+      const report = { tab: 'tracker', source: 'current', pitcher: '', team: '', game: '', games: '10', customGames: 10, rows: [], fileName: '', historyTried: false };
       const REPORT_KEY = 'lightning-pitch-reports-v1';
       const MODE_KEY = 'lightning-pitch-mode-v1';
       const TEAM_CARDS_KEY = 'lightning-pitch-team-cards-v1';
@@ -549,7 +550,7 @@
           const previousTeamId = localStorage.getItem(ACTIVE_TEAM_KEY);
           if (previousTeamId && previousTeamId !== currentTeam.id) {
             state.opponent = ''; state.pitcher = null; state.batter = 1; state.batterSide = 'R'; state.history = []; state.gameDate = localDate(new Date()); state.gameId = createGameId(); resetEntry();
-            report.rows = []; report.fileName = ''; report.source = 'current'; report.pitcher = ''; report.team = '';
+            report.rows = []; report.fileName = ''; report.source = 'current'; report.pitcher = ''; report.team = ''; report.game = '';
           }
           localStorage.setItem(ACTIVE_TEAM_KEY, currentTeam.id);
         } catch (_) { /* The signed-in team still loads if browser storage is blocked. */ }
@@ -1095,7 +1096,7 @@
             const game = gamesById.get(pitch.game_id);
             return { number: pitch.pitch_number, team: currentTeam.name, opponent: game?.opponent || '', gameDate: game?.played_on || '', gameId: pitch.game_id, time: pitch.pitched_at || '', pitcher: pitch.pitcher_name, pitcherNumber: pitch.pitcher_number, batter: pitch.batter_number, batterSide: pitch.batter_side, pitch: pitch.called_pitch, zone: normalizeZone(pitch.called_location), result: pitch.result, strikeType: pitch.strike_type, strikeSpot: pitch.strike_spot, ballType: pitch.ball_detail, playType: pitch.in_play_outcome, countBefore: pitch.count_before, countAfter: pitch.count_after, plateResult: pitch.batter_outcome, missDirection: null, missLocation: normalizeZone(pitch.miss_location), cardCall: pitch.card_call ? normalizeCardCall(pitch.card_call) : null, cardRow: pitch.card_row, cardColumn: pitch.card_column, cardName: pitch.card_name };
           });
-          report.fileName = 'Team database'; report.source = 'imported'; report.pitcher = ''; report.team = '';
+          report.fileName = 'Team database'; report.source = 'imported'; report.pitcher = ''; report.team = ''; report.game = '';
           renderReport();
           if (manual) notify(`Loaded ${report.rows.length} saved team pitches`);
         } catch (error) { if (manual) notify(error.message || 'Could not load team history.'); else throw error; }
@@ -1151,21 +1152,43 @@
         teamPicker.replaceChildren();
         for (const opponent of ['', ...opponents]) { const option = document.createElement('option'); option.value = opponent; option.textContent = opponent === '__unknown__' ? 'Opponent not recorded' : opponent || 'All opponents'; teamPicker.append(option); }
         teamPicker.value = report.team;
-        $('gamesFilter').value = report.games;
-        $('customGames').value = report.customGames;
-        $('customGamesRow').hidden = report.games !== 'custom';
         const teamRows = master && report.team ? all.filter(p => (p.opponent || '__unknown__') === report.team) : all;
         const games = new Map();
         if (master) for (const p of teamRows) {
           const id = p.gameId || 'legacy-previous-import';
-          if (!games.has(id)) games.set(id, { id, date: p.gameDate || '', lastTime: p.time || '' });
+          if (!games.has(id)) games.set(id, { id, date: p.gameDate || '', opponent: p.opponent || '', lastTime: p.time || '' });
           else if ((p.time || '') > games.get(id).lastTime) games.get(id).lastTime = p.time;
         }
         const sortedGames = [...games.values()].sort((a, b) => b.date.localeCompare(a.date) || b.lastTime.localeCompare(a.lastTime) || b.id.localeCompare(a.id));
+        if (report.game && !games.has(report.game)) report.game = '';
+        const numberingGames = new Map();
+        if (master) for (const p of all) {
+          const id = p.gameId || 'legacy-previous-import';
+          if (!numberingGames.has(id)) numberingGames.set(id, { id, date: p.gameDate || '', lastTime: p.time || '' });
+          else if ((p.time || '') > numberingGames.get(id).lastTime) numberingGames.get(id).lastTime = p.time;
+        }
+        const dayPositions = new Map();
+        for (const date of [...new Set([...numberingGames.values()].map(game => game.date))]) {
+          const sameDay = [...numberingGames.values()].filter(game => game.date === date).sort((a, b) => a.lastTime.localeCompare(b.lastTime) || a.id.localeCompare(b.id));
+          sameDay.forEach((game, index) => dayPositions.set(game.id, { number: index + 1, total: sameDay.length }));
+        }
+        const gamePicker = $('reportGame'); gamePicker.replaceChildren();
+        const allGamesOption = document.createElement('option'); allGamesOption.value = ''; allGamesOption.textContent = 'Use games filter below'; gamePicker.append(allGamesOption);
+        for (const game of sortedGames) {
+          const option = document.createElement('option'); option.value = game.id;
+          const dateLabel = /^\d{4}-\d{2}-\d{2}$/.test(game.date) ? new Date(`${game.date}T12:00:00`).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) : 'Date unknown';
+          const position = dayPositions.get(game.id), gameNumber = position?.total > 1 ? ` · Game ${position.number}` : '';
+          option.textContent = `${dateLabel}${gameNumber}${game.opponent ? ` vs ${game.opponent}` : ''}`; gamePicker.append(option);
+        }
+        gamePicker.value = report.game;
+        $('gamesFilter').value = report.games; $('gamesFilter').disabled = !!report.game;
+        $('customGames').value = report.customGames;
+        $('customGamesRow').hidden = !!report.game || report.games !== 'custom';
         const limit = report.games === 'all' ? sortedGames.length : report.games === 'custom' ? report.customGames : Number(report.games);
-        const selected = new Set(sortedGames.slice(0, limit).map(g => g.id));
+        const selected = report.game ? new Set([report.game]) : new Set(sortedGames.slice(0, limit).map(g => g.id));
         const scoped = master ? teamRows.filter(p => selected.has(p.gameId || 'legacy-previous-import')) : all;
-        $('gameRange').textContent = `${selected.size} of ${sortedGames.length} ${sortedGames.length === 1 ? 'game' : 'games'} selected${selected.size ? ` · most recent ${sortedGames[0].date || 'date unknown'}` : ''}`;
+        const chosenGame = report.game ? games.get(report.game) : null;
+        $('gameRange').textContent = chosenGame ? `Showing one game · ${chosenGame.date || 'date unknown'}${chosenGame.opponent ? ` vs ${chosenGame.opponent}` : ''}` : `${selected.size} of ${sortedGames.length} ${sortedGames.length === 1 ? 'game' : 'games'} selected${selected.size ? ` · most recent ${sortedGames[0].date || 'date unknown'}` : ''}`;
         const pitchers = [...new Set(scoped.map(p => p.pitcher))].sort();
         const picker = $('reportPitcher');
         if (report.pitcher && !pitchers.includes(report.pitcher)) report.pitcher = '';
@@ -1584,15 +1607,17 @@
         if (!state.team.trim()) { notify('Set your team name before ending the game.'); openTeamSettings(); return; }
         if (!state.opponent.trim()) { notify('Enter the opponent before ending the game.'); $('opponentInput').focus(); return; }
         if (!state.gameDate) { notify('Choose the game date before ending the game.'); $('gameDateInput').focus(); return; }
+        if (!confirm(`End the game against ${state.opponent.trim()}? The game will be saved to team history and the current game will be cleared.`)) return;
         const button = $('endGameButton'), originalLabel = button.textContent;
-        let gameSaved = false;
         button.disabled = true; button.textContent = 'Saving game…';
         try {
           await saveGameToDatabase();
-          gameSaved = true;
-          await loadTeamHistory(false);
-          showTab('reports'); notify(`Saved ${state.history.length} pitches to team history`);
-        } catch (error) { notify(gameSaved ? 'Game saved, but reports could not refresh.' : error.message || 'Could not save. Your local pitches are safe.'); }
+          const savedPitchCount = state.history.length;
+          state.history = []; state.batter = 1; state.batterSide = 'R'; state.opponent = ''; state.gameDate = localDate(new Date()); state.gameId = createGameId(); state.pitcher = null;
+          resetEntry(); save(); $('pitcherPanel').open = true;
+          try { await loadTeamHistory(false); showTab('reports'); notify(`Game saved · ${savedPitchCount} pitches added to team history`); }
+          catch (_) { showTab('tracker'); notify('Game saved and cleared, but reports could not refresh.'); }
+        } catch (error) { notify(error.message || 'Could not save. Your current game is still here.'); }
         finally { button.textContent = originalLabel; render(); }
       });
       $('githubCancel').addEventListener('click', closeGithubModal);
@@ -1610,7 +1635,7 @@
         $('githubStatus').textContent = 'Saving game to GitHub…'; $('githubStatus').dataset.working = 'true'; $('githubSave').disabled = $('githubCancel').disabled = true;
         try {
           const merged = await saveGameToGithub(getAuth().token, repo, path, branch);
-          report.rows = merged; report.fileName = path.split('/').at(-1); report.source = 'imported'; report.pitcher = ''; report.team = '';
+          report.rows = merged; report.fileName = path.split('/').at(-1); report.source = 'imported'; report.pitcher = ''; report.team = ''; report.game = '';
           saveReport(); closeGithubModal(); showTab('reports'); notify(`Saved game to GitHub · ${merged.length} master pitches`);
         } catch (error) { $('githubStatus').textContent = error.message || 'Could not save. Your local pitches are safe.'; }
         finally { $('githubStatus').dataset.working = 'false'; $('githubSave').disabled = $('githubCancel').disabled = false; }
@@ -1622,15 +1647,16 @@
       $('currentSource').addEventListener('click', () => { report.source = 'current'; report.pitcher = ''; renderReport(); });
       $('importedSource').addEventListener('click', () => { report.source = 'imported'; report.pitcher = ''; renderReport(); if (!report.historyTried) loadTeamHistory(true); });
       $('loadTeamHistory').addEventListener('click', () => loadTeamHistory(true));
-      $('reportTeam').addEventListener('change', event => { report.team = event.target.value; report.pitcher = ''; renderReport(); });
-      $('gamesFilter').addEventListener('change', event => { report.games = event.target.value; report.pitcher = ''; renderReport(); });
+      $('reportTeam').addEventListener('change', event => { report.team = event.target.value; report.game = ''; report.pitcher = ''; renderReport(); });
+      $('reportGame').addEventListener('change', event => { report.game = event.target.value; report.pitcher = ''; renderReport(); });
+      $('gamesFilter').addEventListener('change', event => { report.games = event.target.value; report.game = ''; report.pitcher = ''; renderReport(); });
       $('customGames').addEventListener('input', event => { report.customGames = Math.max(1, Math.min(9999, Number(event.target.value) || 1)); renderReport(); });
       $('reportPitcher').addEventListener('change', event => { report.pitcher = event.target.value; renderReport(); });
       $('importFile').addEventListener('change', async event => {
         const file = event.target.files?.[0]; if (!file) return;
         try {
           const parsed = parseCSV(await file.text());
-          report.rows = parsed; report.fileName = file.name; report.source = 'imported'; report.pitcher = ''; report.team = '';
+          report.rows = parsed; report.fileName = file.name; report.source = 'imported'; report.pitcher = ''; report.team = ''; report.game = '';
           saveReport(); renderReport(); notify(`${parsed.length} pitches imported`);
         } catch (error) { notify(error.message || 'Could not read that CSV.'); }
         event.target.value = '';
