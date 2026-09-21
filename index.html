@@ -25,6 +25,7 @@
     .auth-links button { border: 0; background: transparent; color: #1761bc; padding: 5px 0; font-size: 12px; font-weight: 800; }
     .auth-message { min-height: 20px; margin-top: 12px; color: #a02f38; font-size: 12px; line-height: 1.4; text-align: center; }
     .auth-message.success { color: #18764a; }
+    .invite-notice { margin: 14px 0; padding: 12px 13px; border: 1px solid #bdd4ef; border-radius: 12px; background: #eff6fe; color: #234c7a; font-size: 12px; font-weight: 750; line-height: 1.45; }
     .login-splash { position: fixed; inset: 0; z-index: 30; display: grid; place-items: center; padding: 24px; background: radial-gradient(circle at top, #1a3c69 0, #0d1c35 48%, #081426 100%); }
     .login-splash-card { width: min(100%, 340px); padding: 30px 24px; border: 1px solid #ffffff1f; border-radius: 24px; background: #142844; color: #fff; text-align: center; box-shadow: 0 24px 70px #02091480; animation: login-card-in .28s ease-out; }
     .login-check { width: 66px; height: 66px; display: grid; place-items: center; margin: 0 auto 17px; border-radius: 50%; background: #29a66a; color: #fff; font-size: 35px; font-weight: 900; box-shadow: 0 0 0 8px #29a66a24; }
@@ -254,6 +255,7 @@
       <div class="auth-brand"><span class="ball-icon" aria-hidden="true">✦</span> Pitch Tracker</div>
       <h1 id="authTitle">Sign in</h1>
       <p id="authIntro">Access your team's pitchers, cards, games, and reports.</p>
+      <div id="inviteNotice" class="invite-notice" role="status" hidden>Team invitation ready. Create an account or sign in to continue.</div>
       <form id="authForm" class="auth-form">
         <label id="authEmailRow">Email<input id="authEmail" type="email" autocomplete="email" required></label>
         <label id="authPasswordRow">Password<input id="authPassword" type="password" autocomplete="current-password" minlength="8" required></label>
@@ -278,7 +280,7 @@
       </form>
       <div id="setupMessage" class="auth-message" role="status"></div>
       <form id="joinTeamForm" class="invite-join">
-        <h2>Joining for reports?</h2><p>Enter the one-time code your coach gave you. Reports users cannot track games, change settings, or view pitch cards.</p>
+        <h2>Have a team invite?</h2><p>Enter the one-time code your coach gave you. Your Coach or Reports access will be applied automatically.</p>
         <div class="invite-code-row"><input id="reportInviteCode" maxlength="14" autocomplete="one-time-code" placeholder="ABCD-EFGH-IJKL" aria-label="Report invite code"><button type="submit" class="setup-add" id="joinTeamButton">Join</button></div>
         <div id="joinTeamMessage" class="auth-message" role="status"></div>
       </form>
@@ -412,7 +414,7 @@
       <section class="card coach-only" id="teamSettings"><div class="section-title"><h2>Team</h2></div><p class="hint">Your team name is saved in this browser and used for every game.</p><div class="team-field"><input id="teamNameSetting" maxlength="80" placeholder="Your team name" aria-label="Your team name"></div><div class="editor-actions"><button type="button" class="small-action" id="cancelTeamSettings">Cancel</button><button type="button" class="small-action" id="saveTeamSettings">Save team</button></div></section>
       <section class="card coach-only"><div class="section-title"><h2>Pitchers</h2><button type="button" class="small-action" id="settingsEditPitchers">Edit</button></div><p class="hint">Add each pitcher's display name and jersey number.</p><div id="settingsPitcherList" class="settings-summary"></div><div id="pitcherEditor" class="pitcher-editor" hidden><h3>Edit team pitchers</h3><p class="hint">Name and number changes also update this game's pitch history.</p><div id="pitcherEditRows"></div><button type="button" class="small-action" id="addPitcher">+ Add pitcher</button><div class="editor-actions"><button type="button" class="small-action" id="cancelPitchers">Cancel</button><button type="button" class="small-action" id="savePitchers">Save pitchers</button></div></div></section>
       <section class="card coach-only" id="teamTools"><div class="section-title"><h2>Pitch types</h2></div><p class="hint">Choose the pitches this team throws. Cards and pitch lists use this selection.</p><div id="teamPitches" class="team-pitches" role="group" aria-label="Team pitch types"></div><div class="team-field"><input id="customPitch" maxlength="40" placeholder="Other pitch name" aria-label="Other pitch name"><button class="small-action" type="button" id="addPitch">Add pitch</button></div><p id="teamToolsHint" class="hint" style="margin-top:10px"></p><button type="button" id="closeTeamTools" hidden>Done</button></section>
-      <section class="card coach-only" id="accessSettings"><div class="section-title"><h2>Report access</h2></div><p class="hint">Create a one-time code for someone who should only view reports. The code expires after seven days.</p><button type="button" class="small-action" id="createReportInvite">Create report invite</button><div id="reportInviteResult" class="invite-result" hidden><code id="generatedInviteCode"></code><p id="generatedInviteExpiry"></p><div class="editor-actions"><button type="button" class="small-action" id="copyInviteCode">Copy code</button><button type="button" class="small-action" id="copyInviteLink">Copy invite link</button></div></div></section>
+      <section class="card coach-only" id="accessSettings"><div class="section-title"><h2>Team access</h2></div><p class="hint">Create a one-time, seven-day invite for another coach or a reports-only user.</p><div class="card-controls"><select id="inviteAccess" aria-label="Invite access level"><option value="reports">Reports user</option><option value="coach">Coach</option></select><button type="button" class="small-action" id="createReportInvite">Create invite</button></div><div id="reportInviteResult" class="invite-result" hidden><code id="generatedInviteCode"></code><p id="generatedInviteExpiry"></p><div class="editor-actions"><button type="button" class="small-action" id="copyInviteCode">Copy code</button><button type="button" class="small-action" id="copyInviteLink">Copy invite link</button></div></div></section>
       <section class="card"><div class="section-title"><h2>Account</h2></div><div class="account-row"><div><strong id="accountEmail"></strong><small id="accountRole"></small></div><button type="button" class="small-action" id="signOutButton">Sign out</button></div></section>
     </main>
   </div>
@@ -477,6 +479,7 @@
       let setupPitchers = [{ name: '', number: '' }];
       let authMode = 'signin';
       let generatedReportInvite = '';
+      let inviteRedemptionPromise = null;
       const $ = id => document.getElementById(id);
       const localDate = date => `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
       const createGameId = () => {
@@ -496,6 +499,24 @@
       function clearPendingInvite() {
         try { localStorage.removeItem(REPORT_INVITE_KEY); } catch (_) { /* Nothing else to clear. */ }
         const url = new URL(location.href); if (url.searchParams.has('invite')) { url.searchParams.delete('invite'); history.replaceState(null, '', `${url.pathname}${url.search}${url.hash}`); }
+        if ($('inviteNotice')) $('inviteNotice').hidden = true;
+      }
+      async function renderInviteContext() {
+        const code = pendingInviteCode(), notice = $('inviteNotice');
+        notice.hidden = !code; if (!code) return;
+        notice.textContent = 'Team invitation ready. Create an account or sign in to continue.';
+        if (!dbClient) return;
+        try {
+          const { data, error } = await dbClient.rpc('preview_team_invite', { invite_code: code }); if (error) return;
+          const invitation = Array.isArray(data) ? data[0] : data;
+          if (invitation?.team_name) notice.textContent = `You’re invited to ${invitation.team_name} as a ${invitation.invite_access}. Create an account or sign in to continue.`;
+        } catch (_) { /* Keep the generic invitation message. */ }
+      }
+      async function redeemPendingTeamInvite(code) {
+        if (!inviteRedemptionPromise) inviteRedemptionPromise = dbClient.rpc('redeem_team_invite', { invite_code: code });
+        const pending = inviteRedemptionPromise;
+        try { const { error } = await pending; if (error) throw error; }
+        finally { if (inviteRedemptionPromise === pending) inviteRedemptionPromise = null; }
       }
       const teamKey = () => state.team.trim().toLocaleLowerCase();
       const profile = () => teamProfiles[teamKey()] || null;
@@ -550,6 +571,10 @@
         $('authConfirm').required = create || update;
         $('authPassword').autocomplete = create || update ? 'new-password' : 'current-password';
         $('authSubmit').textContent = create ? 'Create account' : reset ? 'Send reset email' : update ? 'Update password' : 'Sign in';
+        if (pendingInviteCode() && (mode === 'signin' || mode === 'create')) {
+          $('authTitle').textContent = create ? 'Create account to join' : 'Sign in to join';
+          $('authIntro').textContent = create ? 'Use your email and a password to accept this team invitation.' : 'Sign in with the account that should receive this team access.';
+        }
         $('showSignIn').hidden = mode === 'signin';
         $('showCreate').hidden = create || update;
         $('showReset').hidden = reset || update;
@@ -573,8 +598,14 @@
         const { data: membership, error } = await dbClient.from('team_members').select('team_id, role, teams(id, name)').eq('user_id', user.id).limit(1).maybeSingle();
         if (error) throw error;
         if (!membership) {
-          currentTeam = null; setupPitchers = [{ name: '', number: '' }]; renderSetupPitchers(); $('setupMessage').textContent = ''; $('joinTeamMessage').textContent = '';
-          const invite = pendingInviteCode(); $('reportInviteCode').value = invite;
+          const invite = pendingInviteCode();
+          let inviteMessage = '';
+          if (invite) {
+            try { await redeemPendingTeamInvite(invite); clearPendingInvite(); return await loadSignedInTeam(user); }
+            catch (inviteError) { inviteMessage = inviteError.message || 'This invitation could not be accepted.'; }
+          }
+          currentTeam = null; setupPitchers = [{ name: '', number: '' }]; renderSetupPitchers(); $('setupMessage').textContent = ''; $('joinTeamMessage').textContent = inviteMessage;
+          $('reportInviteCode').value = invite;
           $('onboardingTitle').textContent = invite ? 'Join your team' : 'Set up your team';
           $('onboardingIntro').textContent = invite ? 'Your report invite is ready. Select Join to access the team’s reports.' : 'Create a private team workspace or join one with a report invite.';
           showGate('onboarding'); return;
@@ -628,7 +659,8 @@
       }
       async function initializeAuth() {
         if (!dbClient) { setAuthMode('signin'); setAuthMessage('The account service could not load. Check your internet connection and refresh.'); return; }
-        setAuthMode('signin');
+        await renderInviteContext();
+        setAuthMode(pendingInviteCode() ? 'create' : 'signin');
         const { data, error } = await dbClient.auth.getSession();
         if (error) { setAuthMessage(error.message); return; }
         if (data.session?.user) {
@@ -1417,8 +1449,8 @@
         if (!/^[A-Z0-9]{4}(?:-[A-Z0-9]{4}){2}$/.test(code)) { $('joinTeamMessage').textContent = 'Enter the complete invite code.'; return; }
         $('joinTeamButton').disabled = true; $('joinTeamMessage').textContent = 'Joining team…';
         try {
-          const { error } = await dbClient.rpc('redeem_report_invite', { invite_code: code }); if (error) throw error;
-          clearPendingInvite(); await loadSignedInTeam(currentUser); notify('Report access is ready');
+          await redeemPendingTeamInvite(code);
+          clearPendingInvite(); await loadSignedInTeam(currentUser); notify(currentTeam?.role === 'viewer' ? 'Report access is ready' : 'Coach access is ready');
         } catch (joinError) { $('joinTeamMessage').textContent = joinError.message || 'Could not use that invite code.'; }
         finally { $('joinTeamButton').disabled = false; }
       });
@@ -1448,17 +1480,17 @@
       $('signOutButton').addEventListener('click', signOut);
       $('createReportInvite').addEventListener('click', async () => {
         if (!currentTeam || currentTeam.role === 'viewer') return;
-        const button = $('createReportInvite'); button.disabled = true; button.textContent = 'Creating invite…';
+        const button = $('createReportInvite'), access = $('inviteAccess').value; button.disabled = true; button.textContent = 'Creating invite…';
         try {
-          const { data, error } = await dbClient.rpc('create_report_invite', { requested_team_id: currentTeam.id }); if (error) throw error;
+          const { data, error } = await dbClient.rpc('create_team_invite', { requested_team_id: currentTeam.id, requested_access: access }); if (error) throw error;
           const invitation = Array.isArray(data) ? data[0] : data;
           generatedReportInvite = invitation?.invite_code || '';
           if (!generatedReportInvite) throw Error('The invite code was not returned.');
           $('generatedInviteCode').textContent = generatedReportInvite;
-          $('generatedInviteExpiry').textContent = `One-time use · expires ${new Date(invitation.invite_expires_at).toLocaleString()}`;
+          $('generatedInviteExpiry').textContent = `${invitation.invite_access} · one-time use · expires ${new Date(invitation.invite_expires_at).toLocaleString()}`;
           $('reportInviteResult').hidden = false;
         } catch (inviteError) { notify(inviteError.message || 'Could not create the invite.'); }
-        finally { button.disabled = false; button.textContent = 'Create report invite'; }
+        finally { button.disabled = false; button.textContent = 'Create invite'; }
       });
       $('copyInviteCode').addEventListener('click', async () => { if (!generatedReportInvite) return; await copyText(generatedReportInvite); notify('Invite code copied'); });
       $('copyInviteLink').addEventListener('click', async () => {
