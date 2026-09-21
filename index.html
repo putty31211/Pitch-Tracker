@@ -37,6 +37,15 @@
     .setup-pitcher-row input:last-of-type { text-align: center; }
     .setup-pitcher-row button { border: 0; border-radius: 10px; background: #f4e9ea; color: #a02f38; font-weight: 900; }
     .setup-add { border: 1px solid #bcd1ed; border-radius: 10px; background: #eff5fc; color: #1761bc; padding: 9px 11px; font-size: 12px; font-weight: 850; }
+    .invite-join { margin-top: 22px; padding-top: 18px; border-top: 1px solid #e2e9f0; }
+    .invite-join h2 { margin: 0 0 4px; color: #172844; font-size: 17px; }
+    .invite-join p { margin: 0 0 10px; color: #6b809a; font-size: 12px; line-height: 1.45; }
+    .invite-code-row { display: flex; gap: 7px; }
+    .invite-code-row input { flex: 1; min-width: 0; border: 1px solid #ccd9e8; border-radius: 11px; background: #f8fafc; padding: 10px 12px; font: inherit; text-transform: uppercase; }
+    .invite-result { margin-top: 12px; padding: 12px; border-radius: 12px; background: #eff5fc; }
+    .invite-result code { display: block; color: #172844; font-size: 18px; font-weight: 900; letter-spacing: .08em; text-align: center; }
+    .invite-result p { margin: 7px 0 10px; color: #617893; font-size: 11px; text-align: center; }
+    .invite-result .editor-actions { margin-top: 0; }
     .account-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
     .account-row strong { display: block; font-size: 14px; }
     .account-row small { display: block; margin-top: 3px; color: #71849a; }
@@ -258,8 +267,8 @@
   <div id="onboardingGate" class="auth-shell" hidden>
     <section class="auth-card">
       <div class="auth-brand"><span class="ball-icon" aria-hidden="true">✦</span> Pitch Tracker</div>
-      <h1>Set up your team</h1>
-      <p>This creates your private team workspace. You can add more pitchers later.</p>
+      <h1 id="onboardingTitle">Set up your team</h1>
+      <p id="onboardingIntro">Create a private team workspace or join one with a report invite.</p>
       <form id="onboardingForm">
         <label class="setup-field">Team name<input id="setupTeamName" maxlength="80" required placeholder="e.g. Amherst Lightning 12U"></label>
         <div class="section-title"><h2>Pitchers</h2><span>Name · jersey number</span></div>
@@ -268,6 +277,11 @@
         <button class="auth-primary" id="setupSubmit" type="submit">Create team</button>
       </form>
       <div id="setupMessage" class="auth-message" role="status"></div>
+      <form id="joinTeamForm" class="invite-join">
+        <h2>Joining for reports?</h2><p>Enter the one-time code your coach gave you. Reports users cannot track games, change settings, or view pitch cards.</p>
+        <div class="invite-code-row"><input id="reportInviteCode" maxlength="14" autocomplete="one-time-code" placeholder="ABCD-EFGH-IJKL" aria-label="Report invite code"><button type="submit" class="setup-add" id="joinTeamButton">Join</button></div>
+        <div id="joinTeamMessage" class="auth-message" role="status"></div>
+      </form>
       <div class="auth-links"><button type="button" id="setupSignOut">Sign out</button></div>
     </section>
   </div>
@@ -394,10 +408,11 @@
       </section>
     </main>
     <main id="settingsView" hidden>
-      <div class="page-heading"><h2>Team settings</h2><p>Manage the team information used across games, cards, and reports.</p></div>
-      <section class="card" id="teamSettings"><div class="section-title"><h2>Team</h2></div><p class="hint">Your team name is saved in this browser and used for every game.</p><div class="team-field"><input id="teamNameSetting" maxlength="80" placeholder="Your team name" aria-label="Your team name"></div><div class="editor-actions"><button type="button" class="small-action" id="cancelTeamSettings">Cancel</button><button type="button" class="small-action" id="saveTeamSettings">Save team</button></div></section>
-      <section class="card"><div class="section-title"><h2>Pitchers</h2><button type="button" class="small-action" id="settingsEditPitchers">Edit</button></div><p class="hint">Add each pitcher's display name and jersey number.</p><div id="settingsPitcherList" class="settings-summary"></div><div id="pitcherEditor" class="pitcher-editor" hidden><h3>Edit team pitchers</h3><p class="hint">Name and number changes also update this game's pitch history.</p><div id="pitcherEditRows"></div><button type="button" class="small-action" id="addPitcher">+ Add pitcher</button><div class="editor-actions"><button type="button" class="small-action" id="cancelPitchers">Cancel</button><button type="button" class="small-action" id="savePitchers">Save pitchers</button></div></div></section>
-      <section class="card" id="teamTools"><div class="section-title"><h2>Pitch types</h2></div><p class="hint">Choose the pitches this team throws. Cards and pitch lists use this selection.</p><div id="teamPitches" class="team-pitches" role="group" aria-label="Team pitch types"></div><div class="team-field"><input id="customPitch" maxlength="40" placeholder="Other pitch name" aria-label="Other pitch name"><button class="small-action" type="button" id="addPitch">Add pitch</button></div><p id="teamToolsHint" class="hint" style="margin-top:10px"></p><button type="button" id="closeTeamTools" hidden>Done</button></section>
+      <div class="page-heading"><h2 id="settingsHeading">Team settings</h2><p id="settingsIntro">Manage the team information used across games, cards, and reports.</p></div>
+      <section class="card coach-only" id="teamSettings"><div class="section-title"><h2>Team</h2></div><p class="hint">Your team name is saved in this browser and used for every game.</p><div class="team-field"><input id="teamNameSetting" maxlength="80" placeholder="Your team name" aria-label="Your team name"></div><div class="editor-actions"><button type="button" class="small-action" id="cancelTeamSettings">Cancel</button><button type="button" class="small-action" id="saveTeamSettings">Save team</button></div></section>
+      <section class="card coach-only"><div class="section-title"><h2>Pitchers</h2><button type="button" class="small-action" id="settingsEditPitchers">Edit</button></div><p class="hint">Add each pitcher's display name and jersey number.</p><div id="settingsPitcherList" class="settings-summary"></div><div id="pitcherEditor" class="pitcher-editor" hidden><h3>Edit team pitchers</h3><p class="hint">Name and number changes also update this game's pitch history.</p><div id="pitcherEditRows"></div><button type="button" class="small-action" id="addPitcher">+ Add pitcher</button><div class="editor-actions"><button type="button" class="small-action" id="cancelPitchers">Cancel</button><button type="button" class="small-action" id="savePitchers">Save pitchers</button></div></div></section>
+      <section class="card coach-only" id="teamTools"><div class="section-title"><h2>Pitch types</h2></div><p class="hint">Choose the pitches this team throws. Cards and pitch lists use this selection.</p><div id="teamPitches" class="team-pitches" role="group" aria-label="Team pitch types"></div><div class="team-field"><input id="customPitch" maxlength="40" placeholder="Other pitch name" aria-label="Other pitch name"><button class="small-action" type="button" id="addPitch">Add pitch</button></div><p id="teamToolsHint" class="hint" style="margin-top:10px"></p><button type="button" id="closeTeamTools" hidden>Done</button></section>
+      <section class="card coach-only" id="accessSettings"><div class="section-title"><h2>Report access</h2></div><p class="hint">Create a one-time code for someone who should only view reports. The code expires after seven days.</p><button type="button" class="small-action" id="createReportInvite">Create report invite</button><div id="reportInviteResult" class="invite-result" hidden><code id="generatedInviteCode"></code><p id="generatedInviteExpiry"></p><div class="editor-actions"><button type="button" class="small-action" id="copyInviteCode">Copy code</button><button type="button" class="small-action" id="copyInviteLink">Copy invite link</button></div></div></section>
       <section class="card"><div class="section-title"><h2>Account</h2></div><div class="account-row"><div><strong id="accountEmail"></strong><small id="accountRole"></small></div><button type="button" class="small-action" id="signOutButton">Sign out</button></div></section>
     </main>
   </div>
@@ -438,6 +453,7 @@
       const TEAM_CARDS_KEY = 'lightning-pitch-team-cards-v1';
       const TEAM_NAME_KEY = 'lightning-pitch-team-name-v1';
       const ACTIVE_TEAM_KEY = 'pitch-tracker-active-team-v1';
+      const REPORT_INVITE_KEY = 'pitch-tracker-report-invite-v1';
       const SETTINGS_KEY = 'lightning-pitch-github-settings-v1';
       const github = { repo: 'putty31211/Pitch-Tracker', path: 'master-pitch-log.csv', branch: '', clientId: 'Iv23li2FHU7P8zN9EuxG', workerUrl: 'https://pitch-tracker-auth.putty31211.workers.dev' };
       const AUTH_KEY = 'lightning-pitch-github-auth-v1';
@@ -460,6 +476,7 @@
       let cloudPitchers = [];
       let setupPitchers = [{ name: '', number: '' }];
       let authMode = 'signin';
+      let generatedReportInvite = '';
       const $ = id => document.getElementById(id);
       const localDate = date => `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
       const createGameId = () => {
@@ -470,6 +487,16 @@
         return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
       };
       const isUuid = value => /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value || '');
+      const normalizeInviteCode = value => String(value || '').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 12).replace(/(.{4})(?=.)/g, '$1-');
+      function rememberInviteFromUrl() {
+        const code = normalizeInviteCode(new URLSearchParams(location.search).get('invite'));
+        if (/^[A-Z0-9]{4}(?:-[A-Z0-9]{4}){2}$/.test(code)) try { localStorage.setItem(REPORT_INVITE_KEY, code); } catch (_) { /* The code can still be entered manually. */ }
+      }
+      function pendingInviteCode() { try { return normalizeInviteCode(localStorage.getItem(REPORT_INVITE_KEY)); } catch (_) { return ''; } }
+      function clearPendingInvite() {
+        try { localStorage.removeItem(REPORT_INVITE_KEY); } catch (_) { /* Nothing else to clear. */ }
+        const url = new URL(location.href); if (url.searchParams.has('invite')) { url.searchParams.delete('invite'); history.replaceState(null, '', `${url.pathname}${url.search}${url.hash}`); }
+      }
       const teamKey = () => state.team.trim().toLocaleLowerCase();
       const profile = () => teamProfiles[teamKey()] || null;
       const teamPitchNames = () => profile()?.pitches || pitchNames;
@@ -497,7 +524,11 @@
       const calledPitch = call => calledTarget(call) ? 'Fastball' : CARD_PITCHES[call] || call;
       const validCall = call => calledTarget(call) ? teamPitchNames().includes('Fastball') : teamPitchNames().includes(calledPitch(call));
       const reservedPitchName = name => [...Object.keys(CARD_LOCATIONS), ...Object.values(CARD_LOCATIONS), 'Change'].some(label => label.toLocaleLowerCase() === name.toLocaleLowerCase());
-      const authRedirectUrl = () => `${window.location.origin}${window.location.pathname}`;
+      const authRedirectUrl = () => {
+        const url = new URL(`${window.location.origin}${window.location.pathname}`), invite = pendingInviteCode();
+        if (invite) url.searchParams.set('invite', invite);
+        return url.href;
+      };
       function showGate(view) {
         $('authGate').hidden = view !== 'auth';
         $('onboardingGate').hidden = view !== 'onboarding';
@@ -541,7 +572,13 @@
         currentUser = user;
         const { data: membership, error } = await dbClient.from('team_members').select('team_id, role, teams(id, name)').eq('user_id', user.id).limit(1).maybeSingle();
         if (error) throw error;
-        if (!membership) { currentTeam = null; setupPitchers = [{ name: '', number: '' }]; renderSetupPitchers(); $('setupMessage').textContent = ''; showGate('onboarding'); return; }
+        if (!membership) {
+          currentTeam = null; setupPitchers = [{ name: '', number: '' }]; renderSetupPitchers(); $('setupMessage').textContent = ''; $('joinTeamMessage').textContent = '';
+          const invite = pendingInviteCode(); $('reportInviteCode').value = invite;
+          $('onboardingTitle').textContent = invite ? 'Join your team' : 'Set up your team';
+          $('onboardingIntro').textContent = invite ? 'Your report invite is ready. Select Join to access the team’s reports.' : 'Create a private team workspace or join one with a report invite.';
+          showGate('onboarding'); return;
+        }
         const team = Array.isArray(membership.teams) ? membership.teams[0] : membership.teams;
         if (!team) throw Error('Your team membership could not be loaded.');
         currentTeam = { id: membership.team_id, name: team.name, role: membership.role };
@@ -554,10 +591,11 @@
           }
           localStorage.setItem(ACTIVE_TEAM_KEY, currentTeam.id);
         } catch (_) { /* The signed-in team still loads if browser storage is blocked. */ }
+        const cardsRequest = currentTeam.role === 'viewer' ? Promise.resolve({ data: [], error: null }) : dbClient.from('pitch_cards').select('id, name, grid').eq('team_id', currentTeam.id).order('name');
         const [pitchersResult, pitchesResult, cardsResult] = await Promise.all([
           dbClient.from('pitchers').select('id, display_name, jersey_number, active, sort_order').eq('team_id', currentTeam.id).order('sort_order').order('display_name'),
           dbClient.from('pitch_types').select('name, active, sort_order').eq('team_id', currentTeam.id).eq('active', true).order('sort_order').order('name'),
-          dbClient.from('pitch_cards').select('id, name, grid').eq('team_id', currentTeam.id).order('name')
+          cardsRequest
         ]);
         const loadError = pitchersResult.error || pitchesResult.error || cardsResult.error; if (loadError) throw loadError;
         cloudPitchers = pitchersResult.data || [];
@@ -576,9 +614,17 @@
         saveProfiles();
         if (state.pitcher && !teamPitcherNames().includes(state.pitcher)) state.pitcher = null;
         $('accountEmail').textContent = user.email || 'Signed-in account';
-        $('accountRole').textContent = `${currentTeam.name} · ${currentTeam.role}`;
+        const reportsOnly = currentTeam.role === 'viewer';
+        $('accountRole').textContent = `${currentTeam.name} · ${reportsOnly ? 'Reports user' : 'Coach'}`;
         $('brandTeam').textContent = currentTeam.name;
-        render(); renderPitchCard(); showGate('app');
+        $('trackerTab').hidden = reportsOnly; $('cardsTab').hidden = reportsOnly; $('currentSource').hidden = reportsOnly;
+        $('settingsTab').textContent = reportsOnly ? 'Account' : 'Settings';
+        for (const section of document.querySelectorAll('.coach-only')) section.hidden = reportsOnly;
+        $('settingsHeading').textContent = reportsOnly ? 'Account' : 'Team settings';
+        $('settingsIntro').textContent = reportsOnly ? 'View your access and sign out.' : 'Manage the team information used across games, cards, and reports.';
+        clearPendingInvite();
+        render(); if (!reportsOnly) renderPitchCard(); showGate('app');
+        if (reportsOnly) { report.source = 'imported'; showTab('reports'); await loadTeamHistory(false); }
       }
       async function initializeAuth() {
         if (!dbClient) { setAuthMode('signin'); setAuthMessage('The account service could not load. Check your internet connection and refresh.'); return; }
@@ -1115,19 +1161,20 @@
         } catch (error) { if (manual) notify(error.message || 'Could not load master CSV.'); }
       }
       function showTab(tab) {
+        if (currentTeam?.role === 'viewer' && !['reports', 'settings'].includes(tab)) tab = 'reports';
         report.tab = tab;
         const pages = { tracker: 'trackerView', reports: 'reportsView', cards: 'cardsView', settings: 'settingsView' };
         const tabs = { tracker: 'trackerTab', reports: 'reportsTab', cards: 'cardsTab', settings: 'settingsTab' };
         for (const [name, id] of Object.entries(pages)) $(id).hidden = name !== tab;
         for (const [name, id] of Object.entries(tabs)) { $(id).classList.toggle('active', name === tab); $(id).setAttribute('aria-current', name === tab ? 'page' : 'false'); }
         $('heroSummary').hidden = tab !== 'tracker';
-        const headings = { reports: 'Game reports', cards: 'Pitch cards', settings: 'Team settings' };
-        const subtitles = { reports: 'Review pitch calls, results, and batters faced.', cards: 'Build and print the cards used to call pitches.', settings: 'Manage your team, pitchers, and available pitches.' };
+        const headings = { reports: 'Game reports', cards: 'Pitch cards', settings: currentTeam?.role === 'viewer' ? 'Account' : 'Team settings' };
+        const subtitles = { reports: 'Review pitch calls, results, and batters faced.', cards: 'Build and print the cards used to call pitches.', settings: currentTeam?.role === 'viewer' ? 'View your access or sign out.' : 'Manage your team, pitchers, and available pitches.' };
         $('pitcherHeading').textContent = headings[tab] || state.pitcher || 'Choose a pitcher';
         $('heroSubtitle').textContent = subtitles[tab] || 'Tap through a pitch. The pitcher stays selected.';
         if (tab === 'reports') renderReport();
         if (tab === 'cards') renderPitchCard();
-        if (tab === 'settings') { $('teamNameSetting').value = state.team; renderTeamPitches(); }
+        if (tab === 'settings' && currentTeam?.role !== 'viewer') { $('teamNameSetting').value = state.team; renderTeamPitches(); }
         window.scrollTo(0, 0);
       }
       function chartRow(label, valueText, fraction, secondary = false) {
@@ -1363,6 +1410,18 @@
         finally { $('authSubmit').disabled = false; }
       });
       $('setupAddPitcher').addEventListener('click', () => { setupPitchers.push({ name: '', number: '' }); renderSetupPitchers(); $('setupPitchers').lastElementChild?.querySelector('input')?.focus(); });
+      $('reportInviteCode').addEventListener('input', event => { event.target.value = normalizeInviteCode(event.target.value); });
+      $('joinTeamForm').addEventListener('submit', async event => {
+        event.preventDefault(); if (!dbClient || !currentUser) return;
+        const code = normalizeInviteCode($('reportInviteCode').value);
+        if (!/^[A-Z0-9]{4}(?:-[A-Z0-9]{4}){2}$/.test(code)) { $('joinTeamMessage').textContent = 'Enter the complete invite code.'; return; }
+        $('joinTeamButton').disabled = true; $('joinTeamMessage').textContent = 'Joining team…';
+        try {
+          const { error } = await dbClient.rpc('redeem_report_invite', { invite_code: code }); if (error) throw error;
+          clearPendingInvite(); await loadSignedInTeam(currentUser); notify('Report access is ready');
+        } catch (joinError) { $('joinTeamMessage').textContent = joinError.message || 'Could not use that invite code.'; }
+        finally { $('joinTeamButton').disabled = false; }
+      });
       $('onboardingForm').addEventListener('submit', async event => {
         event.preventDefault(); if (!dbClient || !currentUser) return;
         const teamName = $('setupTeamName').value.trim().replace(/\s+/g, ' ');
@@ -1381,8 +1440,32 @@
         finally { $('setupSubmit').disabled = false; }
       });
       const signOut = async () => { if (!dbClient) return; await dbClient.auth.signOut(); };
+      async function copyText(value) {
+        try { await navigator.clipboard.writeText(value); }
+        catch (_) { const input = document.createElement('textarea'); input.value = value; input.style.position = 'fixed'; input.style.opacity = '0'; document.body.append(input); input.select(); document.execCommand('copy'); input.remove(); }
+      }
       $('setupSignOut').addEventListener('click', signOut);
       $('signOutButton').addEventListener('click', signOut);
+      $('createReportInvite').addEventListener('click', async () => {
+        if (!currentTeam || currentTeam.role === 'viewer') return;
+        const button = $('createReportInvite'); button.disabled = true; button.textContent = 'Creating invite…';
+        try {
+          const { data, error } = await dbClient.rpc('create_report_invite', { requested_team_id: currentTeam.id }); if (error) throw error;
+          const invitation = Array.isArray(data) ? data[0] : data;
+          generatedReportInvite = invitation?.invite_code || '';
+          if (!generatedReportInvite) throw Error('The invite code was not returned.');
+          $('generatedInviteCode').textContent = generatedReportInvite;
+          $('generatedInviteExpiry').textContent = `One-time use · expires ${new Date(invitation.invite_expires_at).toLocaleString()}`;
+          $('reportInviteResult').hidden = false;
+        } catch (inviteError) { notify(inviteError.message || 'Could not create the invite.'); }
+        finally { button.disabled = false; button.textContent = 'Create report invite'; }
+      });
+      $('copyInviteCode').addEventListener('click', async () => { if (!generatedReportInvite) return; await copyText(generatedReportInvite); notify('Invite code copied'); });
+      $('copyInviteLink').addEventListener('click', async () => {
+        if (!generatedReportInvite) return;
+        const url = new URL(location.href); url.search = ''; url.hash = ''; url.searchParams.set('invite', generatedReportInvite);
+        await copyText(url.href); notify('Invite link copied');
+      });
       $('opponentInput').addEventListener('input', event => { state.opponent = event.target.value; save(); });
       const setCardSubmenu = open => { $('cardSubmenu').hidden = !open; $('menuCards').setAttribute('aria-expanded', String(open)); };
       const closeOptions = () => { $('optionsMenu').open = false; setCardSubmenu(false); };
@@ -1661,7 +1744,7 @@
         } catch (error) { notify(error.message || 'Could not read that CSV.'); }
         event.target.value = '';
       });
-      restore(); restoreTeamName(); restoreProfiles(); save(); restoreReport(); restoreGithubSettings(); render(); loadPitchCard(); initializeAuth();
+      rememberInviteFromUrl(); restore(); restoreTeamName(); restoreProfiles(); save(); restoreReport(); restoreGithubSettings(); render(); loadPitchCard(); initializeAuth();
     })();
   </script>
 </body>
