@@ -58,7 +58,7 @@
     .pitch-grid .choice { min-height: 50px; }
     .pitch-mode { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; margin-bottom: 13px; }
     .pitch-mode .choice { padding-inline: 5px; }
-    .pitch-card-grid { display: grid; grid-template-columns: 24px repeat(5, minmax(0, 1fr)); gap: 4px; }
+    .pitch-card-grid { display: grid; gap: 4px; }
     .pitch-card-axis { display: grid; place-items: center; color: #647b97; font-size: 12px; font-weight: 900; }
     .pitch-card-grid .choice { min-width: 0; min-height: 56px; padding: 4px 2px; font-size: clamp(9px, 2.6vw, 12px); overflow-wrap: anywhere; }
     .pitch-card-grid .choice small { display: block; font-size: 9px; opacity: .75; margin-bottom: 3px; }
@@ -96,7 +96,8 @@
     .card-editor { border-top: 1px solid #e5ecf3; padding-top: 12px; margin-top: 12px; }
     .card-editor label { display: block; font-size: 12px; font-weight: 800; color: #556b84; }
     .card-editor input { width: 100%; display: block; margin: 6px 0 12px; min-height: 42px; }
-    .editor-grid { display: grid; grid-template-columns: 19px repeat(5, minmax(0, 1fr)); gap: 4px; }
+    .card-editor > label select { width: 100%; display: block; margin: 6px 0 12px; min-height: 42px; }
+    .editor-grid { display: grid; gap: 4px; }
     .editor-grid select { width: 100%; padding: 5px 1px; font-size: 10px; min-height: 52px; white-space: normal; }
     .editor-actions { display: flex; justify-content: flex-end; gap: 7px; margin-top: 12px; }
     .print-sheet { display: none; }
@@ -107,7 +108,7 @@
       .print-sheet { display: grid !important; grid-template-columns: repeat(2, 1fr); grid-template-rows: repeat(var(--print-rows), 1fr); gap: .22in; height: 10.25in; color: #172844; }
       .print-card { border: 1px solid #586b81; padding: .12in; break-inside: avoid; overflow: hidden; }
       .print-card strong { display: block; font-size: 12px; margin-bottom: .10in; }
-      .print-grid { display: grid; grid-template-columns: .19in repeat(5, minmax(0, 1fr)); grid-template-rows: repeat(6, 1fr); height: calc(100% - .30in); }
+      .print-grid { display: grid; height: calc(100% - .30in); }
       .print-grid span { border: 1px solid #9daaba; display: grid; place-items: center; padding: 2px; text-align: center; font-size: 9px; line-height: 1.15; overflow-wrap: anywhere; }
       .print-grid .pitch-card-axis { font-weight: 900; background: #edf2f7; }
     }
@@ -295,7 +296,7 @@
       </section>
       <section class="card" aria-labelledby="pitchLabel">
         <div class="section-title"><h2 id="pitchLabel">2 · Called pitch</h2></div>
-        <div class="pitch-mode" role="group" aria-label="How to call pitches"><button type="button" class="choice" id="standardMode" aria-pressed="true">Pitch + location</button><button type="button" class="choice" id="cardMode" aria-pressed="false">5×5 pitch card</button></div>
+        <div class="pitch-mode" role="group" aria-label="How to call pitches"><button type="button" class="choice" id="standardMode" aria-pressed="true">Pitch + location</button><button type="button" class="choice" id="cardMode" aria-pressed="false">Pitch card</button></div>
         <div id="pitches" class="pitch-grid" role="group" aria-label="Called pitch"></div>
         <div id="cardPanel" hidden>
           <div class="card-controls"><select id="activeCard" aria-label="Choose team pitch card"></select></div>
@@ -371,14 +372,14 @@
       </div>
     </main>
     <main id="cardsView" hidden>
-      <div class="page-heading"><h2>Pitch cards</h2><p>Create, manage, and print the 5×5 cards your team uses to call pitches.</p></div>
+      <div class="page-heading"><h2>Pitch cards</h2><p>Create, manage, and print the cards your team uses to call pitches.</p></div>
       <section class="card">
         <div class="section-title"><h2>Selected card</h2><span>Top number · left number</span></div>
         <div class="card-controls"><select id="manageCardChoice" aria-label="Choose team pitch card"></select></div>
         <div id="manageCardGrid" class="pitch-card-grid manage-grid" aria-label="Selected pitch card preview"></div>
         <p id="manageCardStatus" class="hint" style="margin-top:11px"></p>
         <div class="card-action-row"><button type="button" class="small-action" id="newCard">New card</button><button type="button" class="small-action" id="editCard">Edit card</button><button type="button" class="small-action" id="deleteCard">Delete card</button><button type="button" class="small-action" id="showPrintCards">Print cards</button></div>
-        <div id="cardEditor" class="card-editor" hidden><label for="cardName">Card name<input id="cardName" maxlength="60" placeholder="e.g. Game day card"></label><div id="editorGrid" class="editor-grid" role="group" aria-label="Edit 5 by 5 pitch card"></div><div class="editor-actions"><button id="cancelCard" class="small-action" type="button">Cancel</button><button id="saveCard" class="small-action" type="button">Save card</button></div></div>
+        <div id="cardEditor" class="card-editor" hidden><label for="cardName">Card name<input id="cardName" maxlength="60" placeholder="e.g. Game day card"></label><label for="cardSize">Card size (across × down)<select id="cardSize"><option value="5x5">5 × 5</option><option value="4x4">4 × 4</option><option value="5x4">5 × 4</option><option value="4x5">4 × 5</option></select></label><div id="editorGrid" class="editor-grid" role="group" aria-label="Edit pitch card"></div><div class="editor-actions"><button id="cancelCard" class="small-action" type="button">Cancel</button><button id="saveCard" class="small-action" type="button">Save card</button></div></div>
         <div id="printOptions" class="team-tools" hidden><h3>Print pitch cards</h3><p class="hint">Choose a card and how many copies to place on one letter-size sheet.</p><div class="card-controls"><select id="printCardChoice" aria-label="Pitch card to print"></select><select id="printCopies" aria-label="Cards per sheet"><option value="4">4 per sheet</option><option value="6">6 per sheet</option></select></div><div class="editor-actions"><button type="button" class="small-action" id="cancelPrint">Cancel</button><button id="printCard" class="small-action" type="button">Print cards</button></div></div>
       </section>
     </main>
@@ -437,7 +438,8 @@
       const MISS_DIRECTIONS = ['High / In', 'High', 'High / Out', 'In', 'Out', 'Low / In', 'Low', 'Low / Out'];
       const CARD_LOCATIONS = { Inside: 'In', Outside: 'Out', Middle: 'Middle', 'High Out': 'Up / Out', 'High In': 'Up / In', 'Low In': 'Down / In', High: 'Up', Low: 'Down', 'Low Out': 'Down / Out' };
       const CARD_PITCHES = { Change: 'Change-up' };
-      const DEFAULT_PITCH_CARD = [['Inside', 'Middle', 'High Out', 'Change', 'Curve'], ['Change', 'Drop', 'High In', 'Outside', '2 Seam'], ['Middle', 'Change', 'Inside', 'Low In', 'High'], ['Outside', 'Rise', 'Drop', 'Middle', 'Inside'], ['Low', 'Low Out', 'Rise', '2 Seam', 'Outside']];
+      const DEFAULT_PITCH_CARD = Array.from({ length: 5 }, () => Array(5).fill(''));
+      const CARD_SIZES = new Set(['5x5', '4x4', '5x4', '4x5']);
       let pitchMode = 'standard';
       let pitchCard = DEFAULT_PITCH_CARD;
       let teamProfiles = {};
@@ -459,6 +461,12 @@
       const pitcherLabel = name => `${pitcherNumber(name) ? `#${pitcherNumber(name)} ` : ''}${name}`;
       const activeCard = () => profile()?.cards.find(card => card.id === profile().selectedCardId) || null;
       const cardGrid = () => activeCard()?.grid || pitchCard;
+      const cardDimensions = grid => ({ rows: Array.isArray(grid) ? grid.length : 0, columns: Array.isArray(grid?.[0]) ? grid[0].length : 0 });
+      const validCardGridShape = grid => {
+        const { rows, columns } = cardDimensions(grid);
+        return CARD_SIZES.has(`${columns}x${rows}`) && grid.every(row => Array.isArray(row) && row.length === columns);
+      };
+      const resizeCardGrid = (grid, columns, rows, fill = '') => Array.from({ length: rows }, (_, row) => Array.from({ length: columns }, (_, column) => grid?.[row]?.[column] || fill));
       const zoneLabel = zone => ({ 'Up / In': 'High / In', Up: 'High', 'Up / Out': 'High / Out', 'Down / In': 'Low / In', Down: 'Low', 'Down / Out': 'Low / Out' }[zone] || zone);
       const zoneOrderForBatter = () => state.batterSide === 'L' ? ['Up / In', 'Up', 'Up / Out', 'In', 'Middle', 'Out', 'Down / In', 'Down', 'Down / Out'] : zoneNames;
       const normalizeZone = value => typeof value === 'string' ? zoneNames.find(zone => zone.toLocaleLowerCase() === value.trim().toLocaleLowerCase() || zoneLabel(zone).toLocaleLowerCase() === value.trim().toLocaleLowerCase()) || null : null;
@@ -538,12 +546,13 @@
         const activePitchers = cloudPitchers.filter(pitcher => pitcher.active);
         state.team = currentTeam.name;
         const key = teamKey();
+        const cloudCards = (cardsResult.data || []).filter(card => validCardGridShape(card.grid)).map(card => ({ id: card.id, name: card.name, grid: card.grid.map(row => row.map(normalizeCardCall)) }));
         teamProfiles[key] = {
           pitchers: activePitchers.map(pitcher => pitcher.display_name),
           pitcherNumbers: Object.fromEntries(activePitchers.map(pitcher => [pitcher.display_name, pitcher.jersey_number])),
           pitches: (pitchesResult.data || []).map(pitch => pitch.name),
-          cards: (cardsResult.data || []).filter(card => Array.isArray(card.grid) && card.grid.length === 5).map(card => ({ id: card.id, name: card.name, grid: card.grid.map(row => row.map(normalizeCardCall)) })),
-          selectedCardId: ''
+          cards: cloudCards,
+          selectedCardId: cloudCards[0]?.id || ''
         };
         try { localStorage.setItem(TEAM_NAME_KEY, state.team); } catch (_) { /* Account data remains available from Supabase. */ }
         saveProfiles();
@@ -598,7 +607,7 @@
               const number = String(item.pitcherNumbers?.[name] ?? objectEntry?.number ?? '').trim();
               return [name, /^\d{1,3}$/.test(number) ? number : ''];
             }));
-            const cards = item.cards.map(card => card && Array.isArray(card.grid) ? { ...card, grid: card.grid.map(row => Array.isArray(row) ? row.map(normalizeCardCall) : row) } : card).filter(card => card && typeof card.id === 'string' && typeof card.name === 'string' && card.name.trim() && card.name.length <= 60 && Array.isArray(card.grid) && card.grid.length === 5 && card.grid.every(row => Array.isArray(row) && row.length === 5 && row.every(call => typeof call === 'string' && call.length <= 40 && (calledTarget(call) || pitches.includes(calledPitch(call))))));
+            const cards = item.cards.map(card => card && Array.isArray(card.grid) ? { ...card, grid: card.grid.map(row => Array.isArray(row) ? row.map(normalizeCardCall) : row) } : card).filter(card => card && typeof card.id === 'string' && typeof card.name === 'string' && card.name.trim() && card.name.length <= 60 && validCardGridShape(card.grid) && card.grid.every(row => row.every(call => typeof call === 'string' && call.length <= 40 && (calledTarget(call) || pitches.includes(calledPitch(call))))));
             teamProfiles[key] = { pitches, pitchers, pitcherNumbers, cards, selectedCardId: cards.some(card => card.id === item.selectedCardId) ? item.selectedCardId : '' };
           }
           if (teamKey() && !teamProfiles[teamKey()]) {
@@ -613,17 +622,12 @@
         return rows.slice(1).map(row => row.slice(1).map(normalizeCardCall));
       }
       async function loadPitchCard() {
-        try {
-          const response = await fetch('pitchCard.csv', { cache: 'no-store' });
-          if (!response.ok) throw Error('Pitch card unavailable');
-          pitchCard = parsePitchCardCSV(await response.text());
-          $('cardStatus').textContent = 'Loaded from pitchCard.csv';
-        } catch (_) { $('cardStatus').textContent = 'Using included pitch card. Check pitchCard.csv in the site root for updates.'; }
+        pitchCard = DEFAULT_PITCH_CARD.map(row => [...row]);
         renderPitchCard();
         if (editorDraft?.id === null && !editorDraft.isNew) renderCardEditor();
       }
       function renderTeamPitches() {
-        $('teamToolsHint').textContent = teamKey() ? `Settings for ${state.team.trim()}. The starter card may contain pitches outside this list; those squares are unavailable until you create a team card.` : 'Set your team name from Team settings first.';
+        $('teamToolsHint').textContent = teamKey() ? `Settings for ${state.team.trim()}. These pitches are available when building team cards.` : 'Set your team name from Team settings first.';
         $('teamPitches').replaceChildren(...[...new Set([...pitchNames, ...(profile()?.pitches || [])])].map(name => {
           const selected = teamPitchNames().includes(name);
           const button = document.createElement('button'); button.type = 'button'; button.className = `choice${selected ? ' selected' : ''}`;
@@ -646,7 +650,7 @@
         }));
       }
       function renderCardPicker() {
-        const cards = [{ id: '', name: 'Starter card (pitchCard.csv)' }, ...(profile()?.cards || [])];
+        const cards = [{ id: '', name: 'Blank starter card' }, ...(profile()?.cards || [])];
         for (const picker of [$('activeCard'), $('manageCardChoice'), $('printCardChoice')]) {
           picker.replaceChildren();
           for (const card of cards) {
@@ -655,13 +659,16 @@
           picker.value = activeCard()?.id || '';
         }
         $('deleteCard').disabled = $('deleteCardShortcut').disabled = !activeCard();
-        $('cardStatus').textContent = activeCard() ? `Team card · ${activeCard().name}` : 'Starter card · pitchCard.csv (or included copy)';
-        $('manageCardStatus').textContent = activeCard() ? `${activeCard().name} · saved for ${state.team || 'this team'}` : 'Starter card · create a team card to customize it.';
+        const { rows, columns } = cardDimensions(cardGrid());
+        $('cardStatus').textContent = activeCard() ? `Team card · ${activeCard().name} · ${columns}×${rows}` : 'Blank starter card · create a team card before using card mode.';
+        $('manageCardStatus').textContent = activeCard() ? `${activeCard().name} · ${columns}×${rows} · saved for ${state.team || 'this team'}` : 'Blank starter card · select New card to build your first one.';
       }
       function renderPitchCard() {
         renderCardPicker();
+        const { rows, columns } = cardDimensions(cardGrid());
         const grid = $('pitchCardGrid'); grid.replaceChildren();
-        for (let row = 0; row <= 5; row++) for (let column = 0; column <= 5; column++) {
+        grid.style.gridTemplateColumns = `24px repeat(${columns}, minmax(0, 1fr))`;
+        for (let row = 0; row <= rows; row++) for (let column = 0; column <= columns; column++) {
           if (row === 0 || column === 0) { const axis = document.createElement('span'); axis.className = 'pitch-card-axis'; axis.textContent = row ? row : column || ''; grid.append(axis); continue; }
           const call = normalizeCardCall(cardGrid()[row - 1][column - 1]);
           const button = document.createElement('button'); button.type = 'button'; button.className = `choice${state.cardRow === row && state.cardColumn === column ? ' selected' : ''}`;
@@ -679,7 +686,8 @@
           grid.append(button);
         }
         const preview = $('manageCardGrid'); preview.replaceChildren();
-        for (let row = 0; row <= 5; row++) for (let column = 0; column <= 5; column++) {
+        preview.style.gridTemplateColumns = `24px repeat(${columns}, minmax(0, 1fr))`;
+        for (let row = 0; row <= rows; row++) for (let column = 0; column <= columns; column++) {
           const cell = document.createElement('span');
           if (!row || !column) { cell.className = 'pitch-card-axis'; cell.textContent = row || column || ''; }
           else { cell.className = 'choice'; const number = document.createElement('small'); number.textContent = `${column}–${row}`; cell.append(number, document.createTextNode(normalizeCardCall(cardGrid()[row - 1][column - 1]))); }
@@ -690,9 +698,13 @@
         $('cardEditor').hidden = !editorDraft;
         if (!editorDraft) return;
         $('cardName').value = editorDraft.name;
+        const { rows, columns } = cardDimensions(editorDraft.grid);
+        $('cardSize').value = `${columns}x${rows}`;
         const grid = $('editorGrid'); grid.replaceChildren();
+        grid.style.gridTemplateColumns = `19px repeat(${columns}, minmax(0, 1fr))`;
+        grid.setAttribute('aria-label', `Edit ${columns} by ${rows} pitch card`);
         const calls = [...Object.keys(CARD_LOCATIONS).filter(() => teamPitchNames().includes('Fastball')), ...teamPitchNames()];
-        for (let row = 0; row <= 5; row++) for (let column = 0; column <= 5; column++) {
+        for (let row = 0; row <= rows; row++) for (let column = 0; column <= columns; column++) {
           if (!row || !column) { const axis = document.createElement('span'); axis.className = 'pitch-card-axis'; axis.textContent = row || column || ''; grid.append(axis); continue; }
           const select = document.createElement('select'); select.setAttribute('aria-label', `Top ${column}, left ${row}`);
           for (const call of calls) { const option = document.createElement('option'); option.value = call; option.textContent = call; select.append(option); }
@@ -1383,6 +1395,13 @@
         editorDraft = { id: null, isNew: true, name: '', grid: Array.from({ length: 5 }, () => Array(5).fill(first)) };
         renderCardEditor(); $('cardEditor').scrollIntoView({ behavior: 'smooth', block: 'center' }); $('cardName').focus();
       });
+      $('cardSize').addEventListener('change', event => {
+        if (!editorDraft || !CARD_SIZES.has(event.target.value)) return;
+        const [columns, rows] = event.target.value.split('x').map(Number);
+        const first = teamPitchNames().includes('Fastball') ? 'Inside' : teamPitchNames()[0];
+        editorDraft.grid = resizeCardGrid(editorDraft.grid, columns, rows, first);
+        renderCardEditor();
+      });
       $('editCard').addEventListener('click', () => {
         closeOptions(); showTab('cards'); $('printOptions').hidden = true;
         if (!ensureProfile()) return;
@@ -1398,7 +1417,8 @@
         if (!name) { notify('Give this card a name.'); $('cardName').focus(); return; }
         if (item.cards.some(card => card.id !== editorDraft.id && card.name.toLowerCase() === name.toLowerCase())) { notify('Use a different card name.'); return; }
         const cells = [...$('editorGrid').querySelectorAll('select')];
-        const grid = Array.from({ length: 5 }, (_, row) => cells.slice(row * 5, row * 5 + 5).map(select => select.value));
+        const { rows, columns } = cardDimensions(editorDraft.grid);
+        const grid = Array.from({ length: rows }, (_, row) => cells.slice(row * columns, row * columns + columns).map(select => select.value));
         if (grid.some(row => row.some(call => !validCall(call)))) { notify('Every square needs an enabled team pitch.'); return; }
         let id = editorDraft.id;
         if (currentTeam) {
@@ -1427,12 +1447,15 @@
       $('printCard').addEventListener('click', () => {
         const sheet = $('printSheet'); sheet.replaceChildren();
         const copies = Number($('printCopies').value);
+        const { rows, columns } = cardDimensions(cardGrid());
         sheet.style.setProperty('--print-rows', copies / 2);
         for (let copy = 0; copy < copies; copy++) {
           const card = document.createElement('section'); card.className = 'print-card';
           const title = document.createElement('strong'); title.textContent = `${state.team.trim() || 'Pitch card'} · ${activeCard()?.name || 'Starter card'}`;
           const grid = document.createElement('div'); grid.className = 'print-grid';
-          for (let row = 0; row <= 5; row++) for (let column = 0; column <= 5; column++) {
+          grid.style.gridTemplateColumns = `.19in repeat(${columns}, minmax(0, 1fr))`;
+          grid.style.gridTemplateRows = `repeat(${rows + 1}, 1fr)`;
+          for (let row = 0; row <= rows; row++) for (let column = 0; column <= columns; column++) {
             const cell = document.createElement('span');
             if (!row || !column) { cell.className = 'pitch-card-axis'; cell.textContent = row || column || ''; }
             else cell.textContent = cardGrid()[row - 1][column - 1];
