@@ -25,6 +25,12 @@
     .auth-links button { border: 0; background: transparent; color: #1761bc; padding: 5px 0; font-size: 12px; font-weight: 800; }
     .auth-message { min-height: 20px; margin-top: 12px; color: #a02f38; font-size: 12px; line-height: 1.4; text-align: center; }
     .auth-message.success { color: #18764a; }
+    .login-splash { position: fixed; inset: 0; z-index: 30; display: grid; place-items: center; padding: 24px; background: radial-gradient(circle at top, #1a3c69 0, #0d1c35 48%, #081426 100%); }
+    .login-splash-card { width: min(100%, 340px); padding: 30px 24px; border: 1px solid #ffffff1f; border-radius: 24px; background: #142844; color: #fff; text-align: center; box-shadow: 0 24px 70px #02091480; animation: login-card-in .28s ease-out; }
+    .login-check { width: 66px; height: 66px; display: grid; place-items: center; margin: 0 auto 17px; border-radius: 50%; background: #29a66a; color: #fff; font-size: 35px; font-weight: 900; box-shadow: 0 0 0 8px #29a66a24; }
+    .login-splash-card strong { display: block; font-size: 24px; letter-spacing: -.02em; }
+    .login-splash-card span { display: block; margin-top: 7px; color: #b9c8dd; font-size: 13px; }
+    @keyframes login-card-in { from { opacity: 0; transform: translateY(8px) scale(.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
     .setup-pitchers { margin: 15px 0; }
     .setup-pitcher-row { display: grid; grid-template-columns: 1fr 74px 38px; gap: 7px; margin: 8px 0; }
     .setup-pitcher-row input { min-width: 0; border: 1px solid #ccd9e8; border-radius: 10px; background: #f8fafc; padding: 9px; font: inherit; }
@@ -264,6 +270,9 @@
       <div id="setupMessage" class="auth-message" role="status"></div>
       <div class="auth-links"><button type="button" id="setupSignOut">Sign out</button></div>
     </section>
+  </div>
+  <div id="loginSplash" class="login-splash" role="status" aria-live="assertive" hidden>
+    <div class="login-splash-card"><div class="login-check" aria-hidden="true">✓</div><strong>Login successful</strong><span>Loading your team…</span></div>
   </div>
   <div class="app" id="pitchApp" hidden>
     <header class="hero">
@@ -1255,7 +1264,9 @@
             const { data } = await dbClient.auth.getUser(); if (data.user) await loadSignedInTeam(data.user);
           } else {
             const { data, error } = await dbClient.auth.signInWithPassword({ email, password }); if (error) throw error;
-            await loadSignedInTeam(data.user);
+            $('loginSplash').hidden = false;
+            try { await Promise.all([loadSignedInTeam(data.user), new Promise(resolve => setTimeout(resolve, 900))]); }
+            finally { $('loginSplash').hidden = true; }
           }
         } catch (authError) { setAuthMessage(authError.message || 'Account request failed.'); }
         finally { $('authSubmit').disabled = false; }
