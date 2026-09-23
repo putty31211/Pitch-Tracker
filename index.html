@@ -45,6 +45,18 @@
     .account-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
     .account-row strong { display: block; font-size: 14px; }
     .account-row small { display: block; margin-top: 3px; color: #71849a; }
+    .access-subsection { margin-top: 17px; padding-top: 15px; border-top: 1px solid #e2e9f0; }
+    .access-subsection .section-title { margin-bottom: 8px; }
+    .access-list { display: grid; gap: 8px; }
+    .access-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 11px; border: 1px solid #e2e9f0; border-radius: 12px; background: #f8fafc; }
+    .access-identity { min-width: 0; }
+    .access-identity strong { display: block; overflow: hidden; color: #253a57; font-size: 13px; text-overflow: ellipsis; white-space: nowrap; }
+    .access-identity small { display: block; margin-top: 3px; color: #71849a; font-size: 11px; }
+    .access-actions { display: flex; flex: 0 0 auto; align-items: center; gap: 6px; }
+    .access-actions select { min-height: 38px; max-width: 125px; border: 1px solid #dbe4ee; border-radius: 9px; background: #fff; color: #172844; padding: 7px; font: inherit; font-size: 12px; font-weight: 750; }
+    .access-actions .small-action { min-height: 38px; padding: 7px 9px; }
+    .small-action.danger-action { border-color: #efc4c8; background: #fff3f4; color: #a22d38; }
+    .empty-access { margin: 0; padding: 13px; border: 1px dashed #ccd9e8; border-radius: 11px; color: #71849a; font-size: 12px; text-align: center; }
     .hero { background: #0d1c35; color: white; padding: 24px 20px 18px; border-radius: 0 0 25px 25px; }
     .brand { display: flex; align-items: center; gap: 10px; color: #b9c8dd; font-size: 12px; font-weight: 850; text-transform: uppercase; letter-spacing: .15em; }
     .ball-icon { height: 28px; width: 28px; display: grid; place-items: center; border-radius: 50%; background: #ffb157; color: #182841; font-size: 17px; }
@@ -282,6 +294,7 @@
     .muted { color: #8192a6; font-size: 12px; }
     .toast { position: fixed; left: 50%; bottom: max(18px, env(safe-area-inset-bottom)); transform: translateX(-50%); padding: 11px 17px; background: #142844; color: #fff; border-radius: 12px; box-shadow: 0 8px 24px #10223e40; font-size: 13px; font-weight: 750; z-index: 2; white-space: nowrap; max-width: calc(100vw - 30px); overflow: hidden; text-overflow: ellipsis; }
     .toast[hidden], [hidden] { display: none !important; }
+    @media (max-width: 430px) { .access-row { align-items: stretch; flex-direction: column; } .access-actions { flex-wrap: wrap; } .access-actions select { flex: 1; max-width: none; } }
     @media (max-width: 375px) { .card { padding: 12px; } main { padding-inline: 10px; } .two-columns { gap: 8px; } .choice { font-size: 12px; } .zone { font-size: 9px; } .game-fields { grid-template-columns: 1fr; } .tab { font-size: 11px; } }
     @media (min-width: 561px) { body { padding: 26px 0; } .app { border-radius: 25px; overflow: hidden; min-height: calc(100dvh - 52px); } .hero { border-radius: 0 0 25px 25px; } }
   </style>
@@ -459,7 +472,21 @@
       <section class="card coach-only" id="teamSettings"><div class="section-title"><h2>Team</h2></div><p class="hint">Your team name is saved in this browser and used for every game.</p><div class="team-field"><input id="teamNameSetting" maxlength="80" placeholder="Your team name" aria-label="Your team name"></div><div class="editor-actions"><button type="button" class="small-action" id="cancelTeamSettings">Cancel</button><button type="button" class="small-action" id="saveTeamSettings">Save team</button></div></section>
       <section class="card coach-only"><div class="section-title"><h2>Pitchers</h2><button type="button" class="small-action" id="settingsEditPitchers">Edit</button></div><p class="hint">Add each pitcher's display name and jersey number.</p><div id="settingsPitcherList" class="settings-summary"></div><div id="pitcherEditor" class="pitcher-editor" hidden><h3>Edit team pitchers</h3><p class="hint">Name and number changes also update this game's pitch history.</p><div id="pitcherEditRows"></div><button type="button" class="small-action" id="addPitcher">+ Add pitcher</button><div class="editor-actions"><button type="button" class="small-action" id="cancelPitchers">Cancel</button><button type="button" class="small-action" id="savePitchers">Save pitchers</button></div></div></section>
       <section class="card coach-only" id="teamTools"><div class="section-title"><h2>Pitch types</h2></div><p class="hint">Choose the pitches this team throws. Cards and pitch lists use this selection.</p><div id="teamPitches" class="team-pitches" role="group" aria-label="Team pitch types"></div><div class="team-field"><input id="customPitch" maxlength="40" placeholder="Other pitch name" aria-label="Other pitch name"><button class="small-action" type="button" id="addPitch">Add pitch</button></div><p id="teamToolsHint" class="hint" style="margin-top:10px"></p><button type="button" id="closeTeamTools" hidden>Done</button></section>
-      <section class="card coach-only" id="accessSettings"><div class="section-title"><h2>Team access</h2></div><p class="hint">Create a one-time, seven-day invite for another coach or a reports-only user.</p><div class="card-controls"><select id="inviteAccess" aria-label="Invite access level"><option value="reports">Reports user</option><option value="coach">Coach</option></select><button type="button" class="small-action" id="createReportInvite">Create invite</button></div><div id="reportInviteResult" class="invite-result" hidden><code id="generatedInviteCode"></code><p id="generatedInviteExpiry"></p><div class="editor-actions"><button type="button" class="small-action" id="copyInviteCode">Copy code</button><button type="button" class="small-action" id="copyInviteLink">Copy invite link</button></div></div></section>
+      <section class="card coach-only" id="accessSettings">
+        <div class="section-title"><h2>Team access</h2></div>
+        <p class="hint">Create a one-time, seven-day invite for another coach or a reports-only user.</p>
+        <div class="card-controls"><select id="inviteAccess" aria-label="Invite access level"><option value="reports">Reports user</option><option value="coach">Coach</option></select><button type="button" class="small-action" id="createReportInvite">Create invite</button></div>
+        <div id="reportInviteResult" class="invite-result" hidden><code id="generatedInviteCode"></code><p id="generatedInviteExpiry"></p><div class="editor-actions"><button type="button" class="small-action" id="copyInviteCode">Copy code</button><button type="button" class="small-action" id="copyInviteLink">Copy invite link</button></div></div>
+        <div class="access-subsection">
+          <div class="section-title"><h2>Team members</h2><button type="button" class="small-action" id="refreshTeamAccess">Refresh</button></div>
+          <p id="memberManagementHint" class="hint"></p>
+          <div id="teamMemberList" class="access-list" aria-live="polite"><p class="empty-access">Loading team members…</p></div>
+        </div>
+        <div class="access-subsection">
+          <div class="section-title"><h2>Pending invitations</h2></div>
+          <div id="pendingInviteList" class="access-list" aria-live="polite"><p class="empty-access">Loading invitations…</p></div>
+        </div>
+      </section>
       <section class="card"><div class="section-title"><h2>Account</h2></div><div class="account-row"><div><strong id="accountEmail"></strong><small id="accountRole"></small></div><button type="button" class="small-action" id="signOutButton">Sign out</button></div></section>
     </main>
   </div>
@@ -524,6 +551,8 @@
       let authMode = 'signin';
       let generatedReportInvite = '';
       let inviteRedemptionPromise = null;
+      let teamMembers = [];
+      let pendingTeamInvites = [];
       const $ = id => document.getElementById(id);
       const localDate = date => `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
       const createGameId = () => {
@@ -624,6 +653,96 @@
         $('showReset').hidden = reset || update;
         showGate('auth');
       }
+      const memberRoleLabel = role => ({ owner: 'Owner', editor: 'Coach', viewer: 'Reports user' }[role] || role);
+      const inviteLinkForCode = code => {
+        const url = new URL(location.href); url.search = ''; url.hash = ''; url.searchParams.set('invite', code); return url.href;
+      };
+      function setTeamAccessError(message) {
+        const text = message || 'Team access could not be loaded.';
+        $('teamMemberList').innerHTML = `<p class="empty-access"></p>`; $('teamMemberList').firstElementChild.textContent = text;
+        $('pendingInviteList').innerHTML = '<p class="empty-access">Invitations could not be loaded.</p>';
+      }
+      function renderTeamAccessManagement() {
+        if (!currentTeam || currentTeam.role === 'viewer') return;
+        const isOwner = currentTeam.role === 'owner';
+        $('memberManagementHint').textContent = isOwner
+          ? 'As team owner, you can change another member between Coach and Reports user or remove their access.'
+          : 'You can invite people and cancel pending invitations. Only the team owner can change or remove existing members.';
+
+        const memberList = $('teamMemberList'); memberList.replaceChildren();
+        if (!teamMembers.length) memberList.innerHTML = '<p class="empty-access">No team members found.</p>';
+        for (const member of teamMembers) {
+          const row = document.createElement('div'); row.className = 'access-row';
+          const identity = document.createElement('div'); identity.className = 'access-identity';
+          const email = document.createElement('strong'); email.textContent = `${member.member_email || 'Signed-in account'}${member.member_user_id === currentUser?.id ? ' · You' : ''}`;
+          const detail = document.createElement('small'); detail.textContent = memberRoleLabel(member.member_role);
+          identity.append(email, detail); row.append(identity);
+
+          const actions = document.createElement('div'); actions.className = 'access-actions';
+          if (member.member_role === 'owner') {
+            const protectedLabel = document.createElement('small'); protectedLabel.textContent = 'Protected'; actions.append(protectedLabel);
+          } else if (isOwner) {
+            const access = document.createElement('select'); access.setAttribute('aria-label', `Access for ${member.member_email || 'team member'}`);
+            access.innerHTML = '<option value="editor">Coach</option><option value="viewer">Reports user</option>'; access.value = member.member_role;
+            access.addEventListener('change', async () => {
+              const previous = member.member_role, next = access.value;
+              const nextLabel = memberRoleLabel(next);
+              if (!confirm(`Change ${member.member_email || 'this member'} to ${nextLabel}?`)) { access.value = previous; return; }
+              access.disabled = true;
+              try {
+                const { error } = await dbClient.rpc('update_team_member_access', { requested_team_id: currentTeam.id, requested_user_id: member.member_user_id, requested_access: next }); if (error) throw error;
+                await loadTeamAccessManagement(); notify(`Access changed to ${nextLabel}`);
+              } catch (error) { access.value = previous; access.disabled = false; notify(error.message || 'Could not change member access.'); }
+            });
+            const remove = document.createElement('button'); remove.type = 'button'; remove.className = 'small-action danger-action'; remove.textContent = 'Remove';
+            remove.addEventListener('click', async () => {
+              if (!confirm(`Remove ${member.member_email || 'this member'} from ${currentTeam.name}? They will immediately lose team access.`)) return;
+              remove.disabled = true;
+              try {
+                const { error } = await dbClient.rpc('remove_team_member', { requested_team_id: currentTeam.id, requested_user_id: member.member_user_id }); if (error) throw error;
+                await loadTeamAccessManagement(); notify('Team member removed');
+              } catch (error) { remove.disabled = false; notify(error.message || 'Could not remove the team member.'); }
+            });
+            actions.append(access, remove);
+          }
+          row.append(actions); memberList.append(row);
+        }
+
+        const inviteList = $('pendingInviteList'); inviteList.replaceChildren();
+        if (!pendingTeamInvites.length) inviteList.innerHTML = '<p class="empty-access">No unused invitations.</p>';
+        for (const invitation of pendingTeamInvites) {
+          const row = document.createElement('div'); row.className = 'access-row';
+          const identity = document.createElement('div'); identity.className = 'access-identity';
+          const code = document.createElement('strong'); code.textContent = invitation.code;
+          const detail = document.createElement('small'); detail.textContent = `${memberRoleLabel(invitation.role)} · expires ${new Date(invitation.expires_at).toLocaleString()}`;
+          identity.append(code, detail);
+          const actions = document.createElement('div'); actions.className = 'access-actions';
+          const copy = document.createElement('button'); copy.type = 'button'; copy.className = 'small-action'; copy.textContent = 'Copy link';
+          copy.addEventListener('click', async () => { await copyText(inviteLinkForCode(invitation.code)); notify('Invite link copied'); });
+          const cancel = document.createElement('button'); cancel.type = 'button'; cancel.className = 'small-action danger-action'; cancel.textContent = 'Cancel';
+          cancel.addEventListener('click', async () => {
+            if (!confirm(`Cancel invite ${invitation.code}? The link will stop working.`)) return;
+            cancel.disabled = true;
+            try {
+              const { error } = await dbClient.from('report_invites').delete().eq('id', invitation.id).eq('team_id', currentTeam.id); if (error) throw error;
+              await loadTeamAccessManagement(); notify('Invitation cancelled');
+            } catch (error) { cancel.disabled = false; notify(error.message || 'Could not cancel the invitation.'); }
+          });
+          actions.append(copy, cancel); row.append(identity, actions); inviteList.append(row);
+        }
+      }
+      async function loadTeamAccessManagement() {
+        if (!currentTeam || currentTeam.role === 'viewer') return;
+        $('teamMemberList').innerHTML = '<p class="empty-access">Loading team members…</p>';
+        $('pendingInviteList').innerHTML = '<p class="empty-access">Loading invitations…</p>';
+        const [membersResult, invitesResult] = await Promise.all([
+          dbClient.rpc('list_team_members', { requested_team_id: currentTeam.id }),
+          dbClient.from('report_invites').select('id, code, role, created_at, expires_at').eq('team_id', currentTeam.id).is('redeemed_at', null).gt('expires_at', new Date().toISOString()).order('expires_at')
+        ]);
+        const error = membersResult.error || invitesResult.error;
+        if (error) { setTeamAccessError(error.message); throw error; }
+        teamMembers = membersResult.data || []; pendingTeamInvites = invitesResult.data || []; renderTeamAccessManagement();
+      }
       async function loadSignedInTeam(user) {
         currentUser = user;
         const { data: membership, error } = await dbClient.from('team_members').select('team_id, role, teams(id, name)').eq('user_id', user.id).limit(1).maybeSingle();
@@ -686,6 +805,7 @@
         $('settingsIntro').textContent = reportsOnly ? 'View your access and sign out.' : 'Manage the team information used across games, cards, and reports.';
         clearPendingInvite();
         render(); if (!reportsOnly) renderPitchCard(); showGate('app');
+        if (!reportsOnly) loadTeamAccessManagement().catch(() => { /* Team setup remains usable if the management SQL has not been installed yet. */ });
         if (reportsOnly) { report.source = 'imported'; showTab('reports'); await loadTeamHistory(false); }
       }
       async function initializeAuth() {
@@ -1237,7 +1357,7 @@
         $('heroSubtitle').textContent = subtitles[tab] || 'Tap through a pitch. The pitcher stays selected.';
         if (tab === 'reports') renderReport();
         if (tab === 'cards') renderPitchCard();
-        if (tab === 'settings' && currentTeam?.role !== 'viewer') { $('teamNameSetting').value = state.team; renderTeamPitches(); }
+        if (tab === 'settings' && currentTeam?.role !== 'viewer') { $('teamNameSetting').value = state.team; renderTeamPitches(); loadTeamAccessManagement().catch(() => {}); }
         window.scrollTo(0, 0);
       }
       function chartRow(label, valueText, fraction, secondary = false) {
@@ -1815,14 +1935,20 @@
           $('generatedInviteCode').textContent = generatedReportInvite;
           $('generatedInviteExpiry').textContent = `${invitation.invite_access} · one-time use · expires ${new Date(invitation.invite_expires_at).toLocaleString()}`;
           $('reportInviteResult').hidden = false;
+          loadTeamAccessManagement().catch(() => {});
         } catch (inviteError) { notify(inviteError.message || 'Could not create the invite.'); }
         finally { button.disabled = false; button.textContent = 'Create invite'; }
       });
       $('copyInviteCode').addEventListener('click', async () => { if (!generatedReportInvite) return; await copyText(generatedReportInvite); notify('Invite code copied'); });
       $('copyInviteLink').addEventListener('click', async () => {
         if (!generatedReportInvite) return;
-        const url = new URL(location.href); url.search = ''; url.hash = ''; url.searchParams.set('invite', generatedReportInvite);
-        await copyText(url.href); notify('Invite link copied');
+        await copyText(inviteLinkForCode(generatedReportInvite)); notify('Invite link copied');
+      });
+      $('refreshTeamAccess').addEventListener('click', async () => {
+        const button = $('refreshTeamAccess'); button.disabled = true;
+        try { await loadTeamAccessManagement(); notify('Team access refreshed'); }
+        catch (error) { notify(error.message || 'Could not refresh team access.'); }
+        finally { button.disabled = false; }
       });
       $('opponentInput').addEventListener('input', event => { state.opponent = event.target.value; save(); });
       const setCardSubmenu = open => { $('cardSubmenu').hidden = !open; $('menuCards').setAttribute('aria-expanded', String(open)); };
