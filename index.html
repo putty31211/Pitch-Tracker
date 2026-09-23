@@ -428,7 +428,7 @@
         <section class="card"><div class="section-title"><h2>Pitch mix</h2><span>Share · strike %</span></div><div id="pitchMix"></div></section>
         <section class="card" id="pitchCommandSection"><div class="section-title"><h2>Pitch-type command</h2><span>Execution · result</span></div><div class="report-table-wrap"><table class="report-table"><thead><tr><th>Pitch</th><th>Usage</th><th>Spot hit</th><th>Strikes</th><th>Common miss</th></tr></thead><tbody id="pitchCommandBody"></tbody></table></div><p class="hint" style="margin-top:10px">Spot-hit percentages use charted hit-or-miss pitches. Small samples are labeled.</p></section>
         <section class="card"><div class="section-title"><h2>Pitch results</h2></div><div id="resultChart"></div></section>
-        <section class="card"><div class="section-title"><h2>Called targets</h2><span>Pitch count</span></div><div class="zone-report" id="zoneReport"></div><p class="hint" style="margin-top:12px">These are intended targets, not where the pitch actually went. Strike % includes fouls.</p></section>
+        <section class="card"><div class="section-title"><h2>Called targets</h2><span>Pitch count</span></div><div class="zone-report" id="zoneReport"></div><p class="hint" style="margin-top:12px">These are intended targets, not where the pitch actually went. Strike % includes fouls and balls put in play.</p></section>
         <section class="card" id="targetAccuracySection"><div class="section-title"><h2>Target accuracy</h2><span>Charted pitches only</span></div><div id="accuracyChart"></div><p class="hint" style="margin-top:12px">Fouls and balls in play have no hit/miss choice yet, so they are excluded.</p></section>
         <section class="card" id="workloadSection"><div class="section-title"><h2>Workload and command</h2><span>Pitcher pitches per game</span></div><div id="workloadChart"></div><p class="hint" style="margin-top:12px">Pitch numbers restart for each pitcher in each game. This can reveal command changes as workload increases.</p></section>
         <section class="card" id="countSection"><div class="section-title"><h2>Count performance</h2><span>Situation splits</span></div><div class="report-table-wrap"><table class="report-table"><thead><tr><th>Situation</th><th>Pitches</th><th>Spot hit</th><th>Strikes</th></tr></thead><tbody id="countPerformanceBody"></tbody></table></div></section>
@@ -1250,7 +1250,7 @@
         fill.style.width = `${Math.max(0, Math.min(100, fraction * 100))}%`;
         track.append(fill); row.append(top, track); return row;
       }
-      const isStrike = p => p.result === 'Strike' || p.result === 'Foul';
+      const isStrike = p => p.result === 'Strike' || p.result === 'Foul' || p.result === 'In play';
       const percent = (part, total) => total ? `${Math.round(part / total * 100)}%` : '—';
       const isAccuracyAttempt = p => !!p.zone && (p.result === 'Strike' && !!p.strikeSpot || p.result === 'Ball' && !!p.ballType);
       const hitCalledTarget = p => p.strikeSpot === 'Hit spot' || p.ballType === 'Right spot · called ball';
