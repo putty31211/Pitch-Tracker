@@ -4,7 +4,14 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#0d1c35">
-  <title>Pitch Log</title>
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="apple-mobile-web-app-title" content="Pitch Tracker">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+  <title>Pitch Tracker</title>
   <style>
     :root { font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; color: #172844; background: #edf2f7; }
     * { box-sizing: border-box; }
@@ -86,20 +93,8 @@
     .pitch-card-grid .choice { min-width: 0; min-height: 56px; padding: 4px 2px; font-size: clamp(9px, 2.6vw, 12px); overflow-wrap: anywhere; }
     .pitch-card-grid .choice small { display: block; font-size: 9px; opacity: .75; margin-bottom: 3px; }
     .pitch-card-grid .choice:disabled { opacity: .42; cursor: not-allowed; }
-    .game-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
+    .game-top { margin-bottom: 12px; }
     .game-top strong { color: #556b84; font-size: 12px; text-transform: uppercase; letter-spacing: .11em; }
-    .options-menu { position: relative; border: 0; padding: 0; margin: 0; }
-    .options-menu summary { list-style: none; display: grid; place-items: center; width: 44px; height: 42px; border: 1px solid #dbe4ee; border-radius: 11px; color: #1761bc; font-size: 23px; line-height: 1; padding: 0; }
-    .options-menu summary::-webkit-details-marker { display: none; }
-    .options-list { position: absolute; right: 0; top: 46px; z-index: 5; width: 190px; padding: 5px; background: #fff; border: 1px solid #dbe4ee; border-radius: 12px; box-shadow: 0 10px 26px #14274425; }
-    .options-list button { display: block; width: 100%; border: 0; background: transparent; color: #263b58; text-align: left; padding: 11px; border-radius: 8px; font-size: 13px; font-weight: 750; }
-    .options-list button:hover, .options-list button:focus-visible { background: #eff5fc; }
-    .options-list button:disabled { color: #9aa8b8; cursor: default; }
-    .options-parent { display: flex !important; justify-content: space-between; align-items: center; }
-    .options-parent span { transition: transform .15s; }
-    .options-parent[aria-expanded="true"] span { transform: rotate(90deg); }
-    .options-submenu { border-left: 2px solid #dbe7f5; margin: 1px 7px 5px 12px; padding-left: 4px; }
-    .options-submenu button { padding-left: 13px; font-size: 12px; }
     .pitcher-editor { margin-top: 14px; border-top: 1px solid #e5ecf3; padding-top: 12px; }
     .pitcher-editor h3 { margin: 0 0 8px; font-size: 15px; }
     .pitcher-edit-row { display: flex; gap: 7px; margin: 7px 0; }
@@ -351,7 +346,7 @@
     <nav class="tabs" aria-label="App sections"><button type="button" class="tab active" id="trackerTab" aria-current="page">Track</button><button type="button" class="tab" id="reportsTab">Reports</button><button type="button" class="tab" id="cardsTab">Cards</button><button type="button" class="tab" id="settingsTab">Settings</button></nav>
     <main id="trackerView">
       <section class="card" aria-label="Game details" id="gameDetails">
-        <div class="game-top"><strong>Game details</strong><details class="options-menu" id="optionsMenu"><summary aria-label="Options menu" title="Options">☰</summary><div class="options-list"><button type="button" id="menuTeamSettings">Team settings</button><button type="button" class="options-parent" id="menuCards" aria-expanded="false" aria-controls="cardSubmenu">Pitch cards <span aria-hidden="true">›</span></button><div class="options-submenu" id="cardSubmenu" hidden><button type="button" id="newCardShortcut">New card</button><button type="button" id="editCardShortcut">Edit card</button><button type="button" id="deleteCardShortcut">Delete card</button><button type="button" id="menuPrintCards">Print cards</button></div><button type="button" id="menuPitchers">Edit pitchers</button><button type="button" id="menuPitches">Edit pitch types</button></div></details></div>
+        <div class="game-top"><strong>Game details</strong></div>
         <div class="game-fields"><label for="opponentInput">Opponent<input id="opponentInput" type="text" maxlength="80" placeholder="Enter opponent" autocomplete="off"></label><label for="gameDateInput">Game date<input id="gameDateInput" type="date"></label></div>
       </section>
       <section class="card pitcher-card" aria-label="Pitcher selection">
@@ -824,7 +819,7 @@
         });
       }
       function openTeamSettings() {
-        $('optionsMenu').open = false; showTab('settings');
+        showTab('settings');
         $('teamNameSetting').value = state.team;
         $('teamSettings').scrollIntoView({ behavior: 'smooth', block: 'center' }); $('teamNameSetting').focus();
       }
@@ -905,7 +900,7 @@
           }
           picker.value = activeCard()?.id || '';
         }
-        $('deleteCard').disabled = $('deleteCardShortcut').disabled = !activeCard();
+        $('deleteCard').disabled = !activeCard();
         const { rows, columns } = cardDimensions(cardGrid());
         $('cardStatus').textContent = activeCard() ? `Team card · ${activeCard().name} · ${columns}×${rows}` : 'Blank starter card · create a team card before using card mode.';
         $('manageCardStatus').textContent = activeCard() ? `${activeCard().name} · ${columns}×${rows} · saved for ${state.team || 'this team'}` : 'Blank starter card · select New card to build your first one.';
@@ -1951,9 +1946,6 @@
         finally { button.disabled = false; }
       });
       $('opponentInput').addEventListener('input', event => { state.opponent = event.target.value; save(); });
-      const setCardSubmenu = open => { $('cardSubmenu').hidden = !open; $('menuCards').setAttribute('aria-expanded', String(open)); };
-      const closeOptions = () => { $('optionsMenu').open = false; setCardSubmenu(false); };
-      $('menuTeamSettings').addEventListener('click', () => { closeOptions(); openTeamSettings(); });
       $('cancelTeamSettings').addEventListener('click', () => { $('teamNameSetting').value = state.team; });
       $('saveTeamSettings').addEventListener('click', async () => {
         const name = $('teamNameSetting').value.trim().replace(/\s+/g, ' ');
@@ -1974,25 +1966,6 @@
         resetEntry(); editorDraft = null; pitcherDraft = null; renderCardEditor(); renderPitcherEditor();
         if (state.pitcher && !teamPitcherNames().includes(state.pitcher)) { state.pitcher = null; $('pitcherPanel').open = true; }
         save(); render(); notify(`${name} saved as your team`);
-      });
-      $('menuCards').addEventListener('click', () => setCardSubmenu($('cardSubmenu').hidden));
-      $('menuPitchers').addEventListener('click', () => {
-        closeOptions(); if (!ensureProfile()) return;
-        showTab('settings');
-        pitcherDraft = teamPitcherNames().map(name => ({ id: cloudPitchers.find(pitcher => pitcher.active && pitcher.display_name === name)?.id || null, original: name, name, number: pitcherNumber(name) }));
-        renderPitcherEditor(); $('pitcherEditor').scrollIntoView({ behavior: 'smooth', block: 'center' });
-      });
-      $('menuPitches').addEventListener('click', () => {
-        closeOptions(); if (!ensureProfile()) return;
-        pitcherDraft = null; renderPitcherEditor();
-        showTab('settings'); renderTeamPitches();
-        $('teamTools').scrollIntoView({ behavior: 'smooth', block: 'center' });
-      });
-      $('menuPrintCards').addEventListener('click', () => {
-        closeOptions(); if (!ensureProfile()) return;
-        showTab('cards'); pitcherDraft = null; renderPitcherEditor();
-        renderCardPicker(); $('printOptions').hidden = false;
-        $('printOptions').scrollIntoView({ behavior: 'smooth', block: 'center' });
       });
       $('closeTeamTools').addEventListener('click', () => { $('teamTools').hidden = true; });
       $('cancelPrint').addEventListener('click', () => { $('printOptions').hidden = true; });
@@ -2032,8 +2005,6 @@
         if (state.pitcher && !names.includes(state.pitcher)) { state.pitcher = null; $('pitcherPanel').open = true; resetEntry(); }
         pitcherDraft = null; saveProfiles(); save(); renderPitcherEditor(); render(); notify('Pitchers saved');
       });
-      document.addEventListener('click', event => { if (!$('optionsMenu').contains(event.target)) closeOptions(); });
-      document.addEventListener('keydown', event => { if (event.key === 'Escape') closeOptions(); });
       $('addPitch').addEventListener('click', async () => {
         const name = $('customPitch').value.trim().replace(/\s+/g, ' ');
         if (!name) { $('customPitch').focus(); return; }
@@ -2058,7 +2029,7 @@
         $('printOptions').hidden = false;
       });
       $('newCard').addEventListener('click', () => {
-        closeOptions(); showTab('cards'); $('printOptions').hidden = true;
+        showTab('cards'); $('printOptions').hidden = true;
         if (!ensureProfile()) return;
         const first = teamPitchNames().includes('Fastball') ? 'Inside' : teamPitchNames()[0];
         editorDraft = { id: null, isNew: true, name: '', grid: Array.from({ length: 5 }, () => Array(5).fill(first)) };
@@ -2072,7 +2043,7 @@
         renderCardEditor();
       });
       $('editCard').addEventListener('click', () => {
-        closeOptions(); showTab('cards'); $('printOptions').hidden = true;
+        showTab('cards'); $('printOptions').hidden = true;
         if (!ensureProfile()) return;
         const card = activeCard();
         editorDraft = { id: card?.id || null, isNew: false, name: card?.name || 'My pitch card', grid: cardGrid().map(row => [...row]) };
@@ -2101,16 +2072,12 @@
         item.selectedCardId = id; editorDraft = null; resetEntry(); saveProfiles(); renderCardEditor(); render(); notify(`${name} saved`);
       });
       $('deleteCard').addEventListener('click', async () => {
-        closeOptions();
         $('printOptions').hidden = true;
         const card = activeCard(); if (!card || !confirm(`Delete the team card "${card.name}"? Logged pitches will stay in the game history.`)) return;
         if (currentTeam) { const { error } = await dbClient.from('pitch_cards').delete().eq('id', card.id); if (error) { notify(error.message); return; } }
         const item = profile(); item.cards = item.cards.filter(saved => saved.id !== card.id); item.selectedCardId = '';
         editorDraft = null; renderCardEditor(); resetEntry(); saveProfiles(); render(); notify('Card deleted');
       });
-      $('newCardShortcut').addEventListener('click', () => { closeOptions(); showTab('cards'); $('newCard').click(); });
-      $('editCardShortcut').addEventListener('click', () => { closeOptions(); showTab('cards'); $('editCard').click(); });
-      $('deleteCardShortcut').addEventListener('click', () => { closeOptions(); showTab('cards'); $('deleteCard').click(); });
       $('showPrintCards').addEventListener('click', () => { if (!ensureProfile()) return; renderCardPicker(); $('printOptions').hidden = false; $('printOptions').scrollIntoView({ behavior: 'smooth', block: 'center' }); });
       $('settingsEditPitchers').addEventListener('click', () => { if (!ensureProfile()) return; pitcherDraft = teamPitcherNames().map(name => ({ id: cloudPitchers.find(pitcher => pitcher.active && pitcher.display_name === name)?.id || null, original: name, name, number: pitcherNumber(name) })); renderPitcherEditor(); $('pitcherEditor').scrollIntoView({ behavior: 'smooth', block: 'center' }); });
       $('printCard').addEventListener('click', () => {
@@ -2232,6 +2199,13 @@
       });
       rememberInviteFromUrl(); restore(); restoreTeamName(); restoreProfiles(); save(); restoreReport(); restoreGithubSettings(); render(); loadPitchCard(); initializeAuth();
     })();
+  </script>
+  <script>
+    if ('serviceWorker' in navigator && location.protocol === 'https:') {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./service-worker.js').catch(error => console.warn('App installation support could not start.', error));
+      });
+    }
   </script>
 </body>
 </html>
