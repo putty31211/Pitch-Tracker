@@ -32,6 +32,7 @@
     .auth-links button { border: 0; background: transparent; color: #1761bc; padding: 5px 0; font-size: 12px; font-weight: 800; }
     .auth-message { min-height: 20px; margin-top: 12px; color: #a02f38; font-size: 12px; line-height: 1.4; text-align: center; }
     .auth-message.success { color: #18764a; }
+    .app-version { margin-top: 8px; color: #93a3b7; font-size: 10px; font-weight: 750; text-align: center; }
     .invite-notice { margin: 14px 0; padding: 12px 13px; border: 1px solid #bdd4ef; border-radius: 12px; background: #eff6fe; color: #234c7a; font-size: 12px; font-weight: 750; line-height: 1.45; }
     .login-splash { position: fixed; inset: 0; z-index: 30; display: grid; place-items: center; padding: 24px; background: radial-gradient(circle at top, #1a3c69 0, #0d1c35 48%, #081426 100%); }
     .login-splash-card { width: min(100%, 340px); padding: 30px 24px; border: 1px solid #ffffff1f; border-radius: 24px; background: #142844; color: #fff; text-align: center; box-shadow: 0 24px 70px #02091480; animation: login-card-in .28s ease-out; }
@@ -301,14 +302,29 @@
       <h1 id="authTitle">Sign in</h1>
       <p id="authIntro">Access your team's pitchers, cards, games, and reports.</p>
       <div id="inviteNotice" class="invite-notice" role="status" hidden>Team invitation ready. Create an account or sign in to continue.</div>
-      <form id="authForm" class="auth-form">
-        <label id="authEmailRow">Email<input id="authEmail" type="email" autocomplete="email" required></label>
-        <label id="authPasswordRow">Password<input id="authPassword" type="password" autocomplete="current-password" minlength="8" required></label>
-        <label id="authConfirmRow" hidden>Confirm password<input id="authConfirm" type="password" autocomplete="new-password" minlength="8"></label>
-        <button class="auth-primary" id="authSubmit" type="submit">Sign in</button>
+      <form id="signInForm" class="auth-form" autocomplete="on">
+        <label>Email<input id="signInEmail" name="username" type="email" inputmode="email" autocomplete="username" autocapitalize="none" spellcheck="false" required></label>
+        <label>Password<input id="signInPassword" name="password" type="password" autocomplete="current-password" required></label>
+        <button class="auth-primary" id="signInSubmit" type="submit">Sign in</button>
+      </form>
+      <form id="createAccountForm" class="auth-form" autocomplete="on" hidden>
+        <label>Email<input id="createEmail" name="username" type="email" inputmode="email" autocomplete="username" autocapitalize="none" spellcheck="false" required disabled></label>
+        <label>Create password<input id="createPassword" name="new-password" type="password" autocomplete="new-password" passwordrules="minlength: 8;" minlength="8" required disabled></label>
+        <label>Confirm password<input id="createConfirm" name="new-password-confirmation" type="password" autocomplete="new-password" minlength="8" required disabled></label>
+        <button class="auth-primary" id="createAccountSubmit" type="submit" disabled>Create account</button>
+      </form>
+      <form id="resetPasswordForm" class="auth-form" autocomplete="on" hidden>
+        <label>Email<input id="resetEmail" name="username" type="email" inputmode="email" autocomplete="username" autocapitalize="none" spellcheck="false" required disabled></label>
+        <button class="auth-primary" id="resetPasswordSubmit" type="submit" disabled>Send reset email</button>
+      </form>
+      <form id="updatePasswordForm" class="auth-form" autocomplete="on" hidden>
+        <label>New password<input id="updatePassword" name="new-password" type="password" autocomplete="new-password" passwordrules="minlength: 8;" minlength="8" required disabled></label>
+        <label>Confirm new password<input id="updateConfirm" name="new-password-confirmation" type="password" autocomplete="new-password" minlength="8" required disabled></label>
+        <button class="auth-primary" id="updatePasswordSubmit" type="submit" disabled>Update password</button>
       </form>
       <div class="auth-links"><button type="button" id="showSignIn" hidden>Sign in</button><button type="button" id="showCreate">Create account</button><button type="button" id="showReset">Forgot password?</button></div>
       <div id="authMessage" class="auth-message" role="status"></div>
+      <div class="app-version">Build 2026.09.25.1</div>
     </section>
   </div>
   <div id="onboardingGate" class="auth-shell" hidden>
@@ -627,18 +643,25 @@
         $('authMessage').textContent = message; $('authMessage').classList.toggle('success', success);
       }
       function setAuthMode(mode) {
+        const previousMode = authMode;
+        const email = $('signInEmail').value || $('createEmail').value || $('resetEmail').value;
         authMode = mode; setAuthMessage();
         const create = mode === 'create', reset = mode === 'reset', update = mode === 'update';
+        const forms = { signin: $('signInForm'), create: $('createAccountForm'), reset: $('resetPasswordForm'), update: $('updatePasswordForm') };
+        for (const [name, form] of Object.entries(forms)) {
+          const active = name === mode; form.hidden = !active;
+          for (const control of form.querySelectorAll('input, button')) control.disabled = !active;
+        }
+        if (email) {
+          if (mode === 'signin') $('signInEmail').value = email;
+          if (mode === 'create') $('createEmail').value = email;
+          if (mode === 'reset') $('resetEmail').value = email;
+        }
+        if (previousMode !== mode) {
+          for (const id of ['signInPassword', 'createPassword', 'createConfirm', 'updatePassword', 'updateConfirm']) $(id).value = '';
+        }
         $('authTitle').textContent = create ? 'Create account' : reset ? 'Reset password' : update ? 'Choose a new password' : 'Sign in';
         $('authIntro').textContent = create ? 'Create your account, verify your email, and set up your team.' : reset ? 'We will email you a secure password-reset link.' : update ? 'Enter the new password you want to use.' : "Access your team's pitchers, cards, games, and reports.";
-        $('authEmailRow').hidden = update;
-        $('authPasswordRow').hidden = reset;
-        $('authConfirmRow').hidden = !create && !update;
-        $('authEmail').required = !update;
-        $('authPassword').required = !reset;
-        $('authConfirm').required = create || update;
-        $('authPassword').autocomplete = create || update ? 'new-password' : 'current-password';
-        $('authSubmit').textContent = create ? 'Create account' : reset ? 'Send reset email' : update ? 'Update password' : 'Sign in';
         if (pendingInviteCode() && (mode === 'signin' || mode === 'create')) {
           $('authTitle').textContent = create ? 'Create account to join' : 'Sign in to join';
           $('authIntro').textContent = create ? 'Use your email and a password to accept this team invitation.' : 'Sign in with the account that should receive this team access.';
@@ -1856,33 +1879,44 @@
       $('showSignIn').addEventListener('click', () => setAuthMode('signin'));
       $('showCreate').addEventListener('click', () => setAuthMode('create'));
       $('showReset').addEventListener('click', () => setAuthMode('reset'));
-      $('authForm').addEventListener('submit', async event => {
+      async function handleAuthSubmit(mode, event) {
         event.preventDefault(); if (!dbClient) return;
-        const email = $('authEmail').value.trim(); const password = $('authPassword').value; const confirmation = $('authConfirm').value;
-        if ((authMode === 'create' || authMode === 'update') && password !== confirmation) { setAuthMessage('The passwords do not match.'); return; }
-        $('authSubmit').disabled = true; setAuthMessage(authMode === 'reset' ? 'Sending reset email…' : 'Working…');
+        const fields = {
+          signin: { email: $('signInEmail').value.trim(), password: $('signInPassword').value, submit: $('signInSubmit') },
+          create: { email: $('createEmail').value.trim(), password: $('createPassword').value, confirmation: $('createConfirm').value, submit: $('createAccountSubmit') },
+          reset: { email: $('resetEmail').value.trim(), submit: $('resetPasswordSubmit') },
+          update: { password: $('updatePassword').value, confirmation: $('updateConfirm').value, submit: $('updatePasswordSubmit') }
+        };
+        const active = fields[mode];
+        if (!active) return;
+        if ((mode === 'create' || mode === 'update') && active.password !== active.confirmation) { setAuthMessage('The passwords do not match.'); return; }
+        active.submit.disabled = true; setAuthMessage(mode === 'reset' ? 'Sending reset email…' : 'Working…');
         try {
-          if (authMode === 'create') {
-            const { data, error } = await dbClient.auth.signUp({ email, password, options: { emailRedirectTo: authRedirectUrl() } });
+          if (mode === 'create') {
+            const { data, error } = await dbClient.auth.signUp({ email: active.email, password: active.password, options: { emailRedirectTo: authRedirectUrl() } });
             if (error) throw error;
             if (data.session?.user) await loadSignedInTeam(data.session.user);
             else setAuthMessage('Account created. Check your email and click the confirmation link, then return here to sign in.', true);
-          } else if (authMode === 'reset') {
-            const { error } = await dbClient.auth.resetPasswordForEmail(email, { redirectTo: authRedirectUrl() }); if (error) throw error;
+          } else if (mode === 'reset') {
+            const { error } = await dbClient.auth.resetPasswordForEmail(active.email, { redirectTo: authRedirectUrl() }); if (error) throw error;
             setAuthMessage('Password-reset email sent. Check your inbox.', true);
-          } else if (authMode === 'update') {
-            const { error } = await dbClient.auth.updateUser({ password }); if (error) throw error;
+          } else if (mode === 'update') {
+            const { error } = await dbClient.auth.updateUser({ password: active.password }); if (error) throw error;
             setAuthMessage('Password updated. Loading your account…', true);
             const { data } = await dbClient.auth.getUser(); if (data.user) await loadSignedInTeam(data.user);
           } else {
-            const { data, error } = await dbClient.auth.signInWithPassword({ email, password }); if (error) throw error;
+            const { data, error } = await dbClient.auth.signInWithPassword({ email: active.email, password: active.password }); if (error) throw error;
             $('loginSplash').hidden = false;
             try { await Promise.all([loadSignedInTeam(data.user), new Promise(resolve => setTimeout(resolve, 900))]); }
             finally { $('loginSplash').hidden = true; }
           }
         } catch (authError) { setAuthMessage(authError.message || 'Account request failed.'); }
-        finally { $('authSubmit').disabled = false; }
-      });
+        finally { active.submit.disabled = false; }
+      }
+      $('signInForm').addEventListener('submit', event => handleAuthSubmit('signin', event));
+      $('createAccountForm').addEventListener('submit', event => handleAuthSubmit('create', event));
+      $('resetPasswordForm').addEventListener('submit', event => handleAuthSubmit('reset', event));
+      $('updatePasswordForm').addEventListener('submit', event => handleAuthSubmit('update', event));
       $('reportInviteCode').addEventListener('input', event => { event.target.value = normalizeInviteCode(event.target.value); });
       $('joinTeamForm').addEventListener('submit', async event => {
         event.preventDefault(); if (!dbClient || !currentUser) return;
