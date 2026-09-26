@@ -324,7 +324,7 @@
       </form>
       <div class="auth-links"><button type="button" id="showSignIn" hidden>Sign in</button><button type="button" id="showCreate">Create account</button><button type="button" id="showReset">Forgot password?</button></div>
       <div id="authMessage" class="auth-message" role="status"></div>
-      <div class="app-version">Build 2026.09.26.1</div>
+      <div class="app-version">Build 2026.09.26.2</div>
     </section>
   </div>
   <div id="onboardingGate" class="auth-shell" hidden>
@@ -1824,7 +1824,7 @@
         window.addEventListener('afterprint', cleanup, { once: true });
         if (printMedia.addEventListener) printMedia.addEventListener('change', handlePrintMedia);
         else if (printMedia.addListener) printMedia.addListener(handlePrintMedia);
-        requestAnimationFrame(() => requestAnimationFrame(() => window.print()));
+        window.print();
       }
       function render() {
         $('opponentInput').value = state.opponent;
