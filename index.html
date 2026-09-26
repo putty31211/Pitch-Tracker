@@ -324,7 +324,7 @@
       </form>
       <div class="auth-links"><button type="button" id="showSignIn" hidden>Sign in</button><button type="button" id="showCreate">Create account</button><button type="button" id="showReset">Forgot password?</button></div>
       <div id="authMessage" class="auth-message" role="status"></div>
-      <div class="app-version">Build 2026.09.25.1</div>
+      <div class="app-version">Build 2026.09.26.1</div>
     </section>
   </div>
   <div id="onboardingGate" class="auth-shell" hidden>
@@ -1811,8 +1811,20 @@
         appendClone($('reportKpis'), 'Summary');
         for (const id of ['insightsSection', 'pitchCommandSection', 'targetAccuracySection', 'workloadSection', 'countSection', 'batterSideSection', 'plateAppearanceSection', 'callEffectivenessSection', 'gameComparisonSection', 'cardUsageSection', 'efficiencySection', 'missSection']) appendClone($(id));
         document.body.classList.add('print-report');
-        window.print();
-        document.body.classList.remove('print-report'); sheet.className = 'print-sheet'; sheet.replaceChildren();
+        let cleaned = false;
+        const printMedia = window.matchMedia('print');
+        const cleanup = () => {
+          if (cleaned) return;
+          cleaned = true;
+          document.body.classList.remove('print-report'); sheet.className = 'print-sheet'; sheet.replaceChildren();
+          if (printMedia.removeEventListener) printMedia.removeEventListener('change', handlePrintMedia);
+          else if (printMedia.removeListener) printMedia.removeListener(handlePrintMedia);
+        };
+        const handlePrintMedia = event => { if (!event.matches) cleanup(); };
+        window.addEventListener('afterprint', cleanup, { once: true });
+        if (printMedia.addEventListener) printMedia.addEventListener('change', handlePrintMedia);
+        else if (printMedia.addListener) printMedia.addListener(handlePrintMedia);
+        requestAnimationFrame(() => requestAnimationFrame(() => window.print()));
       }
       function render() {
         $('opponentInput').value = state.opponent;
@@ -2115,6 +2127,7 @@
       $('showPrintCards').addEventListener('click', () => { if (!ensureProfile()) return; renderCardPicker(); $('printOptions').hidden = false; $('printOptions').scrollIntoView({ behavior: 'smooth', block: 'center' }); });
       $('settingsEditPitchers').addEventListener('click', () => { if (!ensureProfile()) return; pitcherDraft = teamPitcherNames().map(name => ({ id: cloudPitchers.find(pitcher => pitcher.active && pitcher.display_name === name)?.id || null, original: name, name, number: pitcherNumber(name) })); renderPitcherEditor(); $('pitcherEditor').scrollIntoView({ behavior: 'smooth', block: 'center' }); });
       $('printCard').addEventListener('click', () => {
+        document.body.classList.remove('print-report');
         const sheet = $('printSheet'); sheet.replaceChildren();
         const copies = Number($('printCopies').value);
         const { rows, columns } = cardDimensions(cardGrid());
