@@ -239,7 +239,7 @@
     .modal-status { color: #aa3030 !important; min-height: 20px; margin: 0 !important; }
     .modal-status[data-working="true"] { color: #1761bc !important; }
     .modal-status[data-success="true"] { color: #167346 !important; }
-    .pdf-render-host { position: fixed; left: -10000px; top: 0; width: 7.9in; padding: 0; background: #fff; color: #172844; font-family: Arial, sans-serif; }
+    .pdf-render-host { position: absolute; left: 0; top: 0; z-index: 9; width: 7.9in; max-width: none; padding: 0; pointer-events: none; background: #fff; color: #172844; font-family: Arial, sans-serif; }
     .pdf-render-host .print-sheet { display: block !important; width: 100%; height: auto !important; }
     .pdf-render-host .report-print-header { border-bottom: 3px solid #1761bc; padding-bottom: 10px; margin-bottom: 12px; }
     .pdf-render-host .report-print-header h1 { margin: 0; font-size: 22px; }
@@ -341,7 +341,7 @@
       </form>
       <div class="auth-links"><button type="button" id="showSignIn" hidden>Sign in</button><button type="button" id="showCreate">Create account</button><button type="button" id="showReset">Forgot password?</button></div>
       <div id="authMessage" class="auth-message" role="status"></div>
-      <div class="app-version">Build 2026.09.26.4</div>
+      <div class="app-version">Build 2026.09.26.5</div>
     </section>
   </div>
   <div id="onboardingGate" class="auth-shell" hidden>
@@ -1829,10 +1829,12 @@
         host.append(reportCopy); document.body.append(host);
         try {
           await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+          const renderWidth = Math.ceil(reportCopy.scrollWidth), renderHeight = Math.ceil(reportCopy.scrollHeight);
+          if (!renderWidth || !renderHeight) throw Error('The report did not render. Close this message and try again.');
           const blob = await window.html2pdf().set({
             margin: [0.28, 0.28, 0.28, 0.28], filename: reportPdfName(),
             image: { type: 'jpeg', quality: 0.94 },
-            html2canvas: { scale: 1.35, useCORS: true, backgroundColor: '#ffffff', logging: false },
+            html2canvas: { scale: 1.2, useCORS: true, backgroundColor: '#ffffff', logging: false, scrollX: 0, scrollY: 0, windowWidth: renderWidth, windowHeight: renderHeight },
             jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' },
             pagebreak: { mode: ['css', 'legacy'], avoid: ['.report-print-section'] }
           }).from(reportCopy).outputPdf('blob');
