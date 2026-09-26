@@ -239,23 +239,6 @@
     .modal-status { color: #aa3030 !important; min-height: 20px; margin: 0 !important; }
     .modal-status[data-working="true"] { color: #1761bc !important; }
     .modal-status[data-success="true"] { color: #167346 !important; }
-    .pdf-render-host { position: absolute; left: 0; top: 0; z-index: 9; width: 7.9in; max-width: none; padding: 0; pointer-events: none; background: #fff; color: #172844; font-family: Arial, sans-serif; }
-    .pdf-render-host .print-sheet { display: block !important; width: 100%; height: auto !important; }
-    .pdf-render-host .report-print-header { border-bottom: 3px solid #1761bc; padding-bottom: 10px; margin-bottom: 12px; }
-    .pdf-render-host .report-print-header h1 { margin: 0; font-size: 22px; }
-    .pdf-render-host .report-print-header p { margin: 4px 0 0; color: #526a88; font-size: 10px; }
-    .pdf-render-host .report-print-section { break-inside: avoid; margin: 0 0 12px; }
-    .pdf-render-host .report-print-section h2 { margin: 0 0 6px; color: #172844; font-size: 14px; }
-    .pdf-render-host .report-print-section .card { box-shadow: none; margin: 0; padding: 0; border: 0; }
-    .pdf-render-host .report-print-section .hint { font-size: 8px; }
-    .pdf-render-host .report-print-section .report-kpis { grid-template-columns: repeat(4, 1fr); }
-    .pdf-render-host .report-print-section .report-kpi { padding: 8px; }
-    .pdf-render-host .report-print-section .report-kpi strong { font-size: 16px; }
-    .pdf-render-host .report-print-section .efficiency-chart-scroll { overflow: visible; }
-    .pdf-render-host .report-print-section .efficiency-chart-scroll svg { width: 100% !important; height: auto; }
-    .pdf-render-host .report-print-section .miss-bubble-cell { min-height: 84px; }
-    .pdf-render-host .report-print-section .report-table { font-size: 9px; }
-    .pdf-render-host .report-print-section .report-table th, .pdf-render-host .report-print-section .report-table td { padding: 5px; }
     .report-kpis { display: grid; grid-template-columns: repeat(3, 1fr); gap: 7px; margin-bottom: 12px; }
     .report-kpi { background: #fff; border: 1px solid #dfe8f1; border-radius: 14px; padding: 12px 9px; }
     .report-kpi strong { display: block; font-size: 21px; line-height: 1.1; color: #172844; font-variant-numeric: tabular-nums; }
@@ -341,7 +324,7 @@
       </form>
       <div class="auth-links"><button type="button" id="showSignIn" hidden>Sign in</button><button type="button" id="showCreate">Create account</button><button type="button" id="showReset">Forgot password?</button></div>
       <div id="authMessage" class="auth-message" role="status"></div>
-      <div class="app-version">Build 2026.09.26.5</div>
+      <div class="app-version">Build 2026.09.26.6</div>
     </section>
   </div>
   <div id="onboardingGate" class="auth-shell" hidden>
@@ -546,7 +529,7 @@
   <div id="toast" class="toast" role="status" hidden></div>
   <div id="printSheet" class="print-sheet" aria-hidden="true"></div>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" integrity="sha512-GsLlZN/3F2ErC5ifS5QtgpiJtWd43JWSuIgh7mbzZ8zBps+dvLusV+eNQATqgA/HdeKFVgA5v3S/cIrLF7QnIg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
   <script>
     (() => {
       'use strict';
@@ -1823,23 +1806,144 @@
       }
       const reportPdfName = () => `${(currentTeam?.name || state.team || 'team').replace(/[^a-z0-9]+/gi, '-').replace(/^-|-$/g, '').toLowerCase() || 'team'}-pitcher-command-${localDate(new Date())}.pdf`;
       async function createCommandReportPdf(sheet) {
-        if (!window.html2pdf) throw Error('The PDF builder could not load. Check your connection and try again.');
-        const host = document.createElement('div'); host.className = 'pdf-render-host';
-        const reportCopy = sheet.cloneNode(true); reportCopy.removeAttribute('id'); reportCopy.removeAttribute('aria-hidden');
-        host.append(reportCopy); document.body.append(host);
-        try {
-          await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
-          const renderWidth = Math.ceil(reportCopy.scrollWidth), renderHeight = Math.ceil(reportCopy.scrollHeight);
-          if (!renderWidth || !renderHeight) throw Error('The report did not render. Close this message and try again.');
-          const blob = await window.html2pdf().set({
-            margin: [0.28, 0.28, 0.28, 0.28], filename: reportPdfName(),
-            image: { type: 'jpeg', quality: 0.94 },
-            html2canvas: { scale: 1.2, useCORS: true, backgroundColor: '#ffffff', logging: false, scrollX: 0, scrollY: 0, windowWidth: renderWidth, windowHeight: renderHeight },
-            jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' },
-            pagebreak: { mode: ['css', 'legacy'], avoid: ['.report-print-section'] }
-          }).from(reportCopy).outputPdf('blob');
-          return new File([blob], reportPdfName(), { type: 'application/pdf', lastModified: Date.now() });
-        } finally { host.remove(); }
+        const Pdf = window.jspdf?.jsPDF;
+        if (!Pdf) throw Error('The PDF builder could not load. Check your connection and try again.');
+        const doc = new Pdf({ unit: 'pt', format: 'letter', orientation: 'portrait', compress: true });
+        const pageWidth = doc.internal.pageSize.getWidth(), pageHeight = doc.internal.pageSize.getHeight();
+        const margin = 36, contentWidth = pageWidth - margin * 2, bottom = pageHeight - 38;
+        const palette = { navy: '#172844', blue: '#1761bc', orange: '#e67e22', gray: '#627994', light: '#e8eef5', pale: '#f4f7fb', white: '#ffffff' };
+        let y = 36;
+        const clean = value => String(value || '').replace(/[–—]/g, '-').replace(/→/g, 'to').replace(/·/g, '|').replace(/[‘’]/g, "'").replace(/\s+/g, ' ').trim();
+        const rgb = hex => [parseInt(hex.slice(1, 3), 16), parseInt(hex.slice(3, 5), 16), parseInt(hex.slice(5, 7), 16)];
+        const textColor = hex => doc.setTextColor(...rgb(hex));
+        const drawColor = hex => doc.setDrawColor(...rgb(hex));
+        const fillColor = hex => doc.setFillColor(...rgb(hex));
+        const newPage = () => { doc.addPage(); y = 36; };
+        const ensure = height => { if (y + height > bottom) newPage(); };
+        const wrappedText = (value, options = {}) => {
+          const size = options.size || 9, indent = options.indent || 0, width = options.width || contentWidth - indent;
+          const normalized = clean(value); if (!normalized) return;
+          const lines = doc.splitTextToSize(normalized, width), lineHeight = options.lineHeight || size * 1.3;
+          ensure(lines.length * lineHeight + (options.after ?? 5));
+          doc.setFont('helvetica', options.style || 'normal'); doc.setFontSize(size); textColor(options.color || palette.navy);
+          doc.text(lines, margin + indent, y); y += lines.length * lineHeight + (options.after ?? 5);
+        };
+        const sectionTitle = value => {
+          ensure(25); y += 5; drawColor(palette.blue); doc.setLineWidth(2); doc.line(margin, y, margin + contentWidth, y); y += 15;
+          doc.setFont('helvetica', 'bold'); doc.setFontSize(13); textColor(palette.navy); doc.text(clean(value), margin, y); y += 10;
+        };
+        const cellText = cell => [...cell.childNodes].map(node => clean(node.textContent)).filter(Boolean).join(' | ');
+        const drawKpis = cards => {
+          const columns = 4, gap = 6, boxWidth = (contentWidth - gap * (columns - 1)) / columns, boxHeight = 49;
+          for (let start = 0; start < cards.length; start += columns) {
+            ensure(boxHeight + gap);
+            cards.slice(start, start + columns).forEach((card, index) => {
+              const x = margin + index * (boxWidth + gap); fillColor(palette.pale); drawColor(palette.light);
+              doc.roundedRect(x, y, boxWidth, boxHeight, 5, 5, 'FD');
+              doc.setFont('helvetica', 'bold'); doc.setFontSize(16); textColor(palette.navy); doc.text(clean(card.querySelector('strong')?.textContent), x + 8, y + 20);
+              doc.setFontSize(7); textColor(palette.gray); doc.text(clean(card.querySelector('small')?.textContent).toUpperCase(), x + 8, y + 36, { maxWidth: boxWidth - 16 });
+            });
+            y += boxHeight + gap;
+          }
+        };
+        const drawTable = table => {
+          const headers = [...table.querySelectorAll('thead th')].map(cell => clean(cell.textContent));
+          const rows = [...table.querySelectorAll('tbody tr')].map(row => [...row.children].map(cellText));
+          if (!headers.length) return;
+          const firstShare = headers.length >= 5 ? .26 : .34, otherWidth = contentWidth * (1 - firstShare) / (headers.length - 1);
+          const widths = headers.map((_, index) => index ? otherWidth : contentWidth * firstShare);
+          const drawRow = (values, header = false) => {
+            const fontSize = header ? 7.5 : 7.2;
+            doc.setFont('helvetica', header ? 'bold' : 'normal'); doc.setFontSize(fontSize);
+            const lines = values.map((value, index) => doc.splitTextToSize(clean(value), widths[index] - 8));
+            const rowHeight = Math.max(header ? 21 : 19, ...lines.map(items => items.length * (fontSize + 2) + 7));
+            ensure(rowHeight);
+            let x = margin;
+            values.forEach((value, index) => {
+              if (header) { fillColor(palette.blue); drawColor(palette.blue); textColor(palette.white); }
+              else { fillColor(index % 2 ? '#fbfcfe' : palette.white); drawColor(palette.light); textColor(palette.navy); }
+              doc.rect(x, y, widths[index], rowHeight, 'FD');
+              doc.text(lines[index], x + 4, y + 11, { maxWidth: widths[index] - 8 }); x += widths[index];
+            });
+            y += rowHeight;
+          };
+          drawRow(headers, true);
+          for (const row of rows) {
+            const estimated = Math.max(...row.map((value, index) => doc.splitTextToSize(clean(value), widths[index] - 8).length)) * 9.2 + 7;
+            if (y + estimated > bottom) { newPage(); drawRow(headers, true); }
+            drawRow(row);
+          }
+          y += 4;
+        };
+        const drawBars = rows => {
+          for (const row of rows) {
+            ensure(30);
+            const labels = row.querySelectorAll('.chart-label span'), label = clean(labels[0]?.textContent), value = clean(labels[1]?.textContent);
+            doc.setFont('helvetica', 'bold'); doc.setFontSize(8.5); textColor(palette.navy); doc.text(label, margin, y + 9);
+            doc.setFont('helvetica', 'normal'); doc.setFontSize(7.5); textColor(palette.gray); doc.text(value, margin + contentWidth, y + 9, { align: 'right' });
+            fillColor(palette.light); doc.roundedRect(margin, y + 14, contentWidth, 7, 3, 3, 'F');
+            const fill = row.querySelector('.bar-fill'), fraction = Math.max(0, Math.min(100, parseFloat(fill?.style.width) || 0));
+            fillColor(fill?.classList.contains('secondary') ? palette.orange : palette.blue); if (fraction) doc.roundedRect(margin, y + 14, contentWidth * fraction / 100, 7, 3, 3, 'F');
+            y += 29;
+          }
+        };
+        const drawMissGrid = cells => {
+          const columns = 3, gap = 5, width = (contentWidth - gap * 2) / columns, height = 52;
+          for (let start = 0; start < cells.length; start += columns) {
+            ensure(height + gap);
+            cells.slice(start, start + columns).forEach((cell, index) => {
+              const x = margin + index * (width + gap), label = clean(cell.querySelector('.miss-bubble-label')?.textContent);
+              const count = clean(cell.querySelector('.miss-bubble strong')?.textContent) || '-', rate = clean(cell.querySelector('.miss-bubble-rate')?.textContent);
+              fillColor(palette.pale); drawColor(palette.light); doc.roundedRect(x, y, width, height, 5, 5, 'FD');
+              doc.setFont('helvetica', 'bold'); doc.setFontSize(7.5); textColor(palette.gray); doc.text(label, x + width / 2, y + 12, { align: 'center' });
+              doc.setFontSize(16); textColor(count === '-' ? palette.gray : palette.orange); doc.text(count, x + width / 2, y + 32, { align: 'center' });
+              doc.setFontSize(7); textColor(palette.gray); if (rate) doc.text(rate, x + width / 2, y + 44, { align: 'center' });
+            });
+            y += height + gap;
+          }
+        };
+        const drawEfficiencyChart = svg => {
+          if (!svg) return;
+          const box = (svg.getAttribute('viewBox') || `0 0 ${svg.getAttribute('width') || 340} ${svg.getAttribute('height') || 217}`).split(/\s+/).map(Number);
+          const sourceWidth = box[2] || 340, sourceHeight = box[3] || 217, chartHeight = 190;
+          ensure(chartHeight + 8); const sx = contentWidth / sourceWidth, sy = chartHeight / sourceHeight, xAt = value => margin + Number(value) * sx, yAt = value => y + Number(value) * sy;
+          fillColor('#fbfcfe'); drawColor(palette.light); doc.roundedRect(margin, y, contentWidth, chartHeight, 4, 4, 'FD');
+          for (const line of svg.querySelectorAll('line')) { drawColor(palette.light); doc.setLineWidth(.6); doc.line(xAt(line.getAttribute('x1')), yAt(line.getAttribute('y1')), xAt(line.getAttribute('x2')), yAt(line.getAttribute('y2'))); }
+          for (const polyline of svg.querySelectorAll('polyline')) {
+            const points = clean(polyline.getAttribute('points')).split(' ').map(point => point.split(',').map(Number)).filter(point => point.length === 2);
+            drawColor(polyline.getAttribute('stroke') || palette.blue); doc.setLineWidth(2);
+            for (let index = 1; index < points.length; index++) doc.line(xAt(points[index - 1][0]), yAt(points[index - 1][1]), xAt(points[index][0]), yAt(points[index][1]));
+          }
+          for (const circle of svg.querySelectorAll('circle')) { drawColor(circle.getAttribute('stroke') || palette.blue); fillColor(palette.white); doc.circle(xAt(circle.getAttribute('cx')), yAt(circle.getAttribute('cy')), Math.max(2.5, Number(circle.getAttribute('r') || 4) * Math.min(sx, sy)), 'FD'); }
+          for (const label of svg.querySelectorAll('text')) {
+            doc.setFont('helvetica', 'normal'); doc.setFontSize(6); textColor(palette.gray);
+            doc.text(clean(label.textContent), xAt(label.getAttribute('x')), yAt(label.getAttribute('y')), { align: label.getAttribute('text-anchor') === 'middle' ? 'center' : label.getAttribute('text-anchor') === 'end' ? 'right' : 'left' });
+          }
+          y += chartHeight + 7;
+        };
+        const header = sheet.querySelector('.report-print-header');
+        doc.setFont('helvetica', 'bold'); doc.setFontSize(19); textColor(palette.navy); doc.text(clean(header?.querySelector('h1')?.textContent || 'Pitcher Command Report'), margin, y); y += 18;
+        wrappedText(header?.querySelector('p')?.textContent || '', { size: 8, color: palette.gray, after: 7 });
+        drawColor(palette.blue); doc.setLineWidth(3); doc.line(margin, y, margin + contentWidth, y); y += 8;
+        for (const wrapper of sheet.querySelectorAll('.report-print-section')) {
+          const source = wrapper.querySelector('.card') || wrapper, title = clean(wrapper.querySelector('h2')?.textContent || source.querySelector('.section-title h2')?.textContent || 'Report section');
+          sectionTitle(title);
+          const kpis = [...source.querySelectorAll('.report-kpi')]; if (kpis.length) drawKpis(kpis);
+          const insights = [...source.querySelectorAll('.insight-list li')]; for (const insight of insights) wrappedText(`- ${insight.textContent}`, { size: 8.5, indent: 5, width: contentWidth - 5, after: 4 });
+          const table = source.querySelector('table'); if (table) drawTable(table);
+          const bars = [...source.querySelectorAll('.chart-row')]; if (bars.length) drawBars(bars);
+          const legend = clean(source.querySelector('.efficiency-legend')?.textContent); if (legend) wrappedText(legend, { size: 8, style: 'bold', color: palette.gray, after: 5 });
+          drawEfficiencyChart(source.querySelector('.efficiency-chart-scroll svg'));
+          const misses = [...source.querySelectorAll('.miss-bubble-cell')]; if (misses.length) drawMissGrid(misses);
+          const hint = clean(source.querySelector('.hint')?.textContent); if (hint) wrappedText(hint, { size: 7, style: 'italic', color: palette.gray, after: 4 });
+        }
+        const pageCount = doc.getNumberOfPages();
+        for (let page = 1; page <= pageCount; page++) {
+          doc.setPage(page); drawColor(palette.light); doc.setLineWidth(.5); doc.line(margin, pageHeight - 27, margin + contentWidth, pageHeight - 27);
+          doc.setFont('helvetica', 'normal'); doc.setFontSize(7); textColor(palette.gray); doc.text(`Pitch Tracker | Page ${page} of ${pageCount}`, margin + contentWidth, pageHeight - 15, { align: 'right' });
+        }
+        const blob = doc.output('blob');
+        return new File([blob], reportPdfName(), { type: 'application/pdf', lastModified: Date.now() });
       }
       function offerPdfDownload(file) {
         const url = URL.createObjectURL(file), link = document.createElement('a');
