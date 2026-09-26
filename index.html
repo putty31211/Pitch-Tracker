@@ -239,6 +239,23 @@
     .modal-status { color: #aa3030 !important; min-height: 20px; margin: 0 !important; }
     .modal-status[data-working="true"] { color: #1761bc !important; }
     .modal-status[data-success="true"] { color: #167346 !important; }
+    .pdf-render-host { position: fixed; left: -10000px; top: 0; width: 7.9in; padding: 0; background: #fff; color: #172844; font-family: Arial, sans-serif; }
+    .pdf-render-host .print-sheet { display: block !important; width: 100%; height: auto !important; }
+    .pdf-render-host .report-print-header { border-bottom: 3px solid #1761bc; padding-bottom: 10px; margin-bottom: 12px; }
+    .pdf-render-host .report-print-header h1 { margin: 0; font-size: 22px; }
+    .pdf-render-host .report-print-header p { margin: 4px 0 0; color: #526a88; font-size: 10px; }
+    .pdf-render-host .report-print-section { break-inside: avoid; margin: 0 0 12px; }
+    .pdf-render-host .report-print-section h2 { margin: 0 0 6px; color: #172844; font-size: 14px; }
+    .pdf-render-host .report-print-section .card { box-shadow: none; margin: 0; padding: 0; border: 0; }
+    .pdf-render-host .report-print-section .hint { font-size: 8px; }
+    .pdf-render-host .report-print-section .report-kpis { grid-template-columns: repeat(4, 1fr); }
+    .pdf-render-host .report-print-section .report-kpi { padding: 8px; }
+    .pdf-render-host .report-print-section .report-kpi strong { font-size: 16px; }
+    .pdf-render-host .report-print-section .efficiency-chart-scroll { overflow: visible; }
+    .pdf-render-host .report-print-section .efficiency-chart-scroll svg { width: 100% !important; height: auto; }
+    .pdf-render-host .report-print-section .miss-bubble-cell { min-height: 84px; }
+    .pdf-render-host .report-print-section .report-table { font-size: 9px; }
+    .pdf-render-host .report-print-section .report-table th, .pdf-render-host .report-print-section .report-table td { padding: 5px; }
     .report-kpis { display: grid; grid-template-columns: repeat(3, 1fr); gap: 7px; margin-bottom: 12px; }
     .report-kpi { background: #fff; border: 1px solid #dfe8f1; border-radius: 14px; padding: 12px 9px; }
     .report-kpi strong { display: block; font-size: 21px; line-height: 1.1; color: #172844; font-variant-numeric: tabular-nums; }
@@ -324,7 +341,7 @@
       </form>
       <div class="auth-links"><button type="button" id="showSignIn" hidden>Sign in</button><button type="button" id="showCreate">Create account</button><button type="button" id="showReset">Forgot password?</button></div>
       <div id="authMessage" class="auth-message" role="status"></div>
-      <div class="app-version">Build 2026.09.26.3</div>
+      <div class="app-version">Build 2026.09.26.4</div>
     </section>
   </div>
   <div id="onboardingGate" class="auth-shell" hidden>
@@ -518,9 +535,18 @@
       <div class="modal-actions"><button type="button" class="modal-cancel" id="githubCancel">Cancel</button><button type="submit" class="modal-save" id="githubSave">Sign in with GitHub</button></div>
     </form>
   </div>
+  <div id="pdfModal" class="modal-backdrop" hidden>
+    <section class="modal-card" role="dialog" aria-modal="true" aria-labelledby="pdfTitle">
+      <h2 id="pdfTitle">Command report PDF</h2>
+      <p id="pdfIntro">Creating a printable letter-size PDF from the report shown on screen.</p>
+      <p id="pdfStatus" class="modal-status" role="status"></p>
+      <div class="modal-actions"><button type="button" class="modal-cancel" id="pdfCancel">Close</button><button type="button" class="modal-save" id="pdfShare" hidden>Share / Print PDF</button></div>
+    </section>
+  </div>
   <div id="toast" class="toast" role="status" hidden></div>
   <div id="printSheet" class="print-sheet" aria-hidden="true"></div>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" integrity="sha512-GsLlZN/3F2ErC5ifS5QtgpiJtWd43JWSuIgh7mbzZ8zBps+dvLusV+eNQATqgA/HdeKFVgA5v3S/cIrLF7QnIg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
   <script>
     (() => {
       'use strict';
@@ -558,6 +584,7 @@
       let pitcherDraft = null;
       let currentUser = null;
       let currentTeam = null;
+      let reportPdfFile = null;
       let cloudPitchers = [];
       let authMode = 'signin';
       let generatedReportInvite = '';
@@ -1794,11 +1821,32 @@
           li.append(left, outcome); return li;
         }));
       }
+      const reportPdfName = () => `${(currentTeam?.name || state.team || 'team').replace(/[^a-z0-9]+/gi, '-').replace(/^-|-$/g, '').toLowerCase() || 'team'}-pitcher-command-${localDate(new Date())}.pdf`;
+      async function createCommandReportPdf(sheet) {
+        if (!window.html2pdf) throw Error('The PDF builder could not load. Check your connection and try again.');
+        const host = document.createElement('div'); host.className = 'pdf-render-host';
+        const reportCopy = sheet.cloneNode(true); reportCopy.removeAttribute('id'); reportCopy.removeAttribute('aria-hidden');
+        host.append(reportCopy); document.body.append(host);
+        try {
+          await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+          const blob = await window.html2pdf().set({
+            margin: [0.28, 0.28, 0.28, 0.28], filename: reportPdfName(),
+            image: { type: 'jpeg', quality: 0.94 },
+            html2canvas: { scale: 1.35, useCORS: true, backgroundColor: '#ffffff', logging: false },
+            jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' },
+            pagebreak: { mode: ['css', 'legacy'], avoid: ['.report-print-section'] }
+          }).from(reportCopy).outputPdf('blob');
+          return new File([blob], reportPdfName(), { type: 'application/pdf', lastModified: Date.now() });
+        } finally { host.remove(); }
+      }
+      function offerPdfDownload(file) {
+        const url = URL.createObjectURL(file), link = document.createElement('a');
+        link.href = url; link.download = file.name; link.rel = 'noopener'; document.body.append(link); link.click(); link.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 60000);
+      }
       function printCommandReport() {
         if ($('reportContent').hidden) return;
         const appleMobile = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-        const printWindow = appleMobile ? window.open('', '_blank') : null;
-        if (appleMobile && !printWindow) { notify('Safari blocked the printable report. Allow pop-ups and try again.'); return; }
         const sheet = $('printSheet'); sheet.className = 'print-sheet report-print-sheet'; sheet.replaceChildren(); sheet.style.removeProperty('--print-rows');
         const header = document.createElement('header'); header.className = 'report-print-header';
         const title = document.createElement('h1'); title.textContent = `${currentTeam?.name || state.team || 'Team'} · Pitcher Command Report`;
@@ -1813,25 +1861,19 @@
         };
         appendClone($('reportKpis'), 'Summary');
         for (const id of ['insightsSection', 'pitchCommandSection', 'targetAccuracySection', 'workloadSection', 'countSection', 'batterSideSection', 'plateAppearanceSection', 'callEffectivenessSection', 'gameComparisonSection', 'cardUsageSection', 'efficiencySection', 'missSection']) appendClone($(id));
-        if (printWindow) {
-          const printDocument = printWindow.document;
-          printDocument.open();
-          printDocument.write('<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Pitcher Command Report</title></head><body class="print-report"></body></html>');
-          printDocument.close();
-          for (const sourceStyle of document.querySelectorAll('style')) printDocument.head.append(sourceStyle.cloneNode(true));
-          const mobileStyle = printDocument.createElement('style');
-          mobileStyle.textContent = '.print-sheet{display:block!important;height:auto!important}.print-toolbar{position:sticky;top:0;z-index:10;margin:0 0 16px;padding:12px;border:1px solid #dce7f2;border-radius:12px;background:#fff;box-shadow:0 5px 18px #14284420;color:#405b78;font:700 13px/1.35 Arial,sans-serif}.print-toolbar strong{display:block;margin-bottom:4px;color:#172844;font-size:16px}.print-toolbar button{width:100%;min-height:46px;margin-top:10px;border:0;border-radius:11px;background:#1761bc;color:#fff;font:800 14px Arial,sans-serif}@media print{.print-toolbar{display:none!important}}';
-          printDocument.head.append(mobileStyle);
-          const toolbar = printDocument.createElement('div'); toolbar.className = 'print-toolbar';
-          const toolbarTitle = printDocument.createElement('strong'); toolbarTitle.textContent = 'Printable command report';
-          const instructions = printDocument.createElement('span'); instructions.textContent = 'Tap the button below. You can then choose a printer or pinch the preview open to save or share a PDF.';
-          const printButton = printDocument.createElement('button'); printButton.type = 'button'; printButton.textContent = 'Print / Save PDF'; printButton.setAttribute('onclick', 'window.print()');
-          toolbar.append(toolbarTitle, instructions, printButton);
-          const reportCopy = sheet.cloneNode(true); reportCopy.removeAttribute('id');
-          printDocument.body.append(toolbar, reportCopy);
-          printDocument.title = `${currentTeam?.name || state.team || 'Team'} - Pitcher Command Report`;
-          printWindow.focus();
-          sheet.className = 'print-sheet'; sheet.replaceChildren();
+        if (appleMobile) {
+          reportPdfFile = null; $('pdfModal').hidden = false; $('pdfShare').hidden = true;
+          $('pdfStatus').dataset.working = 'true'; delete $('pdfStatus').dataset.success; $('pdfStatus').textContent = 'Building the PDF… This may take several seconds.';
+          $('printCommandReport').disabled = true;
+          createCommandReportPdf(sheet).then(file => {
+            reportPdfFile = file; $('pdfStatus').textContent = 'Your PDF is ready. Tap Share / Print PDF to open the iPhone share sheet.';
+            delete $('pdfStatus').dataset.working; $('pdfStatus').dataset.success = 'true'; $('pdfShare').hidden = false;
+          }).catch(error => {
+            delete $('pdfStatus').dataset.working; delete $('pdfStatus').dataset.success;
+            $('pdfStatus').textContent = error.message || 'The PDF could not be created.';
+          }).finally(() => {
+            sheet.className = 'print-sheet'; sheet.replaceChildren(); $('printCommandReport').disabled = false;
+          });
           return;
         }
         document.body.classList.add('print-report');
@@ -2250,6 +2292,17 @@
       $('cardsTab').addEventListener('click', () => showTab('cards'));
       $('settingsTab').addEventListener('click', () => showTab('settings'));
       $('printCommandReport').addEventListener('click', printCommandReport);
+      $('pdfCancel').addEventListener('click', () => { $('pdfModal').hidden = true; });
+      $('pdfShare').addEventListener('click', async () => {
+        if (!reportPdfFile) return;
+        const shareData = { title: 'Pitcher Command Report', text: 'Pitcher command report from Pitch Tracker', files: [reportPdfFile] };
+        if (navigator.share && (!navigator.canShare || navigator.canShare(shareData))) {
+          try { await navigator.share(shareData); }
+          catch (error) {
+            if (error.name !== 'AbortError') { offerPdfDownload(reportPdfFile); notify('The PDF was downloaded instead.'); }
+          }
+        } else { offerPdfDownload(reportPdfFile); notify('PDF downloaded'); }
+      });
       $('currentSource').addEventListener('click', () => { report.source = 'current'; report.pitcher = ''; report.pitch = ''; renderReport(); });
       $('importedSource').addEventListener('click', () => { report.source = 'imported'; report.pitcher = ''; report.pitch = ''; renderReport(); if (!report.historyTried) loadTeamHistory(true); });
       $('loadTeamHistory').addEventListener('click', () => loadTeamHistory(true));
