@@ -324,7 +324,7 @@
       </form>
       <div class="auth-links"><button type="button" id="showSignIn" hidden>Sign in</button><button type="button" id="showCreate">Create account</button><button type="button" id="showReset">Forgot password?</button></div>
       <div id="authMessage" class="auth-message" role="status"></div>
-      <div class="app-version">Build 2026.09.26.2</div>
+      <div class="app-version">Build 2026.09.26.3</div>
     </section>
   </div>
   <div id="onboardingGate" class="auth-shell" hidden>
@@ -1796,6 +1796,9 @@
       }
       function printCommandReport() {
         if ($('reportContent').hidden) return;
+        const appleMobile = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+        const printWindow = appleMobile ? window.open('', '_blank') : null;
+        if (appleMobile && !printWindow) { notify('Safari blocked the printable report. Allow pop-ups and try again.'); return; }
         const sheet = $('printSheet'); sheet.className = 'print-sheet report-print-sheet'; sheet.replaceChildren(); sheet.style.removeProperty('--print-rows');
         const header = document.createElement('header'); header.className = 'report-print-header';
         const title = document.createElement('h1'); title.textContent = `${currentTeam?.name || state.team || 'Team'} · Pitcher Command Report`;
@@ -1810,6 +1813,27 @@
         };
         appendClone($('reportKpis'), 'Summary');
         for (const id of ['insightsSection', 'pitchCommandSection', 'targetAccuracySection', 'workloadSection', 'countSection', 'batterSideSection', 'plateAppearanceSection', 'callEffectivenessSection', 'gameComparisonSection', 'cardUsageSection', 'efficiencySection', 'missSection']) appendClone($(id));
+        if (printWindow) {
+          const printDocument = printWindow.document;
+          printDocument.open();
+          printDocument.write('<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Pitcher Command Report</title></head><body class="print-report"></body></html>');
+          printDocument.close();
+          for (const sourceStyle of document.querySelectorAll('style')) printDocument.head.append(sourceStyle.cloneNode(true));
+          const mobileStyle = printDocument.createElement('style');
+          mobileStyle.textContent = '.print-sheet{display:block!important;height:auto!important}.print-toolbar{position:sticky;top:0;z-index:10;margin:0 0 16px;padding:12px;border:1px solid #dce7f2;border-radius:12px;background:#fff;box-shadow:0 5px 18px #14284420;color:#405b78;font:700 13px/1.35 Arial,sans-serif}.print-toolbar strong{display:block;margin-bottom:4px;color:#172844;font-size:16px}.print-toolbar button{width:100%;min-height:46px;margin-top:10px;border:0;border-radius:11px;background:#1761bc;color:#fff;font:800 14px Arial,sans-serif}@media print{.print-toolbar{display:none!important}}';
+          printDocument.head.append(mobileStyle);
+          const toolbar = printDocument.createElement('div'); toolbar.className = 'print-toolbar';
+          const toolbarTitle = printDocument.createElement('strong'); toolbarTitle.textContent = 'Printable command report';
+          const instructions = printDocument.createElement('span'); instructions.textContent = 'Tap the button below. You can then choose a printer or pinch the preview open to save or share a PDF.';
+          const printButton = printDocument.createElement('button'); printButton.type = 'button'; printButton.textContent = 'Print / Save PDF'; printButton.setAttribute('onclick', 'window.print()');
+          toolbar.append(toolbarTitle, instructions, printButton);
+          const reportCopy = sheet.cloneNode(true); reportCopy.removeAttribute('id');
+          printDocument.body.append(toolbar, reportCopy);
+          printDocument.title = `${currentTeam?.name || state.team || 'Team'} - Pitcher Command Report`;
+          printWindow.focus();
+          sheet.className = 'print-sheet'; sheet.replaceChildren();
+          return;
+        }
         document.body.classList.add('print-report');
         let cleaned = false;
         const printMedia = window.matchMedia('print');
