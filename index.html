@@ -326,7 +326,7 @@
       </form>
       <div class="auth-links"><button type="button" id="showSignIn" hidden>Sign in</button><button type="button" id="showCreate">Create account</button><button type="button" id="showReset">Forgot password?</button></div>
       <div id="authMessage" class="auth-message" role="status"></div>
-      <div class="app-version">Build 2026.10.13.2</div>
+      <div class="app-version">Build 2026.10.13.3</div>
     </section>
   </div>
   <div id="onboardingGate" class="auth-shell" hidden>
@@ -447,11 +447,11 @@
       <section class="card" id="masterFilters" hidden>
         <label class="report-filter" for="reportTeam">Opponent <select id="reportTeam"><option value="">All opponents</option></select></label>
         <label class="report-filter" for="reportGame">Specific game <select id="reportGame"><option value="">Use games filter below</option></select></label>
-        <label class="report-filter" for="gamesFilter">Games <select id="gamesFilter"><option value="all">All games</option><option value="5">Last 5</option><option value="10" selected>Last 10</option><option value="20">Last 20</option><option value="custom">Last N…</option></select></label>
+        <label class="report-filter" for="gamesFilter"><span id="gamesFilterLabel">Games</span> <select id="gamesFilter"><option value="all">All games</option><option value="5">Last 5</option><option value="10" selected>Last 10</option><option value="20">Last 20</option><option value="custom">Last N…</option></select></label>
         <label class="report-filter" id="customGamesRow" for="customGames" hidden>Number of games <input id="customGames" type="number" min="1" max="9999" value="10" inputmode="numeric"></label>
         <p class="hint" id="gameRange" style="margin-top:12px"></p>
       </section>
-      <section class="card"><label class="report-filter" for="reportPitcher">Pitcher <select id="reportPitcher"><option value="">All pitchers</option></select></label><label class="report-filter" for="reportPitchType">Pitch type <select id="reportPitchType"><option value="">All pitch types</option></select></label></section>
+      <section class="card"><label class="report-filter" for="reportPitcher">Pitcher <select id="reportPitcher"><option value="">All pitchers</option></select></label><label class="report-filter" for="reportPitchType">Pitch type <select id="reportPitchType"><option value="">All pitch types</option></select></label><p class="hint" id="pitcherRangeHint" style="margin-top:12px" hidden>The games filter counts only games in which this pitcher appeared.</p></section>
       <div id="reportEmpty" class="card report-empty" hidden><strong>No pitches to report yet</strong>Log a pitch in the current game or load your team history.</div>
       <div id="reportContent" hidden>
         <div class="report-kpis" id="reportKpis" aria-label="Game statistics"></div>
@@ -1731,23 +1731,28 @@
           option.textContent = `${dateLabel}${gameNumber}${game.opponent ? ` vs ${game.opponent}` : ''}`; gamePicker.append(option);
         }
         gamePicker.value = report.game;
-        $('gamesFilter').value = report.games; $('gamesFilter').disabled = !!report.game;
-        $('customGames').value = report.customGames;
-        $('customGamesRow').hidden = !!report.game || report.games !== 'custom';
-        const limit = report.games === 'all' ? sortedGames.length : report.games === 'custom' ? report.customGames : Number(report.games);
-        const selected = report.game ? new Set([report.game]) : new Set(sortedGames.slice(0, limit).map(g => g.id));
-        const scoped = master ? teamRows.filter(p => selected.has(p.gameId || 'legacy-previous-import')) : all;
-        const chosenGame = report.game ? games.get(report.game) : null;
-        $('gameRange').textContent = chosenGame ? `Showing one game · ${chosenGame.date || 'date unknown'}${chosenGame.opponent ? ` vs ${chosenGame.opponent}` : ''}` : `${selected.size} of ${sortedGames.length} ${sortedGames.length === 1 ? 'game' : 'games'} selected${selected.size ? ` · most recent ${sortedGames[0].date || 'date unknown'}` : ''}`;
-        const pitchers = [...new Set(scoped.map(p => p.pitcher))].sort();
+        const pitcherSource = master && report.game ? teamRows.filter(p => (p.gameId || 'legacy-previous-import') === report.game) : teamRows;
+        const pitchers = [...new Set(pitcherSource.map(p => p.pitcher))].sort();
         const picker = $('reportPitcher');
         if (report.pitcher && !pitchers.includes(report.pitcher)) report.pitcher = '';
         picker.replaceChildren();
         for (const name of ['', ...pitchers]) {
-          const number = name ? scoped.find(p => p.pitcher === name && p.pitcherNumber)?.pitcherNumber || pitcherNumber(name) : '';
+          const number = name ? pitcherSource.find(p => p.pitcher === name && p.pitcherNumber)?.pitcherNumber || pitcherNumber(name) : '';
           const option = document.createElement('option'); option.value = name; option.textContent = name ? `${number ? `#${number} ` : ''}${name}` : 'All pitchers'; picker.append(option);
         }
         picker.value = report.pitcher;
+        $('gamesFilter').value = report.games; $('gamesFilter').disabled = !!report.game;
+        $('customGames').value = report.customGames;
+        $('customGamesRow').hidden = !!report.game || report.games !== 'custom';
+        $('gamesFilterLabel').textContent = master && report.pitcher && !report.game ? 'Pitcher games' : 'Games';
+        $('pitcherRangeHint').hidden = !master || !report.pitcher || !!report.game;
+        const eligibleGames = master && report.pitcher && !report.game ? sortedGames.filter(game => teamRows.some(p => (p.gameId || 'legacy-previous-import') === game.id && p.pitcher === report.pitcher)) : sortedGames;
+        const limit = report.games === 'all' ? eligibleGames.length : report.games === 'custom' ? report.customGames : Number(report.games);
+        const selected = report.game ? new Set([report.game]) : new Set(eligibleGames.slice(0, limit).map(g => g.id));
+        const scoped = master ? teamRows.filter(p => selected.has(p.gameId || 'legacy-previous-import')) : all;
+        const chosenGame = report.game ? games.get(report.game) : null;
+        const pitcherGameLabel = report.pitcher ? picker.selectedOptions[0]?.textContent || report.pitcher : '';
+        $('gameRange').textContent = chosenGame ? `Showing one game · ${chosenGame.date || 'date unknown'}${chosenGame.opponent ? ` vs ${chosenGame.opponent}` : ''}` : report.pitcher ? `${selected.size} of ${eligibleGames.length} games pitched by ${pitcherGameLabel} selected${selected.size ? ` · most recent ${eligibleGames[0].date || 'date unknown'}` : ''} · ${eligibleGames.length} appearances across ${sortedGames.length} team games` : `${selected.size} of ${sortedGames.length} ${sortedGames.length === 1 ? 'game' : 'games'} selected${selected.size ? ` · most recent ${sortedGames[0].date || 'date unknown'}` : ''}`;
         const pitcherRows = report.pitcher ? scoped.filter(p => p.pitcher === report.pitcher) : scoped;
         const availablePitches = [...new Set(pitcherRows.map(p => p.pitch).filter(Boolean))].sort();
         if (report.pitch && !availablePitches.includes(report.pitch)) report.pitch = '';
@@ -2467,7 +2472,7 @@
       $('loadTeamHistory').addEventListener('click', () => loadTeamHistory(true));
       $('reportTeam').addEventListener('change', event => { report.team = event.target.value; report.game = ''; report.pitcher = ''; report.pitch = ''; renderReport(); });
       $('reportGame').addEventListener('change', event => { report.game = event.target.value; report.pitcher = ''; report.pitch = ''; renderReport(); });
-      $('gamesFilter').addEventListener('change', event => { report.games = event.target.value; report.game = ''; report.pitcher = ''; report.pitch = ''; renderReport(); });
+      $('gamesFilter').addEventListener('change', event => { report.games = event.target.value; report.game = ''; renderReport(); });
       $('customGames').addEventListener('input', event => { report.customGames = Math.max(1, Math.min(9999, Number(event.target.value) || 1)); renderReport(); });
       $('reportPitcher').addEventListener('change', event => { report.pitcher = event.target.value; renderReport(); });
       $('reportPitchType').addEventListener('change', event => { report.pitch = event.target.value; renderReport(); });
