@@ -326,7 +326,7 @@
       </form>
       <div class="auth-links"><button type="button" id="showSignIn" hidden>Sign in</button><button type="button" id="showCreate">Create account</button><button type="button" id="showReset">Forgot password?</button></div>
       <div id="authMessage" class="auth-message" role="status"></div>
-      <div class="app-version">Build 2026.10.13.1</div>
+      <div class="app-version">Build 2026.10.13.2</div>
     </section>
   </div>
   <div id="onboardingGate" class="auth-shell" hidden>
@@ -1097,7 +1097,7 @@
           if (Array.isArray(saved.history)) state.history = saved.history.filter(p => p && typeof p.pitcher === 'string' && p.pitcher.trim() && p.pitcher.length <= 60 && typeof p.pitch === 'string' && p.pitch.trim() && p.pitch.length <= 40 && ['Strike', 'Ball', 'Foul', 'HBP', 'In play'].includes(p.result));
           const firstTime = state.history[0]?.time;
           const firstDate = firstTime && !Number.isNaN(new Date(firstTime).getTime()) ? localDate(new Date(firstTime)) : localDate(new Date());
-          state.gameDate = /^\d{4}-\d{2}-\d{2}$/.test(saved.gameDate) ? saved.gameDate : firstDate;
+          state.gameDate = state.history.length && /^\d{4}-\d{2}-\d{2}$/.test(saved.gameDate) ? saved.gameDate : state.history.length ? firstDate : localDate(new Date());
           state.gameId = typeof saved.gameId === 'string' && saved.gameId ? saved.gameId : createGameId();
           const lastBatter = Math.max(0, ...state.history.map(p => Number.isSafeInteger(p.batter) ? p.batter : 0));
           if (Number.isSafeInteger(saved.batter) && saved.batter >= lastBatter && saved.batter <= lastBatter + 1) state.batter = saved.batter;
