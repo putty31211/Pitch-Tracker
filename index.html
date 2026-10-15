@@ -326,7 +326,7 @@
       </form>
       <div class="auth-links"><button type="button" id="showSignIn" hidden>Sign in</button><button type="button" id="showCreate">Create account</button><button type="button" id="showReset">Forgot password?</button></div>
       <div id="authMessage" class="auth-message" role="status"></div>
-      <div class="app-version">Build 2026.10.14.1</div>
+      <div class="app-version">Build 2026.10.14.2</div>
     </section>
   </div>
   <div id="onboardingGate" class="auth-shell" hidden>
@@ -562,7 +562,7 @@
       const PENDING_KEY = 'lightning-pitch-github-pending-v1';
       const CALLBACK_URL = 'https://putty31211.github.io/Pitch-Tracker/';
       let auth = null;
-      const CSV_COLUMNS = ['number', 'team', 'opponent', 'game_date', 'game_id', 'timestamp', 'pitcher', 'pitcher_number', 'batter', 'batter_side', 'called_pitch', 'called_location', 'result', 'strike_type', 'strike_spot', 'ball_detail', 'in_play_outcome', 'contact_type', 'count_before', 'count_after', 'batter_outcome', 'miss_direction', 'card_call', 'card_row', 'card_column', 'card_name', 'miss_location'];
+      const CSV_COLUMNS = ['number', 'team', 'opponent', 'game_date', 'game_id', 'timestamp', 'pitcher', 'pitcher_number', 'batter', 'batter_side', 'called_pitch', 'called_location', 'result', 'strike_type', 'strike_spot', 'ball_detail', 'in_play_outcome', 'contact_result', 'count_before', 'count_after', 'batter_outcome', 'miss_direction', 'card_call', 'card_row', 'card_column', 'card_name', 'miss_location', 'miss_beyond_target'];
       const MISS_DIRECTIONS = ['High / In', 'High', 'High / Out', 'In', 'Out', 'Low / In', 'Low', 'Low / Out'];
       const CONTACT_TYPES = ['Ground ball', 'Fly ball', 'Pop-up', 'Line drive', 'Bunt', 'Bomb'];
       const PLAY_OUTCOMES = ['Hit', 'Out', 'Error', 'Other'];
@@ -650,6 +650,11 @@
         if (beyond) return beyondMissValue(normalizeZone(beyond[1]));
         return normalizeZone(trimmed);
       };
+      const trueValue = value => value === true || typeof value === 'string' && ['true', '1', 'yes'].includes(value.trim().toLocaleLowerCase());
+      const decodeMissLocation = (value, beyond = false) => {
+        const normalized = normalizeMissLocation(value), zone = missZone(normalized);
+        return trueValue(beyond) && zone ? beyondMissValue(zone) : normalized;
+      };
       const missLocationLabel = value => isBeyondMiss(value) ? `Beyond target (${zoneLabel(missZone(value))})` : zoneLabel(missZone(value));
       const beyondDirectionLabel = zone => ({
         'Up / In': 'Higher / farther in', Up: 'Higher', 'Up / Out': 'Higher / farther out',
@@ -662,7 +667,6 @@
         if (/^hard hit\s*\/\s*bomb$/i.test(trimmed)) return 'Bomb';
         return CONTACT_TYPES.find(contact => contact.toLocaleLowerCase() === trimmed.toLocaleLowerCase()) || null;
       };
-      const encodeInPlayOutcome = (outcome, contact) => outcome && contact ? `${outcome} | ${contact}` : outcome || null;
       const decodeInPlayOutcome = (value, explicitContact = null) => {
         const raw = typeof value === 'string' ? value.trim() : '', parts = raw.split('|').map(part => part.trim());
         const outcome = PLAY_OUTCOMES.includes(parts[0]) ? parts[0] : raw || null;
@@ -1187,12 +1191,12 @@
         const hasOpponentColumn = headers.includes('opponent');
         const legacyId = `legacy-${String(data[0]?.timestamp || 'game').replace(/[^0-9A-Za-z]/g, '')}`;
         return data.map((p, index) => {
-          const when = new Date(p.timestamp), inPlay = decodeInPlayOutcome(p.in_play_outcome, p.contact_type);
+          const when = new Date(p.timestamp), inPlay = decodeInPlayOutcome(p.in_play_outcome, p.contact_result || p.contact_type);
           return { number: Number(p.number) || index + 1, team: hasOpponentColumn ? p.team || '' : '', opponent: hasOpponentColumn ? p.opponent || '' : p.team || '', gameDate: p.game_date || (Number.isNaN(when.getTime()) ? '' : localDate(when)), gameId: p.game_id || legacyId,
             time: p.timestamp || '', pitcher: p.pitcher, pitcherNumber: /^\d{1,3}$/.test(p.pitcher_number || '') ? p.pitcher_number : '', batter: Number(p.batter) || null, batterSide: ['R', 'L'].includes(p.batter_side) ? p.batter_side : null, pitch: p.called_pitch, zone: normalizeZone(p.called_location), result: p.result,
             strikeType: p.strike_type || null, strikeSpot: p.strike_spot || null, ballType: p.ball_detail || null, playType: inPlay.outcome, contactType: inPlay.contact,
             missDirection: MISS_DIRECTIONS.includes(p.miss_direction) ? p.miss_direction : null,
-            missLocation: normalizeMissLocation(p.miss_location),
+            missLocation: decodeMissLocation(p.miss_location, p.miss_beyond_target),
             cardCall: p.card_call ? normalizeCardCall(p.card_call) : null, cardRow: Number(p.card_row) || null, cardColumn: Number(p.card_column) || null, cardName: p.card_name || null,
             countBefore: p.count_before || null, countAfter: p.count_after || null, plateResult: p.batter_outcome || null };
         });
@@ -1217,7 +1221,7 @@
         const rows = state.history.map((pitch, index) => {
           const pitcher = cloudPitchers.find(saved => saved.display_name === pitch.pitcher) || cloudPitchers.find(saved => saved.jersey_number === pitch.pitcherNumber);
           if (!pitcher) throw Error(`Could not match ${pitch.pitcher} to a saved team pitcher.`);
-          return { team_id: teamId, game_id: gameId, pitcher_id: pitcher.id, pitcher_name: pitch.pitcher, pitcher_number: pitch.pitcherNumber || pitcher.jersey_number, pitch_number: index + 1, pitched_at: pitch.time || new Date().toISOString(), batter_number: pitch.batter ?? null, batter_side: pitch.batterSide ?? null, called_pitch: pitch.pitch, called_location: pitch.zone ?? null, result: pitch.result, strike_type: pitch.strikeType ?? null, strike_spot: pitch.strikeSpot ?? null, ball_detail: pitch.ballType ?? null, in_play_outcome: encodeInPlayOutcome(pitch.playType, pitch.contactType), count_before: pitch.countBefore ?? null, count_after: pitch.countAfter ?? null, batter_outcome: pitch.plateResult ?? null, miss_location: pitch.missLocation ?? null, card_call: pitch.cardCall ?? null, card_row: pitch.cardRow ?? null, card_column: pitch.cardColumn ?? null, card_name: pitch.cardName ?? null };
+          return { team_id: teamId, game_id: gameId, pitcher_id: pitcher.id, pitcher_name: pitch.pitcher, pitcher_number: pitch.pitcherNumber || pitcher.jersey_number, pitch_number: index + 1, pitched_at: pitch.time || new Date().toISOString(), batter_number: pitch.batter ?? null, batter_side: pitch.batterSide ?? null, called_pitch: pitch.pitch, called_location: pitch.zone ?? null, result: pitch.result, strike_type: pitch.strikeType ?? null, strike_spot: pitch.strikeSpot ?? null, ball_detail: pitch.ballType ?? null, in_play_outcome: pitch.playType ?? null, contact_result: pitch.contactType ?? null, count_before: pitch.countBefore ?? null, count_after: pitch.countAfter ?? null, batter_outcome: pitch.plateResult ?? null, miss_location: missZone(pitch.missLocation), miss_beyond_target: isBeyondMiss(pitch.missLocation), card_call: pitch.cardCall ?? null, card_row: pitch.cardRow ?? null, card_column: pitch.cardColumn ?? null, card_name: pitch.cardName ?? null };
         });
         const { error: pitchError } = await dbClient.from('pitches').upsert(rows, { onConflict: 'game_id,pitch_number' });
         if (pitchError) throw pitchError;
@@ -1228,7 +1232,7 @@
       }
       function serializeCSV(rows) {
         const quote = value => `"${String(value ?? '').replaceAll('"', '""')}"`;
-        const data = rows.map(p => [p.number, p.team, p.opponent, p.gameDate, p.gameId, p.time, p.pitcher, p.pitcherNumber, p.batter, p.batterSide, p.pitch, p.zone, p.result, p.strikeType, p.strikeSpot, p.ballType, p.playType, p.contactType, p.countBefore, p.countAfter, p.plateResult, p.missDirection, p.cardCall, p.cardRow, p.cardColumn, p.cardName, p.missLocation ? missLocationLabel(p.missLocation) : null].map(quote).join(','));
+        const data = rows.map(p => [p.number, p.team, p.opponent, p.gameDate, p.gameId, p.time, p.pitcher, p.pitcherNumber, p.batter, p.batterSide, p.pitch, p.zone, p.result, p.strikeType, p.strikeSpot, p.ballType, p.playType, p.contactType, p.countBefore, p.countAfter, p.plateResult, p.missDirection, p.cardCall, p.cardRow, p.cardColumn, p.cardName, missZone(p.missLocation), isBeyondMiss(p.missLocation)].map(quote).join(','));
         return '\uFEFF' + CSV_COLUMNS.join(',') + '\r\n' + data.join('\r\n');
       }
       function downloadCSV(rows, filename) {
@@ -1393,15 +1397,15 @@
           const savedPitches = [];
           for (let offset = 0; ; offset += 1000) {
             const { data, error } = await dbClient.from('pitches')
-              .select('id, game_id, pitch_number, pitched_at, pitcher_name, pitcher_number, batter_number, batter_side, called_pitch, called_location, result, strike_type, strike_spot, ball_detail, in_play_outcome, count_before, count_after, batter_outcome, miss_location, card_call, card_row, card_column, card_name')
+              .select('id, game_id, pitch_number, pitched_at, pitcher_name, pitcher_number, batter_number, batter_side, called_pitch, called_location, result, strike_type, strike_spot, ball_detail, in_play_outcome, contact_result, count_before, count_after, batter_outcome, miss_location, miss_beyond_target, card_call, card_row, card_column, card_name')
               .eq('team_id', currentTeam.id).order('pitched_at').order('id').range(offset, offset + 999);
             if (error) throw error;
             savedPitches.push(...(data || []));
             if (!data || data.length < 1000) break;
           }
           report.rows = savedPitches.filter(pitch => gamesById.has(pitch.game_id)).map(pitch => {
-            const game = gamesById.get(pitch.game_id), inPlay = decodeInPlayOutcome(pitch.in_play_outcome);
-            return { number: pitch.pitch_number, team: currentTeam.name, opponent: game?.opponent || '', gameDate: game?.played_on || '', gameId: pitch.game_id, time: pitch.pitched_at || '', pitcher: pitch.pitcher_name, pitcherNumber: pitch.pitcher_number, batter: pitch.batter_number, batterSide: pitch.batter_side, pitch: pitch.called_pitch, zone: normalizeZone(pitch.called_location), result: pitch.result, strikeType: pitch.strike_type, strikeSpot: pitch.strike_spot, ballType: pitch.ball_detail, playType: inPlay.outcome, contactType: inPlay.contact, countBefore: pitch.count_before, countAfter: pitch.count_after, plateResult: pitch.batter_outcome, missDirection: null, missLocation: normalizeMissLocation(pitch.miss_location), cardCall: pitch.card_call ? normalizeCardCall(pitch.card_call) : null, cardRow: pitch.card_row, cardColumn: pitch.card_column, cardName: pitch.card_name };
+            const game = gamesById.get(pitch.game_id), inPlay = decodeInPlayOutcome(pitch.in_play_outcome, pitch.contact_result);
+            return { number: pitch.pitch_number, team: currentTeam.name, opponent: game?.opponent || '', gameDate: game?.played_on || '', gameId: pitch.game_id, time: pitch.pitched_at || '', pitcher: pitch.pitcher_name, pitcherNumber: pitch.pitcher_number, batter: pitch.batter_number, batterSide: pitch.batter_side, pitch: pitch.called_pitch, zone: normalizeZone(pitch.called_location), result: pitch.result, strikeType: pitch.strike_type, strikeSpot: pitch.strike_spot, ballType: pitch.ball_detail, playType: inPlay.outcome, contactType: inPlay.contact, countBefore: pitch.count_before, countAfter: pitch.count_after, plateResult: pitch.batter_outcome, missDirection: null, missLocation: decodeMissLocation(pitch.miss_location, pitch.miss_beyond_target), cardCall: pitch.card_call ? normalizeCardCall(pitch.card_call) : null, cardRow: pitch.card_row, cardColumn: pitch.card_column, cardName: pitch.card_name };
           });
           report.fileName = 'Team database'; report.source = 'imported'; report.pitcher = ''; report.pitch = ''; report.team = ''; report.game = '';
           renderReport();
