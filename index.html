@@ -326,7 +326,7 @@
       </form>
       <div class="auth-links"><button type="button" id="showSignIn" hidden>Sign in</button><button type="button" id="showCreate">Create account</button><button type="button" id="showReset">Forgot password?</button></div>
       <div id="authMessage" class="auth-message" role="status"></div>
-      <div class="app-version">Build 2026.10.14.2</div>
+      <div class="app-version">Build 2026.10.15.1</div>
     </section>
   </div>
   <div id="onboardingGate" class="auth-shell" hidden>
@@ -336,6 +336,8 @@
       <p id="onboardingIntro">Create a private team workspace or join one with a report invite.</p>
       <form id="onboardingForm">
         <label class="setup-field">Team name<input id="setupTeamName" maxlength="80" required placeholder="e.g. Amherst Lightning 12U"></label>
+        <label class="setup-field">Head coach<input id="setupHeadCoach" maxlength="80" required placeholder="e.g. Bannister"></label>
+        <label class="setup-field">Season<input id="setupSeasonLabel" maxlength="40" required placeholder="e.g. 2026-2027"></label>
         <button class="auth-primary" id="setupSubmit" type="submit">Create team</button>
       </form>
       <div id="setupMessage" class="auth-message" role="status"></div>
@@ -445,6 +447,7 @@
         <p class="hint">Team history loads from the secure database. CSV import remains available for older games.</p>
       </section>
       <section class="card" id="masterFilters" hidden>
+        <label class="report-filter" for="reportSeason">Season <select id="reportSeason"><option value="">All seasons</option></select></label>
         <label class="report-filter" for="reportTeam">Opponent <select id="reportTeam"><option value="">All opponents</option></select></label>
         <label class="report-filter" for="reportGame">Specific game <select id="reportGame"><option value="">Use games filter below</option></select></label>
         <label class="report-filter" for="gamesFilter"><span id="gamesFilterLabel">Games</span> <select id="gamesFilter"><option value="all">All games</option><option value="5">Last 5</option><option value="10" selected>Last 10</option><option value="20">Last 20</option><option value="custom">Last N…</option></select></label>
@@ -489,6 +492,7 @@
     <main id="settingsView" hidden>
       <div class="page-heading"><h2 id="settingsHeading">Team settings</h2><p id="settingsIntro">Manage the team information used across games, cards, and reports.</p></div>
       <section class="card coach-only" id="teamSettings"><div class="section-title"><h2>Team</h2></div><p class="hint">Your team name is saved in this browser and used for every game.</p><div class="team-field"><input id="teamNameSetting" maxlength="80" placeholder="Your team name" aria-label="Your team name"></div><div class="editor-actions"><button type="button" class="small-action" id="cancelTeamSettings">Cancel</button><button type="button" class="small-action" id="saveTeamSettings">Save team</button></div></section>
+      <section class="card coach-only" id="seasonSettings"><div class="section-title"><h2>Season</h2><span id="activeSeasonStatus">Active season</span></div><p class="hint">Games are saved to the active season. You can keep older seasons available for reports.</p><label class="report-filter" for="settingsSeasonChoice">Season <select id="settingsSeasonChoice"></select></label><div class="game-fields"><label for="seasonLabelSetting">Season label<input id="seasonLabelSetting" maxlength="40" placeholder="e.g. 2026-2027"></label><label for="headCoachSetting">Head coach<input id="headCoachSetting" maxlength="80" placeholder="e.g. Bannister"></label></div><div class="game-fields"><label for="seasonStartSetting">Start date (optional)<input id="seasonStartSetting" type="date"></label><label for="seasonEndSetting">End date (optional)<input id="seasonEndSetting" type="date"></label></div><div class="editor-actions"><button type="button" class="small-action" id="newSeason">New season</button><button type="button" class="small-action" id="makeSeasonActive">Make active</button><button type="button" class="small-action" id="saveSeasonSettings">Save season</button></div></section>
       <section class="card coach-only"><div class="section-title"><h2>Pitchers</h2><button type="button" class="small-action" id="settingsEditPitchers">Edit</button></div><p class="hint">Add each pitcher's display name and jersey number.</p><div id="settingsPitcherList" class="settings-summary"></div><div id="pitcherEditor" class="pitcher-editor" hidden><h3>Edit team pitchers</h3><p class="hint">Name and number changes also update this game's pitch history.</p><div id="pitcherEditRows"></div><button type="button" class="small-action" id="addPitcher">+ Add pitcher</button><div class="editor-actions"><button type="button" class="small-action" id="cancelPitchers">Cancel</button><button type="button" class="small-action" id="savePitchers">Save pitchers</button></div></div></section>
       <section class="card coach-only" id="teamTools"><div class="section-title"><h2>Pitch types</h2></div><p class="hint">Choose the pitches this team throws. Cards and pitch lists use this selection.</p><div id="teamPitches" class="team-pitches" role="group" aria-label="Team pitch types"></div><div class="team-field"><input id="customPitch" maxlength="40" placeholder="Other pitch name" aria-label="Other pitch name"><button class="small-action" type="button" id="addPitch">Add pitch</button></div><p id="teamToolsHint" class="hint" style="margin-top:10px"></p><button type="button" id="closeTeamTools" hidden>Done</button></section>
       <section class="card coach-only" id="accessSettings">
@@ -549,7 +553,7 @@
       const pitchNames = ['Fastball', '2 Seam', 'Change-up', 'Curve', 'Drop', 'Rise', 'Screwball'];
       const zoneNames = ['Up / Out', 'Up', 'Up / In', 'Out', 'Middle', 'In', 'Down / Out', 'Down', 'Down / In'];
       const state = { team: '', opponent: '', gameDate: '', gameId: '', pitcher: null, batter: 1, batterSide: 'R', pitch: null, zone: null, result: null, strikeType: null, strikeSpot: null, ballType: null, playType: null, contactType: null, missLocation: null, cardCall: null, cardRow: null, cardColumn: null, history: [] };
-      const report = { tab: 'tracker', source: 'current', pitcher: '', pitch: '', team: '', game: '', games: '10', customGames: 10, rows: [], fileName: '', historyTried: false };
+      const report = { tab: 'tracker', source: 'current', pitcher: '', pitch: '', season: '', team: '', game: '', games: '10', customGames: 10, rows: [], fileName: '', historyTried: false };
       const REPORT_KEY = 'lightning-pitch-reports-v1';
       const MODE_KEY = 'lightning-pitch-mode-v1';
       const TEAM_CARDS_KEY = 'lightning-pitch-team-cards-v1';
@@ -562,7 +566,7 @@
       const PENDING_KEY = 'lightning-pitch-github-pending-v1';
       const CALLBACK_URL = 'https://putty31211.github.io/Pitch-Tracker/';
       let auth = null;
-      const CSV_COLUMNS = ['number', 'team', 'opponent', 'game_date', 'game_id', 'timestamp', 'pitcher', 'pitcher_number', 'batter', 'batter_side', 'called_pitch', 'called_location', 'result', 'strike_type', 'strike_spot', 'ball_detail', 'in_play_outcome', 'contact_result', 'count_before', 'count_after', 'batter_outcome', 'miss_direction', 'card_call', 'card_row', 'card_column', 'card_name', 'miss_location', 'miss_beyond_target'];
+      const CSV_COLUMNS = ['number', 'team', 'season', 'head_coach', 'opponent', 'game_date', 'game_id', 'timestamp', 'pitcher', 'pitcher_number', 'batter', 'batter_side', 'called_pitch', 'called_location', 'result', 'strike_type', 'strike_spot', 'ball_detail', 'in_play_outcome', 'contact_result', 'count_before', 'count_after', 'batter_outcome', 'miss_direction', 'card_call', 'card_row', 'card_column', 'card_name', 'miss_location', 'miss_beyond_target'];
       const MISS_DIRECTIONS = ['High / In', 'High', 'High / Out', 'In', 'Out', 'Low / In', 'Low', 'Low / Out'];
       const CONTACT_TYPES = ['Ground ball', 'Fly ball', 'Pop-up', 'Line drive', 'Bunt', 'Bomb'];
       const PLAY_OUTCOMES = ['Hit', 'Out', 'Error', 'Other'];
@@ -578,6 +582,9 @@
       let pitcherDraft = null;
       let currentUser = null;
       let currentTeam = null;
+      let teamSeasons = [];
+      let currentSeason = null;
+      let seasonDraftNew = false;
       let reportPdfFile = null;
       let cloudPitchers = [];
       let authMode = 'signin';
@@ -841,18 +848,21 @@
           const previousTeamId = localStorage.getItem(ACTIVE_TEAM_KEY);
           if (previousTeamId && previousTeamId !== currentTeam.id) {
             state.opponent = ''; state.pitcher = null; state.batter = 1; state.batterSide = 'R'; state.history = []; state.gameDate = localDate(new Date()); state.gameId = createGameId(); resetEntry();
-            report.rows = []; report.fileName = ''; report.source = 'current'; report.pitcher = ''; report.team = ''; report.game = '';
+            report.rows = []; report.fileName = ''; report.source = 'current'; report.pitcher = ''; report.season = ''; report.team = ''; report.game = '';
           }
           localStorage.setItem(ACTIVE_TEAM_KEY, currentTeam.id);
         } catch (_) { /* The signed-in team still loads if browser storage is blocked. */ }
         const cardsRequest = currentTeam.role === 'viewer' ? Promise.resolve({ data: [], error: null }) : dbClient.from('pitch_cards').select('id, name, grid').eq('team_id', currentTeam.id).order('name');
-        const [pitchersResult, pitchesResult, cardsResult] = await Promise.all([
+        const [pitchersResult, pitchesResult, cardsResult, seasonsResult] = await Promise.all([
           dbClient.from('pitchers').select('id, display_name, jersey_number, active, sort_order').eq('team_id', currentTeam.id).order('sort_order').order('display_name'),
           dbClient.from('pitch_types').select('name, active, sort_order').eq('team_id', currentTeam.id).eq('active', true).order('sort_order').order('name'),
-          cardsRequest
+          cardsRequest,
+          dbClient.from('seasons').select('id, label, head_coach_name, start_date, end_date, is_active, created_at').eq('team_id', currentTeam.id).order('created_at', { ascending: false })
         ]);
-        const loadError = pitchersResult.error || pitchesResult.error || cardsResult.error; if (loadError) throw loadError;
+        const loadError = pitchersResult.error || pitchesResult.error || cardsResult.error || seasonsResult.error; if (loadError) throw loadError;
         cloudPitchers = pitchersResult.data || [];
+        teamSeasons = seasonsResult.data || [];
+        currentSeason = teamSeasons.find(season => season.is_active) || teamSeasons[0] || null;
         const activePitchers = cloudPitchers.filter(pitcher => pitcher.active);
         state.team = currentTeam.name;
         const key = teamKey();
@@ -900,6 +910,32 @@
         showTab('settings');
         $('teamNameSetting').value = state.team;
         $('teamSettings').scrollIntoView({ behavior: 'smooth', block: 'center' }); $('teamNameSetting').focus();
+      }
+      function renderSeasonSettings(selectedId = null) {
+        if (!currentTeam || currentTeam.role === 'viewer') return;
+        const picker = $('settingsSeasonChoice');
+        const selected = !seasonDraftNew && (teamSeasons.find(season => season.id === selectedId) || currentSeason || teamSeasons[0]);
+        picker.replaceChildren();
+        if (!teamSeasons.length) {
+          const option = document.createElement('option'); option.value = ''; option.textContent = 'No seasons yet'; picker.append(option);
+        } else {
+          for (const season of teamSeasons) {
+            const option = document.createElement('option'); option.value = season.id; option.textContent = `${season.label}${season.is_active ? ' · Active' : ''}`; picker.append(option);
+          }
+          picker.value = selected?.id || teamSeasons[0].id;
+        }
+        $('seasonLabelSetting').value = seasonDraftNew ? '' : selected?.label || '';
+        $('headCoachSetting').value = seasonDraftNew ? currentSeason?.head_coach_name || '' : selected?.head_coach_name || '';
+        $('seasonStartSetting').value = seasonDraftNew ? '' : selected?.start_date || '';
+        $('seasonEndSetting').value = seasonDraftNew ? '' : selected?.end_date || '';
+        $('activeSeasonStatus').textContent = seasonDraftNew ? 'New season' : selected?.is_active ? 'Active season' : 'Past season';
+        $('makeSeasonActive').hidden = seasonDraftNew || !selected || selected.is_active;
+      }
+      async function refreshTeamSeasons(selectedId = null) {
+        const { data, error } = await dbClient.from('seasons').select('id, label, head_coach_name, start_date, end_date, is_active, created_at').eq('team_id', currentTeam.id).order('created_at', { ascending: false });
+        if (error) throw error;
+        teamSeasons = data || []; currentSeason = teamSeasons.find(season => season.is_active) || teamSeasons[0] || null;
+        seasonDraftNew = false; renderSeasonSettings(selectedId || currentSeason?.id);
       }
       function ensureProfile() {
         if (!teamKey()) { notify('Set your team name first.'); openTeamSettings(); return null; }
@@ -1192,7 +1228,7 @@
         const legacyId = `legacy-${String(data[0]?.timestamp || 'game').replace(/[^0-9A-Za-z]/g, '')}`;
         return data.map((p, index) => {
           const when = new Date(p.timestamp), inPlay = decodeInPlayOutcome(p.in_play_outcome, p.contact_result || p.contact_type);
-          return { number: Number(p.number) || index + 1, team: hasOpponentColumn ? p.team || '' : '', opponent: hasOpponentColumn ? p.opponent || '' : p.team || '', gameDate: p.game_date || (Number.isNaN(when.getTime()) ? '' : localDate(when)), gameId: p.game_id || legacyId,
+          return { number: Number(p.number) || index + 1, team: hasOpponentColumn ? p.team || '' : '', seasonId: '', seasonLabel: p.season || '', headCoach: p.head_coach || '', opponent: hasOpponentColumn ? p.opponent || '' : p.team || '', gameDate: p.game_date || (Number.isNaN(when.getTime()) ? '' : localDate(when)), gameId: p.game_id || legacyId,
             time: p.timestamp || '', pitcher: p.pitcher, pitcherNumber: /^\d{1,3}$/.test(p.pitcher_number || '') ? p.pitcher_number : '', batter: Number(p.batter) || null, batterSide: ['R', 'L'].includes(p.batter_side) ? p.batter_side : null, pitch: p.called_pitch, zone: normalizeZone(p.called_location), result: p.result,
             strikeType: p.strike_type || null, strikeSpot: p.strike_spot || null, ballType: p.ball_detail || null, playType: inPlay.outcome, contactType: inPlay.contact,
             missDirection: MISS_DIRECTIONS.includes(p.miss_direction) ? p.miss_direction : null,
@@ -1202,20 +1238,21 @@
         });
       }
       function currentGameRows() {
-        return state.history.map((p, index) => ({ ...p, number: index + 1, team: state.team.trim(), opponent: state.opponent.trim(), gameDate: state.gameDate, gameId: state.gameId }));
+        return state.history.map((p, index) => ({ ...p, number: index + 1, team: state.team.trim(), seasonId: currentSeason?.id || '', seasonLabel: currentSeason?.label || '', headCoach: currentSeason?.head_coach_name || '', opponent: state.opponent.trim(), gameDate: state.gameDate, gameId: state.gameId }));
       }
       async function saveGameToDatabase() {
         if (!currentTeam || !currentUser) throw Error('Sign in to save this game.');
         if (currentTeam.role === 'viewer') throw Error('This account has view-only access.');
+        if (!currentSeason?.id) throw Error('Create an active season in Settings before saving this game.');
         if (!isUuid(state.gameId)) { state.gameId = createGameId(); save(); }
         const teamId = currentTeam.id, gameId = state.gameId;
         const { data: existing, error: lookupError } = await dbClient.from('games').select('id, status').eq('id', gameId).eq('team_id', teamId).maybeSingle();
         if (lookupError) throw lookupError;
         if (existing) {
-          const { error } = await dbClient.from('games').update({ opponent: state.opponent.trim(), played_on: state.gameDate }).eq('id', gameId).eq('team_id', teamId);
+          const { error } = await dbClient.from('games').update({ opponent: state.opponent.trim(), played_on: state.gameDate, season_id: currentSeason.id }).eq('id', gameId).eq('team_id', teamId);
           if (error) throw error;
         } else {
-          const { error } = await dbClient.from('games').insert({ id: gameId, team_id: teamId, opponent: state.opponent.trim(), played_on: state.gameDate, status: 'draft', created_by: currentUser.id });
+          const { error } = await dbClient.from('games').insert({ id: gameId, team_id: teamId, season_id: currentSeason.id, opponent: state.opponent.trim(), played_on: state.gameDate, status: 'draft', created_by: currentUser.id });
           if (error) throw error;
         }
         const rows = state.history.map((pitch, index) => {
@@ -1232,7 +1269,7 @@
       }
       function serializeCSV(rows) {
         const quote = value => `"${String(value ?? '').replaceAll('"', '""')}"`;
-        const data = rows.map(p => [p.number, p.team, p.opponent, p.gameDate, p.gameId, p.time, p.pitcher, p.pitcherNumber, p.batter, p.batterSide, p.pitch, p.zone, p.result, p.strikeType, p.strikeSpot, p.ballType, p.playType, p.contactType, p.countBefore, p.countAfter, p.plateResult, p.missDirection, p.cardCall, p.cardRow, p.cardColumn, p.cardName, missZone(p.missLocation), isBeyondMiss(p.missLocation)].map(quote).join(','));
+        const data = rows.map(p => [p.number, p.team, p.seasonLabel, p.headCoach, p.opponent, p.gameDate, p.gameId, p.time, p.pitcher, p.pitcherNumber, p.batter, p.batterSide, p.pitch, p.zone, p.result, p.strikeType, p.strikeSpot, p.ballType, p.playType, p.contactType, p.countBefore, p.countAfter, p.plateResult, p.missDirection, p.cardCall, p.cardRow, p.cardColumn, p.cardName, missZone(p.missLocation), isBeyondMiss(p.missLocation)].map(quote).join(','));
         return '\uFEFF' + CSV_COLUMNS.join(',') + '\r\n' + data.join('\r\n');
       }
       function downloadCSV(rows, filename) {
@@ -1376,7 +1413,7 @@
       function restoreReport() {
         try {
           const saved = JSON.parse(localStorage.getItem(REPORT_KEY) || '{}');
-          if (Array.isArray(saved.rows)) report.rows = saved.rows.filter(p => p && p.pitcher && p.pitch && p.result).map(p => ({ ...p, team: Object.hasOwn(p, 'opponent') ? p.team || '' : '', opponent: Object.hasOwn(p, 'opponent') ? p.opponent || '' : p.team || '', gameId: p.gameId || 'legacy-previous-import', gameDate: p.gameDate || '', number: p.number || null, missLocation: normalizeMissLocation(p.missLocation), contactType: normalizeContactResult(p.contactType) }));
+          if (Array.isArray(saved.rows)) report.rows = saved.rows.filter(p => p && p.pitcher && p.pitch && p.result).map(p => ({ ...p, team: Object.hasOwn(p, 'opponent') ? p.team || '' : '', seasonId: p.seasonId || '', seasonLabel: p.seasonLabel || '', headCoach: p.headCoach || '', opponent: Object.hasOwn(p, 'opponent') ? p.opponent || '' : p.team || '', gameId: p.gameId || 'legacy-previous-import', gameDate: p.gameDate || '', number: p.number || null, missLocation: normalizeMissLocation(p.missLocation), contactType: normalizeContactResult(p.contactType) }));
           if (typeof saved.fileName === 'string') report.fileName = saved.fileName;
         } catch (_) { /* Keep reporting available if saved data is invalid. */ }
       }
@@ -1388,7 +1425,7 @@
         try {
           const savedGames = [];
           for (let offset = 0; ; offset += 1000) {
-            const { data, error } = await dbClient.from('games').select('id, opponent, played_on').eq('team_id', currentTeam.id).eq('status', 'completed').order('played_on', { ascending: false }).order('id').range(offset, offset + 999);
+            const { data, error } = await dbClient.from('games').select('id, season_id, opponent, played_on').eq('team_id', currentTeam.id).eq('status', 'completed').order('played_on', { ascending: false }).order('id').range(offset, offset + 999);
             if (error) throw error;
             savedGames.push(...(data || []));
             if (!data || data.length < 1000) break;
@@ -1405,9 +1442,10 @@
           }
           report.rows = savedPitches.filter(pitch => gamesById.has(pitch.game_id)).map(pitch => {
             const game = gamesById.get(pitch.game_id), inPlay = decodeInPlayOutcome(pitch.in_play_outcome, pitch.contact_result);
-            return { number: pitch.pitch_number, team: currentTeam.name, opponent: game?.opponent || '', gameDate: game?.played_on || '', gameId: pitch.game_id, time: pitch.pitched_at || '', pitcher: pitch.pitcher_name, pitcherNumber: pitch.pitcher_number, batter: pitch.batter_number, batterSide: pitch.batter_side, pitch: pitch.called_pitch, zone: normalizeZone(pitch.called_location), result: pitch.result, strikeType: pitch.strike_type, strikeSpot: pitch.strike_spot, ballType: pitch.ball_detail, playType: inPlay.outcome, contactType: inPlay.contact, countBefore: pitch.count_before, countAfter: pitch.count_after, plateResult: pitch.batter_outcome, missDirection: null, missLocation: decodeMissLocation(pitch.miss_location, pitch.miss_beyond_target), cardCall: pitch.card_call ? normalizeCardCall(pitch.card_call) : null, cardRow: pitch.card_row, cardColumn: pitch.card_column, cardName: pitch.card_name };
+            const season = teamSeasons.find(item => item.id === game?.season_id);
+            return { number: pitch.pitch_number, team: currentTeam.name, seasonId: game?.season_id || '', seasonLabel: season?.label || '', headCoach: season?.head_coach_name || '', opponent: game?.opponent || '', gameDate: game?.played_on || '', gameId: pitch.game_id, time: pitch.pitched_at || '', pitcher: pitch.pitcher_name, pitcherNumber: pitch.pitcher_number, batter: pitch.batter_number, batterSide: pitch.batter_side, pitch: pitch.called_pitch, zone: normalizeZone(pitch.called_location), result: pitch.result, strikeType: pitch.strike_type, strikeSpot: pitch.strike_spot, ballType: pitch.ball_detail, playType: inPlay.outcome, contactType: inPlay.contact, countBefore: pitch.count_before, countAfter: pitch.count_after, plateResult: pitch.batter_outcome, missDirection: null, missLocation: decodeMissLocation(pitch.miss_location, pitch.miss_beyond_target), cardCall: pitch.card_call ? normalizeCardCall(pitch.card_call) : null, cardRow: pitch.card_row, cardColumn: pitch.card_column, cardName: pitch.card_name };
           });
-          report.fileName = 'Team database'; report.source = 'imported'; report.pitcher = ''; report.pitch = ''; report.team = ''; report.game = '';
+          report.fileName = 'Team database'; report.source = 'imported'; report.pitcher = ''; report.pitch = ''; report.season = ''; report.team = ''; report.game = '';
           renderReport();
           if (manual) notify(`Loaded ${report.rows.length} saved team pitches`);
         } catch (error) { if (manual) notify(error.message || 'Could not load team history.'); else throw error; }
@@ -1421,7 +1459,7 @@
           url.searchParams.set('fresh', Date.now());
           const response = await fetch(url, { cache: 'no-store' });
           if (!response.ok) throw Error(response.status === 404 ? 'No master-pitch-log.csv found beside index.html.' : `GitHub returned ${response.status}.`);
-          report.rows = parseCSV(await response.text()); report.fileName = 'master-pitch-log.csv'; report.source = 'imported'; report.pitcher = ''; report.pitch = '';
+          report.rows = parseCSV(await response.text()); report.fileName = 'master-pitch-log.csv'; report.source = 'imported'; report.pitcher = ''; report.pitch = ''; report.season = ''; report.team = ''; report.game = '';
           saveReport(); renderReport(); notify(`Loaded ${report.rows.length} master pitches`);
         } catch (error) { if (manual) notify(error.message || 'Could not load master CSV.'); }
       }
@@ -1439,7 +1477,7 @@
         $('heroSubtitle').textContent = subtitles[tab] || 'Tap through a pitch. The pitcher stays selected.';
         if (tab === 'reports') renderReport();
         if (tab === 'cards') renderPitchCard();
-        if (tab === 'settings' && currentTeam?.role !== 'viewer') { $('teamNameSetting').value = state.team; renderTeamPitches(); loadTeamAccessManagement().catch(() => {}); }
+        if (tab === 'settings' && currentTeam?.role !== 'viewer') { $('teamNameSetting').value = state.team; renderSeasonSettings(); renderTeamPitches(); loadTeamAccessManagement().catch(() => {}); }
         window.scrollTo(0, 0);
       }
       function chartRow(label, valueText, fraction, secondary = false) {
@@ -1706,13 +1744,26 @@
         const all = report.source === 'current' ? currentGameRows() : report.rows;
         const master = report.source === 'imported';
         $('masterFilters').hidden = !master;
+        const seasonKey = row => row.seasonId || (row.seasonLabel ? `label:${row.seasonLabel}` : '__unknown__');
+        const seasonPicker = $('reportSeason');
+        const seasons = new Map();
+        for (const row of all) {
+          const key = seasonKey(row);
+          if (!seasons.has(key)) seasons.set(key, row.seasonLabel || 'Season not recorded');
+        }
+        if (report.season && !seasons.has(report.season)) report.season = '';
+        seasonPicker.replaceChildren();
+        const allSeasons = document.createElement('option'); allSeasons.value = ''; allSeasons.textContent = 'All seasons'; seasonPicker.append(allSeasons);
+        for (const [key, label] of [...seasons.entries()].sort((a, b) => b[1].localeCompare(a[1]))) { const option = document.createElement('option'); option.value = key; option.textContent = label; seasonPicker.append(option); }
+        seasonPicker.value = report.season;
+        const seasonRows = master && report.season ? all.filter(row => seasonKey(row) === report.season) : all;
         const teamPicker = $('reportTeam');
-        const opponents = [...new Set(report.rows.map(p => p.opponent || '__unknown__'))].sort();
+        const opponents = [...new Set(seasonRows.map(p => p.opponent || '__unknown__'))].sort();
         if (report.team && !opponents.includes(report.team)) report.team = '';
         teamPicker.replaceChildren();
         for (const opponent of ['', ...opponents]) { const option = document.createElement('option'); option.value = opponent; option.textContent = opponent === '__unknown__' ? 'Opponent not recorded' : opponent || 'All opponents'; teamPicker.append(option); }
         teamPicker.value = report.team;
-        const teamRows = master && report.team ? all.filter(p => (p.opponent || '__unknown__') === report.team) : all;
+        const teamRows = master && report.team ? seasonRows.filter(p => (p.opponent || '__unknown__') === report.team) : seasonRows;
         const games = new Map();
         if (master) for (const p of teamRows) {
           const id = p.gameId || 'legacy-previous-import';
@@ -1722,7 +1773,7 @@
         const sortedGames = [...games.values()].sort((a, b) => b.date.localeCompare(a.date) || b.lastTime.localeCompare(a.lastTime) || b.id.localeCompare(a.id));
         if (report.game && !games.has(report.game)) report.game = '';
         const numberingGames = new Map();
-        if (master) for (const p of all) {
+        if (master) for (const p of seasonRows) {
           const id = p.gameId || 'legacy-previous-import';
           if (!numberingGames.has(id)) numberingGames.set(id, { id, date: p.gameDate || '', lastTime: p.time || '' });
           else if ((p.time || '') > numberingGames.get(id).lastTime) numberingGames.get(id).lastTime = p.time;
@@ -1762,7 +1813,8 @@
         const scoped = master ? teamRows.filter(p => selected.has(p.gameId || 'legacy-previous-import')) : all;
         const chosenGame = report.game ? games.get(report.game) : null;
         const pitcherGameLabel = report.pitcher ? picker.selectedOptions[0]?.textContent || report.pitcher : '';
-        $('gameRange').textContent = chosenGame ? `Showing one game · ${chosenGame.date || 'date unknown'}${chosenGame.opponent ? ` vs ${chosenGame.opponent}` : ''}` : report.pitcher ? `${selected.size} of ${eligibleGames.length} games pitched by ${pitcherGameLabel} selected${selected.size ? ` · most recent ${eligibleGames[0].date || 'date unknown'}` : ''} · ${eligibleGames.length} appearances across ${sortedGames.length} team games` : `${selected.size} of ${sortedGames.length} ${sortedGames.length === 1 ? 'game' : 'games'} selected${selected.size ? ` · most recent ${sortedGames[0].date || 'date unknown'}` : ''}`;
+        const seasonPrefix = report.season ? `${seasonPicker.selectedOptions[0]?.textContent || 'Selected season'} · ` : '';
+        $('gameRange').textContent = seasonPrefix + (chosenGame ? `Showing one game · ${chosenGame.date || 'date unknown'}${chosenGame.opponent ? ` vs ${chosenGame.opponent}` : ''}` : report.pitcher ? `${selected.size} of ${eligibleGames.length} games pitched by ${pitcherGameLabel} selected${selected.size ? ` · most recent ${eligibleGames[0].date || 'date unknown'}` : ''} · ${eligibleGames.length} appearances across ${sortedGames.length} team games` : `${selected.size} of ${sortedGames.length} ${sortedGames.length === 1 ? 'game' : 'games'} selected${selected.size ? ` · most recent ${sortedGames[0].date || 'date unknown'}` : ''}`);
         const pitcherRows = report.pitcher ? scoped.filter(p => p.pitcher === report.pitcher) : scoped;
         const availablePitches = [...new Set(pitcherRows.map(p => p.pitch).filter(Boolean))].sort();
         if (report.pitch && !availablePitches.includes(report.pitch)) report.pitch = '';
@@ -2184,10 +2236,14 @@
       $('onboardingForm').addEventListener('submit', async event => {
         event.preventDefault(); if (!dbClient || !currentUser) return;
         const teamName = $('setupTeamName').value.trim().replace(/\s+/g, ' ');
+        const headCoach = $('setupHeadCoach').value.trim().replace(/\s+/g, ' ');
+        const seasonLabel = $('setupSeasonLabel').value.trim().replace(/\s+/g, ' ');
         if (!teamName) { $('setupMessage').textContent = 'Enter your team name.'; return; }
+        if (!headCoach) { $('setupMessage').textContent = 'Enter the head coach name.'; return; }
+        if (!seasonLabel) { $('setupMessage').textContent = 'Enter a season label.'; return; }
         $('setupSubmit').disabled = true; $('setupMessage').textContent = 'Creating your team…';
         try {
-          const { error: teamError } = await dbClient.rpc('create_pitch_tracker_team', { team_name: teamName }); if (teamError) throw teamError;
+          const { error: teamError } = await dbClient.rpc('create_pitch_tracker_team', { team_name: teamName, head_coach: headCoach, season_label: seasonLabel }); if (teamError) throw teamError;
           await loadSignedInTeam(currentUser);
           showTab('settings');
           pitcherDraft = [{ id: null, original: null, name: '', number: '' }];
@@ -2252,6 +2308,45 @@
         resetEntry(); editorDraft = null; pitcherDraft = null; renderCardEditor(); renderPitcherEditor();
         if (state.pitcher && !teamPitcherNames().includes(state.pitcher)) { state.pitcher = null; $('pitcherPanel').open = true; }
         save(); render(); notify(`${name} saved as your team`);
+      });
+      $('settingsSeasonChoice').addEventListener('change', event => { seasonDraftNew = false; renderSeasonSettings(event.target.value); });
+      $('newSeason').addEventListener('click', () => { seasonDraftNew = true; renderSeasonSettings(); $('seasonLabelSetting').focus(); });
+      $('saveSeasonSettings').addEventListener('click', async () => {
+        if (!currentTeam || currentTeam.role === 'viewer') return;
+        const label = $('seasonLabelSetting').value.trim().replace(/\s+/g, ' '), headCoach = $('headCoachSetting').value.trim().replace(/\s+/g, ' ');
+        const startDate = $('seasonStartSetting').value || null, endDate = $('seasonEndSetting').value || null;
+        if (!label) { notify('Enter a season label.'); $('seasonLabelSetting').focus(); return; }
+        if (!headCoach) { notify('Enter the head coach name.'); $('headCoachSetting').focus(); return; }
+        if (startDate && endDate && endDate < startDate) { notify('The season end date must be after the start date.'); return; }
+        const button = $('saveSeasonSettings'); button.disabled = true;
+        try {
+          if (seasonDraftNew || !teamSeasons.length) {
+            const previousActive = currentSeason?.id || null;
+            const { error: deactivateError } = await dbClient.from('seasons').update({ is_active: false }).eq('team_id', currentTeam.id).eq('is_active', true); if (deactivateError) throw deactivateError;
+            const { data, error } = await dbClient.from('seasons').insert({ team_id: currentTeam.id, label, head_coach_name: headCoach, start_date: startDate, end_date: endDate, is_active: true }).select('id').single();
+            if (error) { if (previousActive) await dbClient.from('seasons').update({ is_active: true }).eq('id', previousActive).eq('team_id', currentTeam.id); throw error; }
+            await refreshTeamSeasons(data.id); notify(`${label} created and made active`);
+          } else {
+            const seasonId = $('settingsSeasonChoice').value;
+            const { error } = await dbClient.from('seasons').update({ label, head_coach_name: headCoach, start_date: startDate, end_date: endDate }).eq('id', seasonId).eq('team_id', currentTeam.id); if (error) throw error;
+            await refreshTeamSeasons(seasonId); notify(`${label} saved`);
+          }
+        } catch (error) { notify(error.message || 'Could not save the season.'); }
+        finally { button.disabled = false; }
+      });
+      $('makeSeasonActive').addEventListener('click', async () => {
+        if (!currentTeam || currentTeam.role === 'viewer') return;
+        const seasonId = $('settingsSeasonChoice').value, selected = teamSeasons.find(season => season.id === seasonId);
+        if (!selected || selected.is_active) return;
+        if (!confirm(`Make ${selected.label} the active season for new games?`)) return;
+        const previousActive = currentSeason?.id || null, button = $('makeSeasonActive'); button.disabled = true;
+        try {
+          const { error: deactivateError } = await dbClient.from('seasons').update({ is_active: false }).eq('team_id', currentTeam.id).eq('is_active', true); if (deactivateError) throw deactivateError;
+          const { error } = await dbClient.from('seasons').update({ is_active: true }).eq('id', seasonId).eq('team_id', currentTeam.id);
+          if (error) { if (previousActive) await dbClient.from('seasons').update({ is_active: true }).eq('id', previousActive).eq('team_id', currentTeam.id); throw error; }
+          await refreshTeamSeasons(seasonId); notify(`${selected.label} is now active`);
+        } catch (error) { notify(error.message || 'Could not change the active season.'); }
+        finally { button.disabled = false; }
       });
       $('closeTeamTools').addEventListener('click', () => { $('teamTools').hidden = true; });
       $('cancelPrint').addEventListener('click', () => { $('printOptions').hidden = true; });
@@ -2456,7 +2551,7 @@
         $('githubStatus').textContent = 'Saving game to GitHub…'; $('githubStatus').dataset.working = 'true'; $('githubSave').disabled = $('githubCancel').disabled = true;
         try {
           const merged = await saveGameToGithub(getAuth().token, repo, path, branch);
-          report.rows = merged; report.fileName = path.split('/').at(-1); report.source = 'imported'; report.pitcher = ''; report.pitch = ''; report.team = ''; report.game = '';
+          report.rows = merged; report.fileName = path.split('/').at(-1); report.source = 'imported'; report.pitcher = ''; report.pitch = ''; report.season = ''; report.team = ''; report.game = '';
           saveReport(); closeGithubModal(); showTab('reports'); notify(`Saved game to GitHub · ${merged.length} master pitches`);
         } catch (error) { $('githubStatus').textContent = error.message || 'Could not save. Your local pitches are safe.'; }
         finally { $('githubStatus').dataset.working = 'false'; $('githubSave').disabled = $('githubCancel').disabled = false; }
@@ -2480,6 +2575,7 @@
       $('currentSource').addEventListener('click', () => { report.source = 'current'; report.pitcher = ''; report.pitch = ''; renderReport(); });
       $('importedSource').addEventListener('click', () => { report.source = 'imported'; report.pitcher = ''; report.pitch = ''; renderReport(); if (!report.historyTried) loadTeamHistory(true); });
       $('loadTeamHistory').addEventListener('click', () => loadTeamHistory(true));
+      $('reportSeason').addEventListener('change', event => { report.season = event.target.value; report.team = ''; report.game = ''; report.pitcher = ''; report.pitch = ''; renderReport(); });
       $('reportTeam').addEventListener('change', event => { report.team = event.target.value; report.game = ''; report.pitcher = ''; report.pitch = ''; renderReport(); });
       $('reportGame').addEventListener('change', event => { report.game = event.target.value; report.pitcher = ''; report.pitch = ''; renderReport(); });
       $('gamesFilter').addEventListener('change', event => { report.games = event.target.value; report.game = ''; renderReport(); });
@@ -2490,7 +2586,7 @@
         const file = event.target.files?.[0]; if (!file) return;
         try {
           const parsed = parseCSV(await file.text());
-          report.rows = parsed; report.fileName = file.name; report.source = 'imported'; report.pitcher = ''; report.pitch = ''; report.team = ''; report.game = '';
+          report.rows = parsed; report.fileName = file.name; report.source = 'imported'; report.pitcher = ''; report.pitch = ''; report.season = ''; report.team = ''; report.game = '';
           saveReport(); renderReport(); notify(`${parsed.length} pitches imported`);
         } catch (error) { notify(error.message || 'Could not read that CSV.'); }
         event.target.value = '';
