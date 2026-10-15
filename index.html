@@ -326,7 +326,7 @@
       </form>
       <div class="auth-links"><button type="button" id="showSignIn" hidden>Sign in</button><button type="button" id="showCreate">Create account</button><button type="button" id="showReset">Forgot password?</button></div>
       <div id="authMessage" class="auth-message" role="status"></div>
-      <div class="app-version">Build 2026.10.13.3</div>
+      <div class="app-version">Build 2026.10.14.1</div>
     </section>
   </div>
   <div id="onboardingGate" class="auth-shell" hidden>
@@ -564,7 +564,7 @@
       let auth = null;
       const CSV_COLUMNS = ['number', 'team', 'opponent', 'game_date', 'game_id', 'timestamp', 'pitcher', 'pitcher_number', 'batter', 'batter_side', 'called_pitch', 'called_location', 'result', 'strike_type', 'strike_spot', 'ball_detail', 'in_play_outcome', 'contact_type', 'count_before', 'count_after', 'batter_outcome', 'miss_direction', 'card_call', 'card_row', 'card_column', 'card_name', 'miss_location'];
       const MISS_DIRECTIONS = ['High / In', 'High', 'High / Out', 'In', 'Out', 'Low / In', 'Low', 'Low / Out'];
-      const CONTACT_TYPES = ['Ground ball', 'Fly ball', 'Pop-up', 'Line drive', 'Bunt', 'Hard hit / bomb'];
+      const CONTACT_TYPES = ['Ground ball', 'Fly ball', 'Pop-up', 'Line drive', 'Bunt', 'Bomb'];
       const PLAY_OUTCOMES = ['Hit', 'Out', 'Error', 'Other'];
       const BEYOND_TARGET_PREFIX = 'Beyond target:';
       const CARD_LOCATIONS = { Inside: 'In', Outside: 'Out', Middle: 'Middle', 'High Out': 'Up / Out', 'High In': 'Up / In', 'Low In': 'Down / In', High: 'Up', Low: 'Down', 'Low Out': 'Down / Out' };
@@ -656,12 +656,18 @@
         In: 'Farther in', Out: 'Farther out',
         'Down / In': 'Lower / farther in', Down: 'Lower', 'Down / Out': 'Lower / farther out'
       }[zone] || 'Beyond target');
+      const normalizeContactResult = value => {
+        if (typeof value !== 'string') return null;
+        const trimmed = value.trim();
+        if (/^hard hit\s*\/\s*bomb$/i.test(trimmed)) return 'Bomb';
+        return CONTACT_TYPES.find(contact => contact.toLocaleLowerCase() === trimmed.toLocaleLowerCase()) || null;
+      };
       const encodeInPlayOutcome = (outcome, contact) => outcome && contact ? `${outcome} | ${contact}` : outcome || null;
       const decodeInPlayOutcome = (value, explicitContact = null) => {
         const raw = typeof value === 'string' ? value.trim() : '', parts = raw.split('|').map(part => part.trim());
         const outcome = PLAY_OUTCOMES.includes(parts[0]) ? parts[0] : raw || null;
         const storedContact = parts.length > 1 ? parts.slice(1).join(' | ') : null;
-        const contact = CONTACT_TYPES.includes(explicitContact) ? explicitContact : CONTACT_TYPES.includes(storedContact) ? storedContact : null;
+        const contact = normalizeContactResult(explicitContact) || normalizeContactResult(storedContact);
         return { outcome, contact };
       };
       const normalizeCardCall = call => {
@@ -1094,7 +1100,7 @@
           if (typeof saved.opponent === 'string') state.opponent = saved.opponent.slice(0, 80);
           else if (typeof saved.team === 'string') state.opponent = saved.team.slice(0, 80);
           if (typeof saved.pitcher === 'string' && saved.pitcher.trim() && saved.pitcher.length <= 60) state.pitcher = saved.pitcher;
-          if (Array.isArray(saved.history)) state.history = saved.history.filter(p => p && typeof p.pitcher === 'string' && p.pitcher.trim() && p.pitcher.length <= 60 && typeof p.pitch === 'string' && p.pitch.trim() && p.pitch.length <= 40 && ['Strike', 'Ball', 'Foul', 'HBP', 'In play'].includes(p.result));
+          if (Array.isArray(saved.history)) state.history = saved.history.filter(p => p && typeof p.pitcher === 'string' && p.pitcher.trim() && p.pitcher.length <= 60 && typeof p.pitch === 'string' && p.pitch.trim() && p.pitch.length <= 40 && ['Strike', 'Ball', 'Foul', 'HBP', 'In play'].includes(p.result)).map(p => ({ ...p, contactType: normalizeContactResult(p.contactType) }));
           const firstTime = state.history[0]?.time;
           const firstDate = firstTime && !Number.isNaN(new Date(firstTime).getTime()) ? localDate(new Date(firstTime)) : localDate(new Date());
           state.gameDate = state.history.length && /^\d{4}-\d{2}-\d{2}$/.test(saved.gameDate) ? saved.gameDate : state.history.length ? firstDate : localDate(new Date());
@@ -1366,7 +1372,7 @@
       function restoreReport() {
         try {
           const saved = JSON.parse(localStorage.getItem(REPORT_KEY) || '{}');
-          if (Array.isArray(saved.rows)) report.rows = saved.rows.filter(p => p && p.pitcher && p.pitch && p.result).map(p => ({ ...p, team: Object.hasOwn(p, 'opponent') ? p.team || '' : '', opponent: Object.hasOwn(p, 'opponent') ? p.opponent || '' : p.team || '', gameId: p.gameId || 'legacy-previous-import', gameDate: p.gameDate || '', number: p.number || null, missLocation: normalizeMissLocation(p.missLocation), contactType: CONTACT_TYPES.includes(p.contactType) ? p.contactType : null }));
+          if (Array.isArray(saved.rows)) report.rows = saved.rows.filter(p => p && p.pitcher && p.pitch && p.result).map(p => ({ ...p, team: Object.hasOwn(p, 'opponent') ? p.team || '' : '', opponent: Object.hasOwn(p, 'opponent') ? p.opponent || '' : p.team || '', gameId: p.gameId || 'legacy-previous-import', gameDate: p.gameDate || '', number: p.number || null, missLocation: normalizeMissLocation(p.missLocation), contactType: normalizeContactResult(p.contactType) }));
           if (typeof saved.fileName === 'string') report.fileName = saved.fileName;
         } catch (_) { /* Keep reporting available if saved data is invalid. */ }
       }
@@ -1813,7 +1819,7 @@
         renderPlateAppearances(rows, pitcherRows);
         const contactRows = rows.filter(p => CONTACT_TYPES.includes(p.contactType));
         $('contactProfileSection').hidden = !contactRows.length;
-        $('contactProfileChart').replaceChildren(...CONTACT_TYPES.map(name => [name, contactRows.filter(p => p.contactType === name).length]).filter(([, count]) => count).map(([name, count]) => chartRow(name, `${count} · ${percent(count, contactRows.length)}`, count / contactRows.length, name === 'Hard hit / bomb')));
+        $('contactProfileChart').replaceChildren(...CONTACT_TYPES.map(name => [name, contactRows.filter(p => p.contactType === name).length]).filter(([, count]) => count).map(([name, count]) => chartRow(name, `${count} · ${percent(count, contactRows.length)}`, count / contactRows.length, name === 'Bomb')));
         renderCallEffectiveness(rows);
         renderGameComparison(rows, chronologicalGames, pitcherRows);
         renderCardUsage(rows);
