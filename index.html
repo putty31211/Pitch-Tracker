@@ -341,7 +341,7 @@
       </form>
       <div class="auth-links"><button type="button" id="showSignIn" hidden>Sign in</button><button type="button" id="showCreate">Create account</button><button type="button" id="showReset">Forgot password?</button></div>
       <div id="authMessage" class="auth-message" role="status"></div>
-      <div class="app-version">Build 2026.11.18.1</div>
+      <div class="app-version">Build 2026.11.18.2</div>
     </section>
   </div>
   <div id="onboardingGate" class="auth-shell" hidden>
@@ -495,7 +495,7 @@
     <main id="cardsView" hidden>
       <div class="page-heading"><h2>Pitch cards</h2><p>Create, manage, and print the cards your team uses to call pitches.</p></div>
       <section class="card">
-        <div class="section-title"><h2>Selected card</h2><span>Top number · left number</span></div>
+        <div class="section-title"><h2>Selected card</h2><span id="cardOrderStatus">Top number · left number</span></div>
         <div class="card-controls"><select id="manageCardChoice" aria-label="Choose team pitch card"></select></div>
         <div id="manageCardGrid" class="pitch-card-grid manage-grid" aria-label="Selected pitch card preview"></div>
         <p id="manageCardStatus" class="hint" style="margin-top:11px"></p>
@@ -506,9 +506,10 @@
           <div id="freeformCardOptions"><label for="cardSize">Card size (across × down)<select id="cardSize"><option value="5x5">5 × 5</option><option value="4x4">4 × 4</option><option value="5x4">5 × 4</option><option value="4x5">4 × 5</option></select></label><div id="editorGrid" class="editor-grid" role="group" aria-label="Edit pitch card"></div></div>
           <div id="matrixCardOptions" hidden>
             <label for="matrixOrientation">Card orientation<select id="matrixOrientation"><option value="pitch-columns">Pitches across top · locations down side</option><option value="location-columns">Locations across top · pitches down side</option></select></label>
+            <label for="matrixCallOrder">Call order<select id="matrixCallOrder"><option value="top-side">Top number then left number</option><option value="side-top">Left number then top number</option></select></label>
             <div class="card-controls"><select id="matrixPreset" aria-label="Matrix location preset"><option value="corners">Four corners</option><option value="nine">Full nine-zone grid</option><option value="inside-outside">Inside / outside</option><option value="high-low">High / low</option></select><button type="button" class="small-action" id="applyMatrixPreset">Apply preset</button></div>
             <div class="matrix-builder"><section class="matrix-builder-section"><h3>Pitches</h3><p class="hint">Choose pitches, assign their numbers, and set their order.</p><div id="matrixPitchRows" class="matrix-axis-list"></div></section><section class="matrix-builder-section"><h3>Locations</h3><p class="hint">Choose targets, assign their numbers, and set their order.</p><div id="matrixLocationRows" class="matrix-axis-list"></div></section></div>
-            <div class="matrix-preview-wrap"><p class="matrix-preview-label">Card preview · top number first</p><div id="matrixPreview" class="pitch-card-grid matrix-grid" aria-label="Matrix card preview"></div></div>
+            <div class="matrix-preview-wrap"><p class="matrix-preview-label" id="matrixPreviewLabel">Card preview · top number first</p><div id="matrixPreview" class="pitch-card-grid matrix-grid" aria-label="Matrix card preview"></div></div>
           </div>
           <div class="editor-actions"><button id="cancelCard" class="small-action" type="button">Cancel</button><button id="saveCard" class="small-action" type="button">Save card</button></div>
         </div>
@@ -602,6 +603,7 @@
       const DEFAULT_PITCH_CARD = Array.from({ length: 5 }, () => Array(5).fill(''));
       const CARD_SIZES = new Set(['5x5', '4x4', '5x4', '4x5']);
       const MATRIX_ORIENTATIONS = new Set(['pitch-columns', 'location-columns']);
+      const MATRIX_CALL_ORDERS = new Set(['top-side', 'side-top']);
       const MATRIX_STORAGE_MARKER = '__pitch_tracker_matrix_v1__';
       const MATRIX_PRESETS = {
         corners: ['Up / In', 'Up / Out', 'Down / In', 'Down / Out'],
@@ -678,13 +680,14 @@
         type: 'matrix',
         version: 1,
         orientation: MATRIX_ORIENTATIONS.has(grid?.orientation) ? grid.orientation : 'pitch-columns',
+        callOrder: MATRIX_CALL_ORDERS.has(grid?.callOrder) ? grid.callOrder : 'top-side',
         pitches: normalizeMatrixItems(grid?.pitches, 'pitch'),
         locations: normalizeMatrixItems(grid?.locations, 'location').map(item => ({ ...item, value: normalizeZone(item.value) }))
       });
       const validMatrixGridShape = grid => {
         if (!isMatrixGrid(grid)) return false;
         const normalized = normalizeMatrixGrid(grid), unique = items => new Set(items.map(item => item.code)).size === items.length;
-        return MATRIX_ORIENTATIONS.has(normalized.orientation) && normalized.pitches.length === grid.pitches?.length && normalized.locations.length === grid.locations?.length && normalized.pitches.length > 0 && normalized.locations.length > 0 && normalized.pitches.length <= 12 && normalized.locations.length <= 12 && unique(normalized.pitches) && unique(normalized.locations);
+        return MATRIX_ORIENTATIONS.has(normalized.orientation) && MATRIX_CALL_ORDERS.has(normalized.callOrder) && normalized.pitches.length === grid.pitches?.length && normalized.locations.length === grid.locations?.length && normalized.pitches.length > 0 && normalized.locations.length > 0 && normalized.pitches.length <= 12 && normalized.locations.length <= 12 && unique(normalized.pitches) && unique(normalized.locations);
       };
       const cloneCardGrid = grid => isMatrixGrid(grid) ? JSON.parse(JSON.stringify(normalizeMatrixGrid(grid))) : grid.map(row => [...row]);
       const encodeCardGrid = grid => isMatrixGrid(grid) ? [[MATRIX_STORAGE_MARKER, JSON.stringify(normalizeMatrixGrid(grid))]] : grid;
@@ -702,7 +705,8 @@
         if (!top || !side) return null;
         const pitch = grid.orientation === 'pitch-columns' ? top.value : side.value;
         const zone = grid.orientation === 'pitch-columns' ? side.value : top.value;
-        return { pitch, zone, code: `${top.code}–${side.code}`, columnCode: top.code, rowCode: side.code };
+        const code = grid.callOrder === 'side-top' ? `${side.code}–${top.code}` : `${top.code}–${side.code}`;
+        return { pitch, zone, code, columnCode: top.code, rowCode: side.code };
       };
       const cardDimensions = grid => isMatrixGrid(grid) ? { rows: matrixSideItems(grid).length, columns: matrixTopItems(grid).length } : ({ rows: Array.isArray(grid) ? grid.length : 0, columns: Array.isArray(grid?.[0]) ? grid[0].length : 0 });
       const validCardGridShape = grid => {
@@ -1086,6 +1090,7 @@
         $('deleteCard').disabled = !activeCard();
         const { rows, columns } = cardDimensions(cardGrid());
         const type = isMatrixGrid(cardGrid()) ? 'Pitch × location matrix' : 'Freeform grid';
+        $('cardOrderStatus').textContent = isMatrixGrid(cardGrid()) && cardGrid().callOrder === 'side-top' ? 'Left number · top number' : 'Top number · left number';
         $('cardStatus').textContent = activeCard() ? `Team card · ${activeCard().name} · ${type} · ${columns}×${rows}` : 'Blank starter card · create a team card before using card mode.';
         $('manageCardStatus').textContent = activeCard() ? `${activeCard().name} · ${type} · ${columns}×${rows} · saved for ${state.team || 'this team'}` : 'Blank starter card · select New card to build your first one.';
       }
@@ -1128,9 +1133,13 @@
       function renderPitchCard() {
         renderCardPicker(); renderCardGridInto($('pitchCardGrid'), cardGrid(), true); renderCardGridInto($('manageCardGrid'), cardGrid());
       }
-      const defaultMatrixGrid = () => ({ type: 'matrix', version: 1, orientation: 'pitch-columns', pitches: teamPitchNames().slice(0, 4).map((value, index) => ({ code: index + 1, value })), locations: MATRIX_PRESETS.corners.map((value, index) => ({ code: index + 1, value })) });
+      const defaultMatrixGrid = () => ({ type: 'matrix', version: 1, orientation: 'pitch-columns', callOrder: 'top-side', pitches: teamPitchNames().slice(0, 4).map((value, index) => ({ code: index + 1, value })), locations: MATRIX_PRESETS.corners.map((value, index) => ({ code: index + 1, value })) });
       const nextMatrixCode = items => { const used = new Set(items.map(item => Number(item.code))); for (let code = 1; code <= 99; code++) if (!used.has(code)) return code; return 99; };
-      function renderMatrixPreview() { if (editorDraft && isMatrixGrid(editorDraft.grid)) renderCardGridInto($('matrixPreview'), editorDraft.grid); }
+      function renderMatrixPreview() {
+        if (!editorDraft || !isMatrixGrid(editorDraft.grid)) return;
+        $('matrixPreviewLabel').textContent = editorDraft.grid.callOrder === 'side-top' ? 'Card preview · left number first' : 'Card preview · top number first';
+        renderCardGridInto($('matrixPreview'), editorDraft.grid);
+      }
       function renderMatrixAxisRows(kind) {
         const grid = editorDraft.grid, selected = kind === 'pitch' ? grid.pitches : grid.locations;
         const sources = kind === 'pitch' ? teamPitchNames() : MATRIX_PRESETS.nine;
@@ -1162,6 +1171,7 @@
         $('freeformCardOptions').hidden = matrix; $('matrixCardOptions').hidden = !matrix;
         if (matrix) {
           $('matrixOrientation').value = editorDraft.grid.orientation;
+          $('matrixCallOrder').value = editorDraft.grid.callOrder;
           renderMatrixAxisRows('pitch'); renderMatrixAxisRows('location'); renderMatrixPreview(); return;
         }
         const { rows, columns } = cardDimensions(editorDraft.grid); $('cardSize').value = `${columns}x${rows}`;
@@ -2544,6 +2554,10 @@
       $('matrixOrientation').addEventListener('change', event => {
         if (!editorDraft || !isMatrixGrid(editorDraft.grid) || !MATRIX_ORIENTATIONS.has(event.target.value)) return;
         editorDraft.grid.orientation = event.target.value; renderCardEditor();
+      });
+      $('matrixCallOrder').addEventListener('change', event => {
+        if (!editorDraft || !isMatrixGrid(editorDraft.grid) || !MATRIX_CALL_ORDERS.has(event.target.value)) return;
+        editorDraft.grid.callOrder = event.target.value; renderCardEditor();
       });
       $('applyMatrixPreset').addEventListener('click', () => {
         if (!editorDraft || !isMatrixGrid(editorDraft.grid)) return;
