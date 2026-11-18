@@ -94,6 +94,10 @@
     .pitch-card-grid .choice { min-width: 0; min-height: 56px; padding: 4px 2px; font-size: clamp(9px, 2.6vw, 12px); overflow-wrap: anywhere; }
     .pitch-card-grid .choice small { display: block; font-size: 9px; opacity: .75; margin-bottom: 3px; }
     .pitch-card-grid .choice:disabled { opacity: .42; cursor: not-allowed; }
+    #cardPanel, #manageCardGrid { overflow-x: auto; }
+    .matrix-grid .pitch-card-axis { min-width: 62px; padding: 5px 3px; border-radius: 7px; background: #edf3fa; font-size: 10px; line-height: 1.15; text-align: center; }
+    .matrix-grid .pitch-card-axis b { display: block; color: #183452; font-size: 12px; }
+    .matrix-grid .choice { min-width: 62px; font-size: 13px; font-variant-numeric: tabular-nums; }
     .game-top { margin-bottom: 12px; }
     .game-top strong { color: #556b84; font-size: 12px; text-transform: uppercase; letter-spacing: .11em; }
     .pitcher-editor { margin-top: 14px; border-top: 1px solid #e5ecf3; padding-top: 12px; }
@@ -118,6 +122,17 @@
     .card-editor > label select { width: 100%; display: block; margin: 6px 0 12px; min-height: 42px; }
     .editor-grid { display: grid; gap: 4px; }
     .editor-grid select { width: 100%; padding: 5px 1px; font-size: 10px; min-height: 52px; white-space: normal; }
+    .matrix-builder { display: grid; gap: 13px; margin-top: 4px; }
+    .matrix-builder-section { padding: 11px; border: 1px solid #e0e8f1; border-radius: 12px; background: #f8fafc; }
+    .matrix-builder-section h3 { margin: 0 0 4px; color: #243d5b; font-size: 14px; }
+    .matrix-axis-list { display: grid; gap: 6px; margin-top: 9px; }
+    .matrix-axis-row { display: grid; grid-template-columns: 25px minmax(0, 1fr) 58px 34px 34px; gap: 5px; align-items: center; }
+    .matrix-axis-row label { min-width: 0; color: #405a78; font-size: 12px; font-weight: 800; }
+    .matrix-axis-row input[type="checkbox"] { width: 18px; height: 18px; margin: 0; accent-color: #1761bc; }
+    .matrix-axis-row input[type="number"] { width: 100%; min-height: 38px; margin: 0; padding: 6px; text-align: center; }
+    .matrix-axis-row button { min-height: 36px; padding: 5px; }
+    .matrix-preview-wrap { margin-top: 12px; overflow-x: auto; }
+    .matrix-preview-label { margin: 0 0 7px; color: #556b84; font-size: 11px; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; }
     .editor-actions { display: flex; justify-content: flex-end; gap: 7px; margin-top: 12px; }
     .print-sheet { display: none; }
     @media print {
@@ -326,7 +341,7 @@
       </form>
       <div class="auth-links"><button type="button" id="showSignIn" hidden>Sign in</button><button type="button" id="showCreate">Create account</button><button type="button" id="showReset">Forgot password?</button></div>
       <div id="authMessage" class="auth-message" role="status"></div>
-      <div class="app-version">Build 2026.10.15.1</div>
+      <div class="app-version">Build 2026.11.18.1</div>
     </section>
   </div>
   <div id="onboardingGate" class="auth-shell" hidden>
@@ -485,7 +500,18 @@
         <div id="manageCardGrid" class="pitch-card-grid manage-grid" aria-label="Selected pitch card preview"></div>
         <p id="manageCardStatus" class="hint" style="margin-top:11px"></p>
         <div class="card-action-row"><button type="button" class="small-action" id="newCard">New card</button><button type="button" class="small-action" id="editCard">Edit card</button><button type="button" class="small-action" id="deleteCard">Delete card</button><button type="button" class="small-action" id="showPrintCards">Print cards</button></div>
-        <div id="cardEditor" class="card-editor" hidden><label for="cardName">Card name<input id="cardName" maxlength="60" placeholder="e.g. Game day card"></label><label for="cardSize">Card size (across × down)<select id="cardSize"><option value="5x5">5 × 5</option><option value="4x4">4 × 4</option><option value="5x4">5 × 4</option><option value="4x5">4 × 5</option></select></label><div id="editorGrid" class="editor-grid" role="group" aria-label="Edit pitch card"></div><div class="editor-actions"><button id="cancelCard" class="small-action" type="button">Cancel</button><button id="saveCard" class="small-action" type="button">Save card</button></div></div>
+        <div id="cardEditor" class="card-editor" hidden>
+          <label for="cardName">Card name<input id="cardName" maxlength="60" placeholder="e.g. Game day card"></label>
+          <label for="cardType">Card type<select id="cardType"><option value="freeform">Freeform numbered grid</option><option value="matrix">Pitch × location matrix</option></select></label>
+          <div id="freeformCardOptions"><label for="cardSize">Card size (across × down)<select id="cardSize"><option value="5x5">5 × 5</option><option value="4x4">4 × 4</option><option value="5x4">5 × 4</option><option value="4x5">4 × 5</option></select></label><div id="editorGrid" class="editor-grid" role="group" aria-label="Edit pitch card"></div></div>
+          <div id="matrixCardOptions" hidden>
+            <label for="matrixOrientation">Card orientation<select id="matrixOrientation"><option value="pitch-columns">Pitches across top · locations down side</option><option value="location-columns">Locations across top · pitches down side</option></select></label>
+            <div class="card-controls"><select id="matrixPreset" aria-label="Matrix location preset"><option value="corners">Four corners</option><option value="nine">Full nine-zone grid</option><option value="inside-outside">Inside / outside</option><option value="high-low">High / low</option></select><button type="button" class="small-action" id="applyMatrixPreset">Apply preset</button></div>
+            <div class="matrix-builder"><section class="matrix-builder-section"><h3>Pitches</h3><p class="hint">Choose pitches, assign their numbers, and set their order.</p><div id="matrixPitchRows" class="matrix-axis-list"></div></section><section class="matrix-builder-section"><h3>Locations</h3><p class="hint">Choose targets, assign their numbers, and set their order.</p><div id="matrixLocationRows" class="matrix-axis-list"></div></section></div>
+            <div class="matrix-preview-wrap"><p class="matrix-preview-label">Card preview · top number first</p><div id="matrixPreview" class="pitch-card-grid matrix-grid" aria-label="Matrix card preview"></div></div>
+          </div>
+          <div class="editor-actions"><button id="cancelCard" class="small-action" type="button">Cancel</button><button id="saveCard" class="small-action" type="button">Save card</button></div>
+        </div>
         <div id="printOptions" class="team-tools" hidden><h3>Print pitch cards</h3><p class="hint">Choose a card and how many copies to place on one letter-size sheet.</p><div class="card-controls"><select id="printCardChoice" aria-label="Pitch card to print"></select><select id="printCopies" aria-label="Cards per sheet"><option value="4">4 per sheet</option><option value="6">6 per sheet</option></select></div><div class="editor-actions"><button type="button" class="small-action" id="cancelPrint">Cancel</button><button id="printCard" class="small-action" type="button">Print cards</button></div></div>
       </section>
     </main>
@@ -575,6 +601,14 @@
       const CARD_PITCHES = { Change: 'Change-up' };
       const DEFAULT_PITCH_CARD = Array.from({ length: 5 }, () => Array(5).fill(''));
       const CARD_SIZES = new Set(['5x5', '4x4', '5x4', '4x5']);
+      const MATRIX_ORIENTATIONS = new Set(['pitch-columns', 'location-columns']);
+      const MATRIX_STORAGE_MARKER = '__pitch_tracker_matrix_v1__';
+      const MATRIX_PRESETS = {
+        corners: ['Up / In', 'Up / Out', 'Down / In', 'Down / Out'],
+        nine: ['Up / In', 'Up', 'Up / Out', 'In', 'Middle', 'Out', 'Down / In', 'Down', 'Down / Out'],
+        'inside-outside': ['In', 'Out'],
+        'high-low': ['Up', 'Down']
+      };
       let pitchMode = 'standard';
       let pitchCard = DEFAULT_PITCH_CARD;
       let teamProfiles = {};
@@ -638,12 +672,46 @@
       const pitcherLabel = name => `${pitcherNumber(name) ? `#${pitcherNumber(name)} ` : ''}${name}`;
       const activeCard = () => profile()?.cards.find(card => card.id === profile().selectedCardId) || null;
       const cardGrid = () => activeCard()?.grid || pitchCard;
-      const cardDimensions = grid => ({ rows: Array.isArray(grid) ? grid.length : 0, columns: Array.isArray(grid?.[0]) ? grid[0].length : 0 });
+      const isMatrixGrid = grid => !!grid && !Array.isArray(grid) && grid.type === 'matrix';
+      const normalizeMatrixItems = (items, kind) => Array.isArray(items) ? items.map(item => ({ code: Number(item?.code), value: String(item?.value || '').trim() })).filter(item => Number.isInteger(item.code) && item.code >= 1 && item.code <= 99 && item.value && (kind === 'pitch' || normalizeZone(item.value))) : [];
+      const normalizeMatrixGrid = grid => ({
+        type: 'matrix',
+        version: 1,
+        orientation: MATRIX_ORIENTATIONS.has(grid?.orientation) ? grid.orientation : 'pitch-columns',
+        pitches: normalizeMatrixItems(grid?.pitches, 'pitch'),
+        locations: normalizeMatrixItems(grid?.locations, 'location').map(item => ({ ...item, value: normalizeZone(item.value) }))
+      });
+      const validMatrixGridShape = grid => {
+        if (!isMatrixGrid(grid)) return false;
+        const normalized = normalizeMatrixGrid(grid), unique = items => new Set(items.map(item => item.code)).size === items.length;
+        return MATRIX_ORIENTATIONS.has(normalized.orientation) && normalized.pitches.length === grid.pitches?.length && normalized.locations.length === grid.locations?.length && normalized.pitches.length > 0 && normalized.locations.length > 0 && normalized.pitches.length <= 12 && normalized.locations.length <= 12 && unique(normalized.pitches) && unique(normalized.locations);
+      };
+      const cloneCardGrid = grid => isMatrixGrid(grid) ? JSON.parse(JSON.stringify(normalizeMatrixGrid(grid))) : grid.map(row => [...row]);
+      const encodeCardGrid = grid => isMatrixGrid(grid) ? [[MATRIX_STORAGE_MARKER, JSON.stringify(normalizeMatrixGrid(grid))]] : grid;
+      const decodeCardGrid = stored => {
+        if (Array.isArray(stored) && stored.length === 1 && Array.isArray(stored[0]) && stored[0][0] === MATRIX_STORAGE_MARKER && typeof stored[0][1] === 'string') {
+          try { const parsed = JSON.parse(stored[0][1]); return validMatrixGridShape(parsed) ? normalizeMatrixGrid(parsed) : null; }
+          catch (_) { return null; }
+        }
+        return stored;
+      };
+      const matrixTopItems = grid => grid.orientation === 'pitch-columns' ? grid.pitches : grid.locations;
+      const matrixSideItems = grid => grid.orientation === 'pitch-columns' ? grid.locations : grid.pitches;
+      const matrixCallAt = (grid, column, row) => {
+        const top = matrixTopItems(grid)[column - 1], side = matrixSideItems(grid)[row - 1];
+        if (!top || !side) return null;
+        const pitch = grid.orientation === 'pitch-columns' ? top.value : side.value;
+        const zone = grid.orientation === 'pitch-columns' ? side.value : top.value;
+        return { pitch, zone, code: `${top.code}–${side.code}`, columnCode: top.code, rowCode: side.code };
+      };
+      const cardDimensions = grid => isMatrixGrid(grid) ? { rows: matrixSideItems(grid).length, columns: matrixTopItems(grid).length } : ({ rows: Array.isArray(grid) ? grid.length : 0, columns: Array.isArray(grid?.[0]) ? grid[0].length : 0 });
       const validCardGridShape = grid => {
+        if (isMatrixGrid(grid)) return validMatrixGridShape(grid);
         const { rows, columns } = cardDimensions(grid);
         return CARD_SIZES.has(`${columns}x${rows}`) && grid.every(row => Array.isArray(row) && row.length === columns);
       };
       const resizeCardGrid = (grid, columns, rows, fill = '') => Array.from({ length: rows }, (_, row) => Array.from({ length: columns }, (_, column) => grid?.[row]?.[column] || fill));
+      const cardUsesPitch = (grid, name) => isMatrixGrid(grid) ? grid.pitches.some(item => item.value === name) : grid.flat().some(call => calledPitch(call) === name);
       const zoneLabel = zone => ({ 'Up / In': 'High / In', Up: 'High', 'Up / Out': 'High / Out', 'Down / In': 'Low / In', Down: 'Low', 'Down / Out': 'Low / Out' }[zone] || zone);
       const zoneOrderForBatter = () => state.batterSide === 'L' ? ['Up / In', 'Up', 'Up / Out', 'In', 'Middle', 'Out', 'Down / In', 'Down', 'Down / Out'] : zoneNames;
       const normalizeZone = value => typeof value === 'string' ? zoneNames.find(zone => zone.toLocaleLowerCase() === value.trim().toLocaleLowerCase() || zoneLabel(zone).toLocaleLowerCase() === value.trim().toLocaleLowerCase()) || null : null;
@@ -866,11 +934,12 @@
         const activePitchers = cloudPitchers.filter(pitcher => pitcher.active);
         state.team = currentTeam.name;
         const key = teamKey();
-        const cloudCards = (cardsResult.data || []).filter(card => validCardGridShape(card.grid)).map(card => ({ id: card.id, name: card.name, grid: card.grid.map(row => row.map(normalizeCardCall)) }));
+        const enabledPitchNames = (pitchesResult.data || []).map(pitch => pitch.name);
+        const cloudCards = (cardsResult.data || []).map(card => ({ ...card, grid: decodeCardGrid(card.grid) })).filter(card => validCardGridShape(card.grid) && (isMatrixGrid(card.grid) ? card.grid.pitches.every(item => enabledPitchNames.includes(item.value)) : card.grid.every(row => row.every(call => calledTarget(call) || enabledPitchNames.includes(calledPitch(call)))))).map(card => ({ id: card.id, name: card.name, grid: isMatrixGrid(card.grid) ? normalizeMatrixGrid(card.grid) : card.grid.map(row => row.map(normalizeCardCall)) }));
         teamProfiles[key] = {
           pitchers: activePitchers.map(pitcher => pitcher.display_name),
           pitcherNumbers: Object.fromEntries(activePitchers.map(pitcher => [pitcher.display_name, pitcher.jersey_number])),
-          pitches: (pitchesResult.data || []).map(pitch => pitch.name),
+          pitches: enabledPitchNames,
           cards: cloudCards,
           selectedCardId: cloudCards[0]?.id || ''
         };
@@ -963,7 +1032,7 @@
               const number = String(item.pitcherNumbers?.[name] ?? objectEntry?.number ?? '').trim();
               return [name, /^\d{1,3}$/.test(number) ? number : ''];
             }));
-            const cards = item.cards.map(card => card && Array.isArray(card.grid) ? { ...card, grid: card.grid.map(row => Array.isArray(row) ? row.map(normalizeCardCall) : row) } : card).filter(card => card && typeof card.id === 'string' && typeof card.name === 'string' && card.name.trim() && card.name.length <= 60 && validCardGridShape(card.grid) && card.grid.every(row => row.every(call => typeof call === 'string' && call.length <= 40 && (calledTarget(call) || pitches.includes(calledPitch(call))))));
+            const cards = item.cards.map(card => card && validCardGridShape(card.grid) ? { ...card, grid: isMatrixGrid(card.grid) ? normalizeMatrixGrid(card.grid) : card.grid.map(row => row.map(normalizeCardCall)) } : card).filter(card => card && typeof card.id === 'string' && typeof card.name === 'string' && card.name.trim() && card.name.length <= 60 && validCardGridShape(card.grid) && (isMatrixGrid(card.grid) ? card.grid.pitches.every(entry => pitches.includes(entry.value)) : card.grid.every(row => row.every(call => typeof call === 'string' && call.length <= 40 && (calledTarget(call) || pitches.includes(calledPitch(call)))))));
             teamProfiles[key] = { pitches, pitchers, pitcherNumbers, cards, selectedCardId: cards.some(card => card.id === item.selectedCardId) ? item.selectedCardId : '' };
           }
           if (teamKey() && !teamProfiles[teamKey()]) {
@@ -993,7 +1062,7 @@
             if (editorDraft) { notify('Save or cancel the card before changing team pitches.'); return; }
             if (selected) {
               if (item.pitches.length === 1) { notify('Keep at least one pitch for this team.'); return; }
-              if (item.cards.some(card => card.grid.flat().some(call => calledPitch(call) === name))) { notify('Edit team cards using this pitch before removing it.'); return; }
+              if (item.cards.some(card => cardUsesPitch(card.grid, name))) { notify('Edit team cards using this pitch before removing it.'); return; }
               if (currentTeam) { const { error } = await dbClient.from('pitch_types').update({ active: false }).eq('team_id', currentTeam.id).eq('name', name); if (error) { notify(error.message); return; } }
               item.pitches = item.pitches.filter(pitch => pitch !== name);
               if (state.pitch === name) resetEntry();
@@ -1016,46 +1085,86 @@
         }
         $('deleteCard').disabled = !activeCard();
         const { rows, columns } = cardDimensions(cardGrid());
-        $('cardStatus').textContent = activeCard() ? `Team card · ${activeCard().name} · ${columns}×${rows}` : 'Blank starter card · create a team card before using card mode.';
-        $('manageCardStatus').textContent = activeCard() ? `${activeCard().name} · ${columns}×${rows} · saved for ${state.team || 'this team'}` : 'Blank starter card · select New card to build your first one.';
+        const type = isMatrixGrid(cardGrid()) ? 'Pitch × location matrix' : 'Freeform grid';
+        $('cardStatus').textContent = activeCard() ? `Team card · ${activeCard().name} · ${type} · ${columns}×${rows}` : 'Blank starter card · create a team card before using card mode.';
+        $('manageCardStatus').textContent = activeCard() ? `${activeCard().name} · ${type} · ${columns}×${rows} · saved for ${state.team || 'this team'}` : 'Blank starter card · select New card to build your first one.';
+      }
+      function matrixAxisCell(item, kind) {
+        const cell = document.createElement('span'); cell.className = 'pitch-card-axis';
+        const code = document.createElement('b'); code.textContent = item.code;
+        cell.append(code, document.createTextNode(kind === 'location' ? zoneLabel(item.value) : item.value)); return cell;
+      }
+      function renderCardGridInto(container, sourceGrid, interactive = false) {
+        const { rows, columns } = cardDimensions(sourceGrid), matrix = isMatrixGrid(sourceGrid);
+        container.replaceChildren(); container.classList.toggle('matrix-grid', matrix);
+        container.style.gridTemplateColumns = `${matrix ? '72px' : '24px'} repeat(${columns}, minmax(${matrix ? '62px' : '0px'}, 1fr))`;
+        container.style.minWidth = matrix && columns > 4 ? `${72 + columns * 68}px` : '';
+        for (let row = 0; row <= rows; row++) for (let column = 0; column <= columns; column++) {
+          if (!row && !column) { const blank = document.createElement('span'); blank.className = 'pitch-card-axis'; container.append(blank); continue; }
+          if (!row) { container.append(matrix ? matrixAxisCell(matrixTopItems(sourceGrid)[column - 1], sourceGrid.orientation === 'pitch-columns' ? 'pitch' : 'location') : Object.assign(document.createElement('span'), { className: 'pitch-card-axis', textContent: column })); continue; }
+          if (!column) { container.append(matrix ? matrixAxisCell(matrixSideItems(sourceGrid)[row - 1], sourceGrid.orientation === 'pitch-columns' ? 'location' : 'pitch') : Object.assign(document.createElement('span'), { className: 'pitch-card-axis', textContent: row })); continue; }
+          const matrixCall = matrix ? matrixCallAt(sourceGrid, column, row) : null;
+          const call = matrix ? matrixCall.code : normalizeCardCall(sourceGrid[row - 1][column - 1]);
+          const selected = matrix ? state.cardCall === matrixCall.code : state.cardRow === row && state.cardColumn === column;
+          const cell = document.createElement(interactive ? 'button' : 'span');
+          if (interactive) cell.type = 'button';
+          cell.className = `choice${selected ? ' selected' : ''}`;
+          if (matrix) cell.textContent = call;
+          else { const number = document.createElement('small'); number.textContent = `${column}–${row}`; cell.append(number, document.createTextNode(call)); }
+          if (interactive) {
+            cell.disabled = matrix ? !teamPitchNames().includes(matrixCall.pitch) : !validCall(call);
+            const description = matrix ? `${matrixCall.pitch} to ${zoneLabel(matrixCall.zone)}` : call;
+            cell.setAttribute('aria-label', `Top ${matrix ? matrixCall.columnCode : column}, left ${matrix ? matrixCall.rowCode : row}: ${description}${cell.disabled ? ', pitch not enabled for this team' : ''}`);
+            cell.setAttribute('aria-pressed', String(selected));
+            cell.addEventListener('click', () => {
+              state.cardCall = call; state.cardRow = matrix ? null : row; state.cardColumn = matrix ? null : column;
+              state.pitch = matrix ? matrixCall.pitch : calledPitch(call); state.zone = matrix ? matrixCall.zone : calledTarget(call);
+              state.strikeSpot = null; state.ballType = null; state.missLocation = null; render();
+            });
+          }
+          container.append(cell);
+        }
       }
       function renderPitchCard() {
-        renderCardPicker();
-        const { rows, columns } = cardDimensions(cardGrid());
-        const grid = $('pitchCardGrid'); grid.replaceChildren();
-        grid.style.gridTemplateColumns = `24px repeat(${columns}, minmax(0, 1fr))`;
-        for (let row = 0; row <= rows; row++) for (let column = 0; column <= columns; column++) {
-          if (row === 0 || column === 0) { const axis = document.createElement('span'); axis.className = 'pitch-card-axis'; axis.textContent = row ? row : column || ''; grid.append(axis); continue; }
-          const call = normalizeCardCall(cardGrid()[row - 1][column - 1]);
-          const button = document.createElement('button'); button.type = 'button'; button.className = `choice${state.cardRow === row && state.cardColumn === column ? ' selected' : ''}`;
-          button.disabled = !validCall(call);
-          const number = document.createElement('small'); number.textContent = `${column}–${row}`;
-          button.append(number, document.createTextNode(call));
-          button.setAttribute('aria-label', `Top ${column}, left ${row}: ${call}${button.disabled ? ', pitch not enabled for this team' : ''}`);
-          button.setAttribute('aria-pressed', String(state.cardRow === row && state.cardColumn === column));
-          button.addEventListener('click', () => {
-            state.cardCall = call; state.cardRow = row; state.cardColumn = column;
-            state.pitch = calledPitch(call); state.zone = calledTarget(call);
-            state.strikeSpot = null; state.ballType = null; state.missLocation = null;
-            render();
+        renderCardPicker(); renderCardGridInto($('pitchCardGrid'), cardGrid(), true); renderCardGridInto($('manageCardGrid'), cardGrid());
+      }
+      const defaultMatrixGrid = () => ({ type: 'matrix', version: 1, orientation: 'pitch-columns', pitches: teamPitchNames().slice(0, 4).map((value, index) => ({ code: index + 1, value })), locations: MATRIX_PRESETS.corners.map((value, index) => ({ code: index + 1, value })) });
+      const nextMatrixCode = items => { const used = new Set(items.map(item => Number(item.code))); for (let code = 1; code <= 99; code++) if (!used.has(code)) return code; return 99; };
+      function renderMatrixPreview() { if (editorDraft && isMatrixGrid(editorDraft.grid)) renderCardGridInto($('matrixPreview'), editorDraft.grid); }
+      function renderMatrixAxisRows(kind) {
+        const grid = editorDraft.grid, selected = kind === 'pitch' ? grid.pitches : grid.locations;
+        const sources = kind === 'pitch' ? teamPitchNames() : MATRIX_PRESETS.nine;
+        const container = $(kind === 'pitch' ? 'matrixPitchRows' : 'matrixLocationRows'); container.replaceChildren();
+        const orderedValues = [...selected.map(item => item.value), ...sources.filter(value => !selected.some(item => item.value === value))];
+        for (const value of orderedValues) {
+          const itemIndex = selected.findIndex(item => item.value === value), item = selected[itemIndex], enabled = itemIndex >= 0;
+          const row = document.createElement('div'); row.className = 'matrix-axis-row';
+          const check = document.createElement('input'); check.type = 'checkbox'; check.checked = enabled; check.setAttribute('aria-label', `Use ${kind === 'pitch' ? value : zoneLabel(value)}`);
+          const label = document.createElement('label'); label.textContent = kind === 'pitch' ? value : zoneLabel(value);
+          const code = document.createElement('input'); code.type = 'number'; code.min = '1'; code.max = '99'; code.inputMode = 'numeric'; code.value = enabled ? item.code : ''; code.disabled = !enabled; code.setAttribute('aria-label', `${label.textContent} number`);
+          const up = document.createElement('button'); up.type = 'button'; up.className = 'small-action'; up.textContent = '↑'; up.disabled = !enabled || itemIndex === 0; up.setAttribute('aria-label', `Move ${label.textContent} up`);
+          const down = document.createElement('button'); down.type = 'button'; down.className = 'small-action'; down.textContent = '↓'; down.disabled = !enabled || itemIndex === selected.length - 1; down.setAttribute('aria-label', `Move ${label.textContent} down`);
+          check.addEventListener('change', () => {
+            if (check.checked) selected.push({ code: nextMatrixCode(selected), value }); else selected.splice(selected.findIndex(entry => entry.value === value), 1);
+            renderCardEditor();
           });
-          grid.append(button);
-        }
-        const preview = $('manageCardGrid'); preview.replaceChildren();
-        preview.style.gridTemplateColumns = `24px repeat(${columns}, minmax(0, 1fr))`;
-        for (let row = 0; row <= rows; row++) for (let column = 0; column <= columns; column++) {
-          const cell = document.createElement('span');
-          if (!row || !column) { cell.className = 'pitch-card-axis'; cell.textContent = row || column || ''; }
-          else { cell.className = 'choice'; const number = document.createElement('small'); number.textContent = `${column}–${row}`; cell.append(number, document.createTextNode(normalizeCardCall(cardGrid()[row - 1][column - 1]))); }
-          preview.append(cell);
+          code.addEventListener('input', () => { item.code = Math.max(1, Math.min(99, Number(code.value) || 0)); renderMatrixPreview(); });
+          up.addEventListener('click', () => { [selected[itemIndex - 1], selected[itemIndex]] = [selected[itemIndex], selected[itemIndex - 1]]; renderCardEditor(); });
+          down.addEventListener('click', () => { [selected[itemIndex + 1], selected[itemIndex]] = [selected[itemIndex], selected[itemIndex + 1]]; renderCardEditor(); });
+          row.append(check, label, code, up, down); container.append(row);
         }
       }
       function renderCardEditor() {
         $('cardEditor').hidden = !editorDraft;
         if (!editorDraft) return;
         $('cardName').value = editorDraft.name;
-        const { rows, columns } = cardDimensions(editorDraft.grid);
-        $('cardSize').value = `${columns}x${rows}`;
+        const matrix = isMatrixGrid(editorDraft.grid); $('cardType').value = matrix ? 'matrix' : 'freeform';
+        $('freeformCardOptions').hidden = matrix; $('matrixCardOptions').hidden = !matrix;
+        if (matrix) {
+          $('matrixOrientation').value = editorDraft.grid.orientation;
+          renderMatrixAxisRows('pitch'); renderMatrixAxisRows('location'); renderMatrixPreview(); return;
+        }
+        const { rows, columns } = cardDimensions(editorDraft.grid); $('cardSize').value = `${columns}x${rows}`;
         const grid = $('editorGrid'); grid.replaceChildren();
         grid.style.gridTemplateColumns = `19px repeat(${columns}, minmax(0, 1fr))`;
         grid.setAttribute('aria-label', `Edit ${columns} by ${rows} pitch card`);
@@ -1191,7 +1300,8 @@
         state.history.slice().reverse().forEach((p, reverseIndex) => {
           const li = document.createElement('li');
           const info = document.createElement('div'); const head = document.createElement('b');
-          head.textContent = `Pitch ${state.history.length - reverseIndex} · ${p.pitcherNumber ? `#${p.pitcherNumber} ` : ''}${p.pitcher} · ${p.pitch}${p.cardRow && p.cardColumn ? ` · Card ${p.cardColumn}–${p.cardRow}` : ''}${p.batter ? ` · Batter ${p.batter}${p.batterSide ? ` (${p.batterSide})` : ''}` : ''}`;
+          const cardLabel = p.cardRow && p.cardColumn ? ` · Card ${p.cardColumn}–${p.cardRow}` : /^\d+–\d+$/.test(p.cardCall || '') ? ` · Card ${p.cardCall}` : '';
+          head.textContent = `Pitch ${state.history.length - reverseIndex} · ${p.pitcherNumber ? `#${p.pitcherNumber} ` : ''}${p.pitcher} · ${p.pitch}${cardLabel}${p.batter ? ` · Batter ${p.batter}${p.batterSide ? ` (${p.batterSide})` : ''}` : ''}`;
           const detail = document.createElement('span');
           const outcome = p.result === 'Strike' ? `${p.strikeType}, ${(p.strikeSpot || 'No spot').toLowerCase()}` : p.result === 'Ball' ? p.ballType : p.result === 'In play' ? `${p.playType}${p.contactType ? ` · ${p.contactType}` : ''}` : p.result;
           detail.textContent = `${outcome} · ${p.zone ? zoneLabel(p.zone) : 'No target'}${p.missLocation ? ` · Missed ${missLocationLabel(p.missLocation).toLowerCase()}` : p.missDirection ? ` · Missed ${p.missDirection.toLowerCase()} (relative)` : ''}${p.plateResult && p.plateResult !== p.playType ? ` · ${p.plateResult}` : ''}`;
@@ -2124,8 +2234,8 @@
         const showTarget = pitchMode === 'standard' || !!state.cardCall;
         $('targetCard').hidden = !showTarget;
         $('targetCard').parentElement.classList.toggle('card-result-only', !showTarget);
-        $('zoneLabel').textContent = pitchMode === 'card' && calledTarget(state.cardCall) ? '3 · Called target from card' : pitchMode === 'card' ? 'Optional target for this pitch' : '3 · Target';
-        $('cardSelection').textContent = state.cardCall ? `Card ${state.cardColumn}–${state.cardRow}: ${state.cardCall} → ${state.pitch}${state.zone ? ` to ${zoneLabel(state.zone)}` : ' · no target called'}` : 'Choose a square: top number first, then left number.';
+        $('zoneLabel').textContent = pitchMode === 'card' && state.zone ? '3 · Called target from card' : pitchMode === 'card' ? 'Optional target for this pitch' : '3 · Target';
+        $('cardSelection').textContent = state.cardCall ? `${isMatrixGrid(cardGrid()) ? `Card ${state.cardCall}` : `Card ${state.cardColumn}–${state.cardRow}: ${state.cardCall}`} → ${state.pitch}${state.zone ? ` to ${zoneLabel(state.zone)}` : ' · no target called'}` : 'Choose a square: top number first, then left number.';
         if (pitchMode === 'card') renderPitchCard();
         choices('pitchers', teamPitcherNames(), 'pitcher', { labelFor: pitcherLabel });
         choices('pitches', teamPitchNames(), 'pitch');
@@ -2412,22 +2522,39 @@
       $('newCard').addEventListener('click', () => {
         showTab('cards'); $('printOptions').hidden = true;
         if (!ensureProfile()) return;
-        const first = teamPitchNames().includes('Fastball') ? 'Inside' : teamPitchNames()[0];
-        editorDraft = { id: null, isNew: true, name: '', grid: Array.from({ length: 5 }, () => Array(5).fill(first)) };
+        editorDraft = { id: null, isNew: true, name: '', grid: defaultMatrixGrid() };
         renderCardEditor(); $('cardEditor').scrollIntoView({ behavior: 'smooth', block: 'center' }); $('cardName').focus();
       });
+      $('cardType').addEventListener('change', event => {
+        if (!editorDraft) return;
+        if (event.target.value === 'matrix' && !isMatrixGrid(editorDraft.grid)) editorDraft.grid = defaultMatrixGrid();
+        if (event.target.value === 'freeform' && isMatrixGrid(editorDraft.grid)) {
+          const first = teamPitchNames().includes('Fastball') ? 'Inside' : teamPitchNames()[0];
+          editorDraft.grid = Array.from({ length: 5 }, () => Array(5).fill(first));
+        }
+        renderCardEditor();
+      });
       $('cardSize').addEventListener('change', event => {
-        if (!editorDraft || !CARD_SIZES.has(event.target.value)) return;
+        if (!editorDraft || isMatrixGrid(editorDraft.grid) || !CARD_SIZES.has(event.target.value)) return;
         const [columns, rows] = event.target.value.split('x').map(Number);
         const first = teamPitchNames().includes('Fastball') ? 'Inside' : teamPitchNames()[0];
         editorDraft.grid = resizeCardGrid(editorDraft.grid, columns, rows, first);
         renderCardEditor();
       });
+      $('matrixOrientation').addEventListener('change', event => {
+        if (!editorDraft || !isMatrixGrid(editorDraft.grid) || !MATRIX_ORIENTATIONS.has(event.target.value)) return;
+        editorDraft.grid.orientation = event.target.value; renderCardEditor();
+      });
+      $('applyMatrixPreset').addEventListener('click', () => {
+        if (!editorDraft || !isMatrixGrid(editorDraft.grid)) return;
+        const values = MATRIX_PRESETS[$('matrixPreset').value] || MATRIX_PRESETS.corners;
+        editorDraft.grid.locations = values.map((value, index) => ({ code: index + 1, value })); renderCardEditor();
+      });
       $('editCard').addEventListener('click', () => {
         showTab('cards'); $('printOptions').hidden = true;
         if (!ensureProfile()) return;
         const card = activeCard();
-        editorDraft = { id: card?.id || null, isNew: false, name: card?.name || 'My pitch card', grid: cardGrid().map(row => [...row]) };
+        editorDraft = { id: card?.id || null, isNew: false, name: card?.name || 'My pitch card', grid: cloneCardGrid(cardGrid()) };
         renderCardEditor(); $('cardEditor').scrollIntoView({ behavior: 'smooth', block: 'center' }); $('cardName').focus();
         if (!card) notify('Editing the starter card will save a new team card.');
       });
@@ -2437,14 +2564,26 @@
         const name = $('cardName').value.trim();
         if (!name) { notify('Give this card a name.'); $('cardName').focus(); return; }
         if (item.cards.some(card => card.id !== editorDraft.id && card.name.toLowerCase() === name.toLowerCase())) { notify('Use a different card name.'); return; }
-        const cells = [...$('editorGrid').querySelectorAll('select')];
-        const { rows, columns } = cardDimensions(editorDraft.grid);
-        const grid = Array.from({ length: rows }, (_, row) => cells.slice(row * columns, row * columns + columns).map(select => select.value));
-        if (grid.some(row => row.some(call => !validCall(call)))) { notify('Every square needs an enabled team pitch.'); return; }
+        let grid;
+        if (isMatrixGrid(editorDraft.grid)) {
+          if (!editorDraft.grid.pitches.length) { notify('Choose at least one pitch.'); return; }
+          if (!editorDraft.grid.locations.length) { notify('Choose at least one location.'); return; }
+          const duplicatePitchCodes = new Set(editorDraft.grid.pitches.map(entry => Number(entry.code))).size !== editorDraft.grid.pitches.length;
+          const duplicateLocationCodes = new Set(editorDraft.grid.locations.map(entry => Number(entry.code))).size !== editorDraft.grid.locations.length;
+          if (duplicatePitchCodes || duplicateLocationCodes) { notify('Pitch numbers and location numbers must each be unique.'); return; }
+          if (!validMatrixGridShape(editorDraft.grid)) { notify('Use numbers from 1 to 99 for every selected pitch and location.'); return; }
+          grid = normalizeMatrixGrid(editorDraft.grid);
+        } else {
+          const cells = [...$('editorGrid').querySelectorAll('select')];
+          const { rows, columns } = cardDimensions(editorDraft.grid);
+          grid = Array.from({ length: rows }, (_, row) => cells.slice(row * columns, row * columns + columns).map(select => select.value));
+          if (grid.some(row => row.some(call => !validCall(call)))) { notify('Every square needs an enabled team pitch.'); return; }
+        }
         let id = editorDraft.id;
         if (currentTeam) {
-          if (id) { const { error } = await dbClient.from('pitch_cards').update({ name, grid, updated_at: new Date().toISOString() }).eq('id', id); if (error) { notify(error.message); return; } }
-          else { const { data, error } = await dbClient.from('pitch_cards').insert({ team_id: currentTeam.id, name, grid, created_by: currentUser.id }).select('id').single(); if (error) { notify(error.message); return; } id = data.id; }
+          const storedGrid = encodeCardGrid(grid);
+          if (id) { const { error } = await dbClient.from('pitch_cards').update({ name, grid: storedGrid, updated_at: new Date().toISOString() }).eq('id', id); if (error) { notify(error.message); return; } }
+          else { const { data, error } = await dbClient.from('pitch_cards').insert({ team_id: currentTeam.id, name, grid: storedGrid, created_by: currentUser.id }).select('id').single(); if (error) { notify(error.message); return; } id = data.id; }
         }
         id ||= `card-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`;
         const existing = item.cards.find(card => card.id === id);
@@ -2465,18 +2604,20 @@
         document.body.classList.remove('print-report');
         const sheet = $('printSheet'); sheet.replaceChildren();
         const copies = Number($('printCopies').value);
-        const { rows, columns } = cardDimensions(cardGrid());
+        const sourceGrid = cardGrid(), matrix = isMatrixGrid(sourceGrid), { rows, columns } = cardDimensions(sourceGrid);
         sheet.style.setProperty('--print-rows', copies / 2);
         for (let copy = 0; copy < copies; copy++) {
           const card = document.createElement('section'); card.className = 'print-card';
           const title = document.createElement('strong'); title.textContent = `${state.team.trim() || 'Pitch card'} · ${activeCard()?.name || 'Starter card'}`;
           const grid = document.createElement('div'); grid.className = 'print-grid';
-          grid.style.gridTemplateColumns = `.19in repeat(${columns}, minmax(0, 1fr))`;
+          grid.style.gridTemplateColumns = `${matrix ? '.72in' : '.19in'} repeat(${columns}, minmax(0, 1fr))`;
           grid.style.gridTemplateRows = `repeat(${rows + 1}, 1fr)`;
           for (let row = 0; row <= rows; row++) for (let column = 0; column <= columns; column++) {
             const cell = document.createElement('span');
-            if (!row || !column) { cell.className = 'pitch-card-axis'; cell.textContent = row || column || ''; }
-            else cell.textContent = cardGrid()[row - 1][column - 1];
+            if (!row && !column) { cell.className = 'pitch-card-axis'; cell.textContent = ''; }
+            else if (!row) { cell.className = 'pitch-card-axis'; const item = matrix ? matrixTopItems(sourceGrid)[column - 1] : null; cell.textContent = matrix ? `${item.code} ${sourceGrid.orientation === 'pitch-columns' ? item.value : zoneLabel(item.value)}` : column; }
+            else if (!column) { cell.className = 'pitch-card-axis'; const item = matrix ? matrixSideItems(sourceGrid)[row - 1] : null; cell.textContent = matrix ? `${item.code} ${sourceGrid.orientation === 'pitch-columns' ? zoneLabel(item.value) : item.value}` : row; }
+            else cell.textContent = matrix ? matrixCallAt(sourceGrid, column, row).code : sourceGrid[row - 1][column - 1];
             grid.append(cell);
           }
           card.append(title, grid); sheet.append(card);
