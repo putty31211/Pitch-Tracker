@@ -133,6 +133,13 @@
     .matrix-axis-row button { min-height: 36px; padding: 5px; }
     .matrix-preview-wrap { margin-top: 12px; overflow-x: auto; }
     .matrix-preview-label { margin: 0 0 7px; color: #556b84; font-size: 11px; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; }
+    .call-order-control { min-width: 0; margin: 2px 0 13px; padding: 0; border: 0; }
+    .call-order-control legend { margin-bottom: 7px; color: #556b84; font-size: 12px; font-weight: 800; }
+    .call-order-buttons { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 7px; }
+    .call-order-buttons .choice { width: 100%; min-width: 0; padding: 9px 5px; }
+    .call-order-buttons strong, .call-order-buttons small { display: block; }
+    .call-order-buttons strong { font-size: 13px; }
+    .call-order-buttons small { margin-top: 3px; font-size: 9px; opacity: .75; }
     .editor-actions { display: flex; justify-content: flex-end; gap: 7px; margin-top: 12px; }
     .print-sheet { display: none; }
     @media print {
@@ -341,7 +348,7 @@
       </form>
       <div class="auth-links"><button type="button" id="showSignIn" hidden>Sign in</button><button type="button" id="showCreate">Create account</button><button type="button" id="showReset">Forgot password?</button></div>
       <div id="authMessage" class="auth-message" role="status"></div>
-      <div class="app-version">Build 2026.11.18.2</div>
+      <div class="app-version">Build 2026.11.18.3</div>
     </section>
   </div>
   <div id="onboardingGate" class="auth-shell" hidden>
@@ -506,7 +513,7 @@
           <div id="freeformCardOptions"><label for="cardSize">Card size (across × down)<select id="cardSize"><option value="5x5">5 × 5</option><option value="4x4">4 × 4</option><option value="5x4">5 × 4</option><option value="4x5">4 × 5</option></select></label><div id="editorGrid" class="editor-grid" role="group" aria-label="Edit pitch card"></div></div>
           <div id="matrixCardOptions" hidden>
             <label for="matrixOrientation">Card orientation<select id="matrixOrientation"><option value="pitch-columns">Pitches across top · locations down side</option><option value="location-columns">Locations across top · pitches down side</option></select></label>
-            <label for="matrixCallOrder">Call order<select id="matrixCallOrder"><option value="top-side">Top number then left number</option><option value="side-top">Left number then top number</option></select></label>
+            <fieldset class="call-order-control"><legend>Call order</legend><div class="call-order-buttons"><button type="button" class="choice" id="callOrderTopSide" aria-pressed="true"><strong>Top → left</strong><small>Example: 3–2</small></button><button type="button" class="choice" id="callOrderSideTop" aria-pressed="false"><strong>Left → top</strong><small>Example: 2–3</small></button></div></fieldset>
             <div class="card-controls"><select id="matrixPreset" aria-label="Matrix location preset"><option value="corners">Four corners</option><option value="nine">Full nine-zone grid</option><option value="inside-outside">Inside / outside</option><option value="high-low">High / low</option></select><button type="button" class="small-action" id="applyMatrixPreset">Apply preset</button></div>
             <div class="matrix-builder"><section class="matrix-builder-section"><h3>Pitches</h3><p class="hint">Choose pitches, assign their numbers, and set their order.</p><div id="matrixPitchRows" class="matrix-axis-list"></div></section><section class="matrix-builder-section"><h3>Locations</h3><p class="hint">Choose targets, assign their numbers, and set their order.</p><div id="matrixLocationRows" class="matrix-axis-list"></div></section></div>
             <div class="matrix-preview-wrap"><p class="matrix-preview-label" id="matrixPreviewLabel">Card preview · top number first</p><div id="matrixPreview" class="pitch-card-grid matrix-grid" aria-label="Matrix card preview"></div></div>
@@ -1171,7 +1178,7 @@
         $('freeformCardOptions').hidden = matrix; $('matrixCardOptions').hidden = !matrix;
         if (matrix) {
           $('matrixOrientation').value = editorDraft.grid.orientation;
-          $('matrixCallOrder').value = editorDraft.grid.callOrder;
+          for (const [id, order] of [['callOrderTopSide', 'top-side'], ['callOrderSideTop', 'side-top']]) { const active = editorDraft.grid.callOrder === order; $(id).classList.toggle('selected', active); $(id).setAttribute('aria-pressed', String(active)); }
           renderMatrixAxisRows('pitch'); renderMatrixAxisRows('location'); renderMatrixPreview(); return;
         }
         const { rows, columns } = cardDimensions(editorDraft.grid); $('cardSize').value = `${columns}x${rows}`;
@@ -2555,9 +2562,9 @@
         if (!editorDraft || !isMatrixGrid(editorDraft.grid) || !MATRIX_ORIENTATIONS.has(event.target.value)) return;
         editorDraft.grid.orientation = event.target.value; renderCardEditor();
       });
-      $('matrixCallOrder').addEventListener('change', event => {
-        if (!editorDraft || !isMatrixGrid(editorDraft.grid) || !MATRIX_CALL_ORDERS.has(event.target.value)) return;
-        editorDraft.grid.callOrder = event.target.value; renderCardEditor();
+      for (const [id, order] of [['callOrderTopSide', 'top-side'], ['callOrderSideTop', 'side-top']]) $(id).addEventListener('click', () => {
+        if (!editorDraft || !isMatrixGrid(editorDraft.grid)) return;
+        editorDraft.grid.callOrder = order; renderCardEditor();
       });
       $('applyMatrixPreset').addEventListener('click', () => {
         if (!editorDraft || !isMatrixGrid(editorDraft.grid)) return;
